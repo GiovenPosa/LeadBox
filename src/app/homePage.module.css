@@ -4,8 +4,8 @@
 
 .workspace {
   display: flex;
-  height: 100%;
-  height: 100dvh; /* Dynamic viewport height for mobile */
+  position: fixed;
+  inset: 0;
   background-color: var(--color-bg-primary);
   overflow: hidden;
   padding-top: var(--safe-area-top);
