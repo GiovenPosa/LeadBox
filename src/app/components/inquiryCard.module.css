@@ -1,0 +1,297 @@
+/* ============================================
+   INQUIRY CARD - Notion-style Block
+   ============================================ */
+
+.card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-sidebar);
+  transition: background-color var(--transition-fast);
+  position: relative;
+}
+
+.card:hover {
+  background-color: var(--color-bg-hover);
+}
+
+/* Card Content */
+.cardContent {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Main Row */
+.mainRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.primaryInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Name */
+.name {
+  font-size: var(--text-xl);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.newDot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  left: -4px;
+  top: -5px;
+  border-radius: 999px;
+  background-color: var(--color-status-lost);
+}
+
+/* Status Badge */
+.statusWrapper {
+  position: relative;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-transform: capitalize;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+.status:hover {
+  filter: brightness(0.95);
+}
+
+.statusNew {
+  background-color: var(--color-status-new-bg);
+  color: var(--color-status-new);
+}
+
+.statusContacted {
+  background-color: var(--color-status-contacted-bg);
+  color: var(--color-status-contacted);
+}
+
+.statusWon {
+  background-color: var(--color-status-won-bg);
+  color: var(--color-status-won);
+}
+
+.statusLost {
+  background-color: var(--color-status-lost-bg);
+  color: var(--color-status-lost);
+}
+
+.statusBad {
+  background-color: var(--color-status-bad-bg);
+  color: var(--color-status-bad);
+}
+
+/* Status Dropdown Menu */
+.statusMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 100;
+  min-width: 120px;
+  padding: var(--space-1);
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  animation: menuFadeIn 0.15s ease;
+}
+
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.statusOption {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.statusOption:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.statusOptionActive {
+  background-color: var(--color-bg-active);
+}
+
+/* Contact Links */
+.contact {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  margin-bottom: var(--space-2);
+  flex: 1;
+}
+
+.contactLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.contactLink:hover {
+  color: var(--color-accent);
+}
+
+.contactLink svg {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.contactLink:hover svg {
+  opacity: 1;
+}
+
+/* Timestamp */
+.timestamp {
+  font-size: var(--text-base);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tags Row */
+.tagsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  padding: 4px 8px;
+  border-radius: var(--radius-2xl);
+  font-size: var(--text-sm);
+  font-weight: 200;
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-secondary);
+  text-transform: capitalize;
+}
+
+.tag svg {
+  opacity: 0.6;
+}
+
+.tagPackage {
+  background-color: rgba(139, 92, 246, 0.08);
+  border-color: rgba(139, 92, 246, 0.15);
+}
+
+.tagBudget {
+  background-color: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.15);
+}
+
+.tagSource {
+  background-color: var(--color-bg-tertiary);
+  text-transform: none;
+}
+
+/* Message */
+.message {
+  margin-bottom: var(--space-1);
+  font-size: var(--text-md);
+  color: var(--color-text-primary);
+  font-weight: 300;
+  line-height: var(--leading-relaxed);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .mainRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  
+  .primaryInfo {
+    width: 100%;
+  }
+  
+  .contact {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+  
+  .timestamp {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: var(--space-3);
+    margin: 0 calc(var(--space-2) * -1);
+  }
+  
+  .handle {
+    display: none;
+  }
+  
+  .contactLink span {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
