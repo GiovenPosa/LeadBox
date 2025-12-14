@@ -11,8 +11,8 @@
   z-index: 100;
   padding: var(--space-2) var(--space-3);
   padding-bottom: calc(var(--space-2) + var(--safe-area-bottom));
+  /* This is the key - extend the background into safe area */
   background-color: var(--color-bg-primary);
-  /* Prevent selection */
   -webkit-user-select: none;
   user-select: none;
 }

@@ -138,19 +138,20 @@ html {
   overscroll-behavior: none;
   overflow: hidden;
   height: 100%;
-  height: 100dvh;
+  /* Ensure background covers safe areas */
+  background-color: var(--color-bg-primary);
 }
 
 body {
   overscroll-behavior: none;
   overflow: hidden;
   height: 100%;
-  
+  margin: 0;
+  /* Ensure background covers safe areas */
+  background-color: var(--color-bg-primary);
   -webkit-user-select: none;
   user-select: none;
-  /* Disable touch callouts (long-press menu) */
   -webkit-touch-callout: none;
-  /* Smoother touch scrolling */
   -webkit-overflow-scrolling: touch;
 }
 
