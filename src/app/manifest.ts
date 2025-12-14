@@ -33,7 +33,7 @@ export default function manifest(): MetadataRoute.Manifest {
     "screenshots": [
       {
         "src": "/screenshots/mobile-view.png",
-        "sizes": "498x1315",
+        "sizes": "503x995",
         "type": "image/png",
         "label": "Inbox"
       },
