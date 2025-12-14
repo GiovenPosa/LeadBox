@@ -56,7 +56,7 @@ export default function HomePage() {
       await fetchInquiries();
     },
     threshold: 80,
-    maxPull: 120,
+    maxPull: 100,
   });
 
   async function updateStatus(id: string, next: OpportunityStatus) {
@@ -190,9 +190,6 @@ export default function HomePage() {
           >
             <HiArrowPath size={20} />
           </div>
-          <span className={styles.pullText}>
-            {isRefreshing ? "Refreshing…" : progress >= 1 ? "Release to refresh" : "Pull to refresh"}
-          </span>
         </div>
 
         <div 
@@ -211,6 +208,13 @@ export default function HomePage() {
           {/* Stats Row */}
           <div className={styles.statsRow}>
             <div className={styles.statGroup}>
+               <StatCard 
+                label="Total" 
+                value={rows.length} 
+                variant="neutral"
+                onClick={() => setStatusFilter("all")}
+                active={statusFilter === "all"}
+              />
               <StatCard 
                 label="New" 
                 value={newCount} 
@@ -231,13 +235,6 @@ export default function HomePage() {
                 variant="green"
                 onClick={() => setStatusFilter(statusFilter === "won" ? "all" : "won")}
                 active={statusFilter === "won"}
-              />
-              <StatCard 
-                label="Total" 
-                value={rows.length} 
-                variant="neutral"
-                onClick={() => setStatusFilter("all")}
-                active={statusFilter === "all"}
               />
               <StatCard 
                 label="Bad" 

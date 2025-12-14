@@ -11,7 +11,7 @@ type UsePullToRefreshOptions = {
 export function usePullToRefresh({
   onRefresh,
   threshold = 80,
-  maxPull = 120,
+  maxPull = 100,
 }: UsePullToRefreshOptions) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [pullDistance, setPullDistance] = useState(0);
