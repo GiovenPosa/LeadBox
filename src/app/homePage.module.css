@@ -101,21 +101,6 @@
   }
 }
 
-@media (max-width: 768px) {
-  .canvas {
-    /* Add bottom padding to account for dock bar */
-    padding-bottom: calc(var(--space-4) + 90px);
-  }
-}
-
-@media (max-width: 640px) {
-  .canvas {
-    padding: var(--space-4) var(--space-3);
-    /* Add bottom padding to account for dock bar */
-    padding-bottom: calc(var(--space-3) + 90px);
-  }
-}
-
 /* ============================================
    PAGE HEADER
    ============================================ */
