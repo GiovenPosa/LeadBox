@@ -9,10 +9,11 @@
   left: 0;
   right: 0;
   z-index: 100;
-  padding: var(--space-2) var(--space-3);
-  padding-bottom: calc(var(--space-2) + var(--safe-area-bottom));
-  /* This is the key - extend the background into safe area */
+  /* Extend background into safe area */
   background-color: var(--color-bg-primary);
+  /* Padding with safe area support */
+  padding: var(--space-2) var(--space-3);
+  padding-bottom: max(var(--space-3), env(safe-area-inset-bottom, 0px));
   -webkit-user-select: none;
   user-select: none;
 }
@@ -25,12 +26,9 @@
   max-width: 500px;
   margin: 0 auto;
   border-radius: 99px;
-  /* Subtle glassmorphism */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
-
-
 
 /* ---- Dock Item ---- */
 
@@ -50,8 +48,6 @@
   cursor: pointer;
   font-family: inherit;
 }
-
-
 
 .dockItemActive {
   color: var(--color-text-primary);
