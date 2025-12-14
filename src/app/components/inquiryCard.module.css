@@ -7,7 +7,7 @@
   align-items: flex-start;
   gap: var(--space-1);
   padding: var(--space-6) var(--space-6);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-2xl);
   background-color: var(--color-bg-sidebar);
   transition: background-color var(--transition-fast), transform var(--transition-fast);
   position: relative;
@@ -46,7 +46,7 @@
 
 /* Name - Allow selection */
 .name {
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   font-weight: 500;
   color: var(--color-text-primary);
   white-space: nowrap;
@@ -83,8 +83,8 @@
   align-items: center;
   padding: 4px 8px;
   border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: 700;
+  font-size: var(--text-md);
+  font-weight: 500;
   text-transform: capitalize;
   transition: all var(--transition-fast);
   cursor: pointer;
@@ -488,7 +488,8 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
+  font-weight: 600;
   color: var(--color-text-secondary);
   transition: color var(--transition-fast);
   white-space: nowrap;
@@ -516,7 +517,8 @@
 
 /* Timestamp */
 .timestamp {
-  font-size: var(--text-base);
+  font-size: var(--text-bs);
+  font-weight: 500;
   color: var(--color-text-tertiary);
   white-space: nowrap;
   flex-shrink: 0;
@@ -539,8 +541,8 @@
   margin-top: var(--space-1);
   padding: 5px 10px;
   border-radius: var(--radius-2xl);
-  font-size: var(--text-lg);
-  font-weight: 200;
+  font-size: var(--text-md);
+  font-weight: 400;
   text-transform: capitalize;
   -webkit-user-select: none;
   user-select: none;
@@ -604,8 +606,8 @@
   
   .timestamp {
     position: absolute;
-    top: var(--space-3);
-    right: var(--space-4);
+    top: var(--space-6);
+    right: var(--space-5);
   }
 }
 
