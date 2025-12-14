@@ -30,5 +30,21 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: "maskable",
       },
     ],
+    "screenshots": [
+      {
+        "src": "/screenshots/mobile-view.png",
+        "sizes": "498x1315",
+        "type": "image/png",
+        "form_factor": "narrow",
+        "label": "Inbox"
+      },
+      {
+        "src": "/screenshots/desktop-view.png",
+        "sizes": "2560x1315",
+        "type": "image/png",
+        "form_factor": "wide",
+        "label": "Dashboard"
+      }
+    ]
   };
 }
