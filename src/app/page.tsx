@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Sidebar from "./components/sidebar";
 import TopBar from "./components/topbar";
+import DockBar from "./components/dockbar";
 import InquiryCard, { BookingInquiry, OpportunityStatus } from "./components/inquiryCard";
+import { usePullToRefresh } from "./hooks/pullRefresh";
 import styles from "./homePage.module.css";
-import { HiInbox } from 'react-icons/hi2';
+import { HiInbox, HiArrowPath } from 'react-icons/hi2';
 
 export default function HomePage() {
   const router = useRouter();
@@ -16,7 +18,6 @@ export default function HomePage() {
   const [email, setEmail] = useState<string | null>(null);
   const [rows, setRows] = useState<BookingInquiry[]>([]);
   const [statusFilter, setStatusFilter] = useState<OpportunityStatus | "all">("all");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const unseenCount = rows.filter(
     (r) => r.opportunity_status === "new" && !r.seen_at
@@ -24,10 +25,39 @@ export default function HomePage() {
   const newCount = rows.filter((r) => r.opportunity_status === "new").length; 
   const contactedCount = rows.filter((r) => r.opportunity_status === "contacted").length;
   const wonCount = rows.filter((r) => r.opportunity_status === "won").length;
+  const badCount = rows.filter((r) => r.opportunity_status === "bad").length;
+  const lostCount = rows.filter((r) => r.opportunity_status === "lost").length;
 
   const filteredRows = statusFilter === "all" 
     ? rows 
     : rows.filter((r) => r.opportunity_status === statusFilter);
+
+  // Fetch data function (reusable for initial load and refresh)
+  const fetchInquiries = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("booking_inquiries")
+      .select(
+        "id, created_at, name, email, phone, selected_types, selected_package, budget, message, source_page, user_agent, opportunity_status, seen_at"
+      )
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setRows((data ?? []) as BookingInquiry[]);
+      setError(null);
+    }
+  }, []);
+
+  // Pull-to-refresh hook
+  const { containerRef, pullDistance, isRefreshing, progress } = usePullToRefresh({
+    onRefresh: async () => {
+      await fetchInquiries();
+    },
+    threshold: 80,
+    maxPull: 120,
+  });
 
   async function updateStatus(id: string, next: OpportunityStatus) {
     const prev = rows;
@@ -49,7 +79,6 @@ export default function HomePage() {
   async function markSeen(id: string) {
     const now = new Date().toISOString();
 
-    // optimistic update
     setRows((prev) =>
       prev.map((r) =>
         r.id === id && !r.seen_at ? { ...r, seen_at: now } : r
@@ -60,7 +89,7 @@ export default function HomePage() {
       .from("booking_inquiries")
       .update({ seen_at: now })
       .eq("id", id)
-      .is("seen_at", null); // only set once
+      .is("seen_at", null);
 
     if (error) {
       setError(error.message);
@@ -78,23 +107,12 @@ export default function HomePage() {
       }
 
       setEmail(sessionEmail);
-
-      const { data, error } = await supabase
-        .from("booking_inquiries")
-        .select(
-          "id, created_at, name, email, phone, selected_types, selected_package, budget, message, source_page, user_agent, opportunity_status, seen_at"
-        )
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (error) setError(error.message);
-      else setRows((data ?? []) as BookingInquiry[]);
-
+      await fetchInquiries();
       setLoading(false);
     }
 
     boot();
-  }, [router]);
+  }, [router, fetchInquiries]);
 
   useEffect(() => {
     if (!email) return;
@@ -141,17 +159,8 @@ export default function HomePage() {
 
   return (
     <div className={styles.workspace}>
-      {/* Sidebar */}
-      <Sidebar email={email} onSignOut={signOut} inboxUnseenCount={unseenCount}
-/>
-
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div 
-          className={styles.overlay}
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {/* Sidebar - Desktop only */}
+      <Sidebar email={email} onSignOut={signOut} inboxUnseenCount={unseenCount} />
 
       {/* Main Area */}
       <div className={styles.main}>
@@ -161,10 +170,38 @@ export default function HomePage() {
             { label: "gios.build", href: "#" },
             { label: "Inbox" }
           ]}
-          onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
+          email={email}
+          onSignOut={signOut}
         />
 
-        <div className={styles.canvas}>
+        {/* Pull-to-refresh indicator */}
+        <div 
+          className={styles.pullIndicator}
+          style={{
+            height: pullDistance,
+            opacity: progress,
+          }}
+        >
+          <div 
+            className={`${styles.pullSpinner} ${isRefreshing ? styles.pullSpinnerActive : ""}`}
+            style={{
+              transform: `rotate(${progress * 360}deg)`,
+            }}
+          >
+            <HiArrowPath size={20} />
+          </div>
+          <span className={styles.pullText}>
+            {isRefreshing ? "Refreshing…" : progress >= 1 ? "Release to refresh" : "Pull to refresh"}
+          </span>
+        </div>
+
+        <div 
+          ref={containerRef}
+          className={styles.canvas}
+          style={{
+            transform: `translateY(${pullDistance}px)`,
+          }}
+        >
           {/* Page Header */}
           <div className={styles.pageHeader}>
             <div className={styles.pageIcon}><HiInbox size={30}/></div>
@@ -202,35 +239,20 @@ export default function HomePage() {
                 onClick={() => setStatusFilter("all")}
                 active={statusFilter === "all"}
               />
-            </div>
-          </div>
-
-          {/* Filter Bar */}
-          <div className={styles.filterBar}>
-            <div className={styles.filterLeft}>
-              <span className={styles.filterCount}>
-                {filteredRows.length} {filteredRows.length === 1 ? "inquiry" : "inquiries"}
-              </span>
-            </div>
-            <div className={styles.filterRight}>
-              <div className={styles.filterSelect}>
-                <label htmlFor="status-filter" className={styles.filterLabel}>
-                  Status
-                </label>
-                <select
-                  id="status-filter"
-                  className={styles.select}
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as OpportunityStatus | "all")}
-                >
-                  <option value="all">All</option>
-                  <option value="new">New</option>
-                  <option value="contacted">Contacted</option>
-                  <option value="won">Won</option>
-                  <option value="lost">Lost</option>
-                  <option value="bad">Bad</option>
-                </select>
-              </div>
+              <StatCard 
+                label="Bad" 
+                value={badCount} 
+                variant="neutral"
+                onClick={() => setStatusFilter("bad")}
+                active={statusFilter === "bad"}
+              />
+              <StatCard 
+                label="Lost" 
+                value={lostCount} 
+                variant="neutral"
+                onClick={() => setStatusFilter("lost")}
+                active={statusFilter === "lost"}
+              />
             </div>
           </div>
 
@@ -264,7 +286,7 @@ export default function HomePage() {
                   />
                 ) : filteredRows.length === 0 ? (
                   <EmptyState 
-                    icon=""
+                    icon="🔍"
                     title={`No ${statusFilter} inquiries`}
                     description="Try changing your filter to see more results."
                   />
@@ -285,6 +307,9 @@ export default function HomePage() {
           </main>
         </div>
       </div>
+
+      {/* Mobile Dock Bar */}
+      <DockBar activePage="inbox" inboxUnseenCount={unseenCount} />
     </div>
   );
 }

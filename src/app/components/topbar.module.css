@@ -3,12 +3,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--space-4);
+  padding: 0 var(--space-3);
+  padding-right: calc(var(--space-4) + var(--safe-area-right));
   background-color: var(--color-bg-primary);
-  border-bottom: 1px solid var(--color-border-secondary);
-  position: sticky;
-  top: 0;
-  z-index: 50;
+  flex-shrink: 0;
+  /* Prevent selection */
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .left {
@@ -17,27 +18,7 @@
   gap: var(--space-3);
 }
 
-.menuButton {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
-  color: var(--color-text-secondary);
-  transition: all var(--transition-fast);
-}
-
-.menuButton:hover {
-  background-color: var(--color-bg-hover);
-  color: var(--color-text-primary);
-}
-
-@media (max-width: 768px) {
-  .menuButton {
-    display: flex;
-  }
-}
+/* ---- Breadcrumbs (Desktop) ---- */
 
 .breadcrumbs {
   display: flex;
@@ -54,10 +35,16 @@
 .breadcrumbLink {
   color: var(--color-text-tertiary);
   transition: color var(--transition-fast);
+  padding: var(--space-1) 0;
+  touch-action: manipulation;
 }
 
 .breadcrumbLink:hover {
   color: var(--color-text-primary);
+}
+
+.breadcrumbLink:active {
+  color: var(--color-accent);
 }
 
 .breadcrumbText {
@@ -71,6 +58,37 @@
   font-size: var(--text-xs);
 }
 
+/* ---- User Avatar Button (Mobile) ---- */
+
+.userAvatarButton {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  touch-action: manipulation;
+}
+
+.userAvatarButton:active {
+  transform: scale(0.95);
+}
+
+.userAvatar {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-border-primary);
+  border-radius: 99px;
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: white;
+}
+
+/* ---- Right Section ---- */
+
 .right {
   display: flex;
   align-items: center;
@@ -81,11 +99,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
   transition: all var(--transition-fast);
+  touch-action: manipulation;
 }
 
 .iconButton:hover {
@@ -93,22 +112,207 @@
   color: var(--color-text-primary);
 }
 
-.shareButton {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
-  margin-left: var(--space-2);
-  background-color: var(--color-accent);
-  color: var(--color-text-inverse);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  transition: background-color var(--transition-fast);
+.iconButton:active {
+  background-color: var(--color-bg-active);
+  transform: scale(0.95);
 }
 
-.shareButton:hover {
-  background-color: var(--color-accent-hover);
+/* ============================================
+   BOTTOM SHEET PANEL
+   ============================================ */
+
+.panelBackdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0);
+  z-index: 200;
+  transition: background-color 0.3s ease;
+  pointer-events: none;
+}
+
+.panelBackdropVisible {
+  background-color: rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
+}
+
+.userPanel {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 201;
+  background-color: var(--color-bg-secondary);
+  border-top-left-radius: var(--radius-2xl);
+  border-top-right-radius: var(--radius-2xl);
+  box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.15);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  max-height: 50vh;
+  overflow: hidden;
+}
+
+.userPanelOpen {
+  transform: translateY(0);
+}
+
+/* Panel Handle */
+.panelHandle {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-3) 0 var(--space-2);
+}
+
+.panelHandleBar {
+  width: 36px;
+  height: 4px;
+  background-color: var(--color-border-primary);
+  border-radius: 2px;
+}
+
+/* Panel Header */
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-4) var(--space-4);
+}
+
+.panelTitle {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.panelCloseButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  color: var(--color-text-tertiary);
+  transition: all var(--transition-fast);
+  touch-action: manipulation;
+}
+
+.panelCloseButton:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.panelCloseButton:active {
+  background-color: var(--color-bg-active);
+}
+
+/* Panel User Info */
+.panelUserInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-4);
+  margin: 0 var(--space-4);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--radius-lg);
+}
+
+.panelAvatar {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-border-primary);
+  border-radius: 99px;
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+}
+
+.panelUserDetails {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.panelUserName {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panelUserEmail {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Panel Actions */
+.panelActions {
+  padding: var(--space-4);
+}
+
+.panelSignOutButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-4);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-md);
+  font-weight: 500;
+  background-color: var(--color-status-lost);
+  transition: all var(--transition-fast);
+  touch-action: manipulation;
+}
+
+.panelSignOutButton:hover {
+  background-color: var(--color-status-lost-bg);
+}
+
+.panelSignOutButton:active {
+  transform: scale(0.98);
+  background-color: var(--color-status-lost-bg);
+}
+
+/* Panel Footer - Safe area spacer */
+.panelFooter {
+  height: var(--safe-area-bottom);
+  flex-shrink: 0;
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 768px) {
+  /* Hide breadcrumbs on mobile */
+  .breadcrumbs {
+    display: none;
+  }
+  
+  /* Show user avatar on mobile */
+  .userAvatarButton {
+    display: flex;
+  }
+  
+  /* Show panel components on mobile */
+  .panelBackdrop {
+    display: block;
+  }
+  
+  .userPanel {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 640px) {

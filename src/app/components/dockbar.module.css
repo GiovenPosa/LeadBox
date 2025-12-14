@@ -1,0 +1,145 @@
+/* ============================================
+   MOBILE DOCK BAR - Bottom Navigation
+   ============================================ */
+
+.dockBar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: var(--space-2) var(--space-3);
+  padding-bottom: calc(var(--space-3) + var(--safe-area-bottom));
+  /* Prevent selection */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.dockInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: var(--space-1);
+  max-width: 400px;
+  margin: 0 auto;
+  padding: var(--space-1) var(--space-1);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: 99px;
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+  /* Subtle glassmorphism */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .dockInner {
+  background-color: rgba(30, 30, 30, 0.9);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* ---- Dock Item ---- */
+
+.dockItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-tertiary);
+  transition: all var(--transition-fast);
+  touch-action: manipulation;
+  min-width: 60px;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+
+
+.dockItemActive {
+  color: var(--color-text-primary);
+  transform: scale(0.98);
+}
+
+.dockItemActive .dockIcon {
+  color: var(--color-text-primary);
+}
+
+.dockItemDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---- Icon Wrapper (for badge positioning) ---- */
+
+.dockIconWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dockIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+}
+
+/* ---- Badge ---- */
+
+.dockBadge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background-color: var(--color-status-new);
+  color: white;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* ---- Label ---- */
+
+.dockLabel {
+  font-size: var(--text-bs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ============================================
+   RESPONSIVE - Show only on mobile
+   ============================================ */
+
+@media (max-width: 768px) {
+  .dockBar {
+    display: block;
+  }
+}
+
+/* Extra small screens - tighter spacing */
+@media (max-width: 360px) {
+  .dockItem {
+    padding: var(--space-2);
+    min-width: 52px;
+  }
+  
+  .dockInner {
+    padding: var(--space-2);
+  }
+}

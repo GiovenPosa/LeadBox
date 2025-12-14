@@ -1,6 +1,6 @@
 .sidebar {
   width: var(--sidebar-width);
-  height: 100vh;
+  height: 100%;
   position: fixed;
   top: 0;
   left: 0;
@@ -9,12 +9,17 @@
   background-color: var(--color-bg-sidebar);
   border-right: 1px solid var(--color-border-secondary);
   z-index: 100;
-  transition: transform var(--transition-slow);
+  /* Account for safe areas */
+  padding-top: var(--safe-area-top);
+  padding-left: var(--safe-area-left);
+  /* Prevent overscroll */
+  overscroll-behavior: contain;
 }
 
 /* Workspace Header */
 .workspaceHeader {
   padding: var(--space-3) var(--space-3) var(--space-2);
+  flex-shrink: 0;
 }
 
 .workspaceButton {
@@ -25,10 +30,15 @@
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-md);
   transition: background-color var(--transition-fast);
+  touch-action: manipulation;
 }
 
 .workspaceButton:hover {
   background-color: var(--color-bg-hover);
+}
+
+.workspaceButton:active {
+  background-color: var(--color-bg-active);
 }
 
 .workspaceLogo {
@@ -61,6 +71,7 @@
 .searchWrapper {
   position: relative;
   margin: 0 var(--space-3) var(--space-3);
+  flex-shrink: 0;
 }
 
 .searchIcon {
@@ -78,7 +89,7 @@
   background-color: var(--color-bg-tertiary);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-  font-size: var(--text-sm);
+  font-size: 16px; /* Prevent iOS zoom */
   color: var(--color-text-primary);
   transition: all var(--transition-fast);
 }
@@ -110,10 +121,13 @@
   pointer-events: none;
 }
 
-/* Navigation */
+/* Navigation - Scrollable area */
 .nav {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 0 var(--space-2);
 }
 
@@ -143,6 +157,7 @@
   color: var(--color-text-tertiary);
   opacity: 0;
   transition: all var(--transition-fast);
+  touch-action: manipulation;
 }
 
 .navSection:hover .addButton {
@@ -158,18 +173,25 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-2) var(--space-2);
   margin: 1px 0;
   border-radius: var(--radius-md);
   font-size: var(--text-md);
   color: var(--color-text-secondary);
   transition: all var(--transition-fast);
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .navItem:hover:not(.navItemDisabled) {
   background-color: var(--color-bg-hover);
   color: var(--color-text-primary);
+}
+
+.navItem:active:not(.navItemDisabled) {
+  background-color: var(--color-bg-active);
 }
 
 .navItemActive {
@@ -186,6 +208,11 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
 }
 
 .navDot {
@@ -194,7 +221,7 @@
   border-radius: 999px;
   background: var(--color-status-lost); 
   display: inline-block;
-
+  flex-shrink: 0;
 }
 
 .navBadge {
@@ -211,6 +238,7 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .navIcon {
@@ -227,14 +255,6 @@
   color: var(--color-text-secondary);
 }
 
-.navLabel {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-weight: 600;
-}
-
 .pageEmoji {
   font-size: var(--text-base);
   line-height: 1;
@@ -249,10 +269,12 @@
 /* Footer / User */
 .footer {
   padding: var(--space-3);
+  padding-bottom: calc(var(--space-3) + var(--safe-area-bottom));
   border-top: 1px solid var(--color-border-secondary);
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  flex-shrink: 0;
 }
 
 .userInfo {
@@ -296,6 +318,7 @@
   color: var(--color-text-tertiary);
   transition: all var(--transition-fast);
   flex-shrink: 0;
+  touch-action: manipulation;
 }
 
 .signOutButton:hover {
@@ -303,14 +326,13 @@
   color: var(--color-text-primary);
 }
 
-/* Mobile */
+.signOutButton:active {
+  background-color: var(--color-bg-active);
+}
+
+/* Mobile - Hide sidebar completely (dock bar is used instead) */
 @media (max-width: 768px) {
   .sidebar {
-    transform: translateX(-100%);
-  }
-  
-  .sidebar.open {
-    transform: translateX(0);
-    box-shadow: var(--shadow-lg);
+    display: none;
   }
 }

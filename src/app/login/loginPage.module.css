@@ -1,14 +1,17 @@
 /* ============================================
-   LOGIN PAGE
+   LOGIN PAGE - PWA App-Like
    ============================================ */
 
 .container {
-  min-height: 100vh;
+  height: 100%;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
+  padding-top: calc(var(--space-4) + var(--safe-area-top));
+  padding-bottom: calc(var(--space-4) + var(--safe-area-bottom));
   background-color: var(--color-bg-secondary);
   position: relative;
   overflow: hidden;
@@ -42,6 +45,8 @@
 .header {
   text-align: center;
   margin-bottom: var(--space-8);
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .logo {
@@ -92,6 +97,8 @@
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--color-text-secondary);
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .input {
@@ -100,9 +107,13 @@
   background-color: var(--color-bg-secondary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--radius-md);
-  font-size: var(--text-base);
+  /* 16px prevents iOS zoom on focus */
+  font-size: 16px;
   color: var(--color-text-primary);
   transition: all var(--transition-fast);
+  /* Enable text selection in inputs */
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .input:hover {
@@ -130,14 +141,21 @@
   color: var(--color-bg-primary);
   border: none;
   border-radius: var(--radius-md);
-  font-size: var(--text-base);
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .submitBtn:hover:not(:disabled) {
   background-color: var(--color-accent);
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .submitBtn:disabled {
@@ -192,6 +210,8 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .footerText {
@@ -204,16 +224,21 @@
   color: var(--color-accent);
   font-weight: 500;
   transition: color var(--transition-fast);
+  touch-action: manipulation;
 }
 
 .footerLink:hover {
   color: var(--color-accent-hover);
 }
 
+.footerLink:active {
+  opacity: 0.8;
+}
+
 /* Bottom credit */
 .credit {
   position: absolute;
-  bottom: var(--space-6);
+  bottom: calc(var(--space-6) + var(--safe-area-bottom));
   font-size: var(--text-xs);
   color: var(--color-text-tertiary);
 }

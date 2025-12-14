@@ -1,11 +1,18 @@
 /* ============================================
-   WORKSPACE LAYOUT
+   WORKSPACE LAYOUT - PWA App-Like
    ============================================ */
 
 .workspace {
   display: flex;
-  min-height: 100vh;
+  height: 100%;
+  height: 100dvh; /* Dynamic viewport height for mobile */
   background-color: var(--color-bg-primary);
+  overflow: hidden;
+  /* Account for safe areas on notched devices */
+  padding-top: var(--safe-area-top);
+  padding-bottom: var(--safe-area-bottom);
+  padding-left: var(--safe-area-left);
+  padding-right: var(--safe-area-right);
 }
 
 .main {
@@ -14,45 +21,112 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-}
-
-.overlay {
-  display: none;
+  height: 100%;
+  overflow: hidden;
+  position: relative; /* For pull indicator positioning */
 }
 
 @media (max-width: 768px) {
   .main {
     margin-left: 0;
   }
-  
-  .overlay {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.3);
-    z-index: 90;
+}
+
+/* ============================================
+   PULL-TO-REFRESH INDICATOR
+   ============================================ */
+
+.pullIndicator {
+  position: absolute;
+  top: var(--topbar-height);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  overflow: hidden;
+  z-index: 10;
+  background: linear-gradient(
+    to bottom,
+    var(--color-bg-secondary) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.pullSpinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--color-text-secondary);
+  transition: transform 0.1s ease;
+}
+
+.pullSpinnerActive {
+  animation: spinRefresh 0.8s linear infinite;
+}
+
+@keyframes spinRefresh {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.pullText {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Hide pull indicator on desktop */
+@media (pointer: fine) {
+  .pullIndicator {
+    display: none;
   }
 }
 
 /* ============================================
-   CANVAS (Content Area)
+   CANVAS (Content Area) - Scrollable
    ============================================ */
 
 .canvas {
   flex: 1;
   padding: var(--space-5);
   width: 100%;
+  /* This is the main scroll container */
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain; /* Prevent scroll chaining */
+  -webkit-overflow-scrolling: touch;
+  /* Smooth transition for pull-to-refresh */
+  transition: transform 0.2s ease;
+  will-change: transform;
 }
 
 @media (max-width: 1024px) {
   .canvas {
-    padding: var(--space-8) var(--space-6);
+    padding: var(--space-4) var(--space-4);
+  }
+}
+
+@media (max-width: 768px) {
+  .canvas {
+    /* Add bottom padding to account for dock bar */
+    padding-bottom: calc(var(--space-4) + 90px);
   }
 }
 
 @media (max-width: 640px) {
   .canvas {
-    padding: var(--space-6) var(--space-4);
+    padding: var(--space-4) var(--space-3);
+    /* Add bottom padding to account for dock bar */
+    padding-bottom: calc(var(--space-3) + 90px);
   }
 }
 
@@ -64,8 +138,10 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  margin-bottom: var(--space-8);
-
+  margin-bottom: var(--space-6);
+  /* Prevent header from being selectable */
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .pageTitle {
@@ -77,17 +153,50 @@
 }
 
 /* ============================================
-   STATS ROW
+   STATS ROW - Horizontal Scroll
    ============================================ */
 
 .statsRow {
   margin-bottom: var(--space-6);
+  margin-left: calc(var(--space-5) * -1);
+  margin-right: calc(var(--space-5) * -1);
+  padding-left: var(--space-5);
+  padding-right: var(--space-5);
+  /* Prevent vertical scroll interference */
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.statsRow::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .statsRow {
+    margin-left: calc(var(--space-4) * -1);
+    margin-right: calc(var(--space-4) * -1);
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+}
+
+@media (max-width: 640px) {
+  .statsRow {
+    margin-left: calc(var(--space-3) * -1);
+    margin-right: calc(var(--space-3) * -1);
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
 }
 
 .statGroup {
   display: flex;
+  width: max-content;
   gap: var(--space-3);
-  flex-wrap: wrap;
 }
 
 .statCard {
@@ -97,11 +206,16 @@
   gap: var(--space-1);
   padding: var(--space-4) var(--space-5);
   background-color: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-secondary);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   min-width: 100px;
+  flex-shrink: 0;
   transition: all var(--transition-base);
   cursor: pointer;
+  /* Prevent double-tap zoom */
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .statCard:hover {
@@ -109,10 +223,14 @@
   border-color: var(--color-border-primary);
 }
 
-.statCardActive {
-  border-color: var(--color-accent);
+.statCard:active {
+  transform: scale(0.98);
+  border: 1px solid var(--color-border-secondary);
 }
 
+.statCardActive {
+  background-color: var(--color-bg-active);
+}
 
 .statValue {
   font-size: var(--text-2xl);
@@ -127,78 +245,13 @@
 }
 
 /* ============================================
-   FILTER BAR
-   ============================================ */
-
-.filterBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-3) 0;
-  margin-bottom: var(--space-4);
-  border-bottom: 1px solid var(--color-border-secondary);
-}
-
-.filterLeft {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.filterCount {
-  font-size: var(--text-bs);
-  color: var(--color-text-secondary);
-}
-
-.filterRight {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.filterSelect {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.filterLabel {
-  font-size: var(--text-m);
-  color: var(--color-text-tertiary);
-}
-
-.select {
-  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-2);
-  background-color: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--radius-md);
-  font-size: var(--text-md);
-  color: var(--color-text-primary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  -webkit-appearance: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  padding-right: 28px;
-}
-
-.select:hover {
-  border-color: var(--color-border-primary);
-  background-color: var(--color-bg-tertiary);
-}
-
-.select:focus {
-  outline: none;
-}
-
-/* ============================================
    CONTENT AREA
    ============================================ */
 
 .content {
   min-height: 200px;
+  /* Add bottom padding for scroll bounce area */
+  padding-bottom: var(--space-8);
 }
 
 /* Card List */
