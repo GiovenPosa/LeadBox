@@ -100,9 +100,9 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
     if (!showStatusPanel) return;
 
     const preventScroll = (e: TouchEvent) => {
-      // Allow scrolling inside the panel if it has overflow
+      // Allow scrolling inside the panel content area
       const target = e.target as HTMLElement;
-      if (target.closest(`.${styles.statusPanel}`)) {
+      if (target.closest(`.${styles.panelContent}`)) {
         return;
       }
       e.preventDefault();
@@ -289,7 +289,6 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
             aria-modal="true"
             aria-label="Change status"
             onClick={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
           >
             {/* Handle */}
             <div className={styles.panelHandle}>
@@ -311,61 +310,64 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
               </button>
             </div>
 
-            {/* Inquiry Info */}
-            <div className={styles.panelInquiryInfo}>
-              <span className={styles.panelInquiryName}>{inquiry.name || "Unnamed"}</span>
-              {inquiry.email && (
-                <span className={styles.panelInquiryEmail}>{inquiry.email}</span>
-              )}
-              {(inquiry.selected_package || inquiry.budget != null) && (
-                <div className={styles.panelInquiryMeta}>
-                  {inquiry.selected_package && (
-                    <span className={styles.panelInquiryTag}>
-                      <HiMiniCube size={25} />
-                      {inquiry.selected_package}
-                    </span>
-                  )}
-                  {inquiry.budget != null && (
-                    <span className={styles.panelInquiryTag}>
-                      <HiCurrencyPound size={25} />
-                      {formatBudget(inquiry.budget)}
-                    </span>
-                  )}
-                </div>
-              )}
-             
-            </div>
-
-            {/* Status Options */}
-            <div className={styles.panelOptions} role="listbox">
-              {STATUS_ORDER.map((status) => {
-                const statusConfig = STATUS_CONFIG[status];
-                const isActive = status === inquiry.opportunity_status;
-                
-                return (
-                  <button
-                    key={status}
-                    className={`${styles.panelOption} ${statusConfig.className} ${isActive ? styles.panelOptionActive : ""}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleStatusSelect(status);
-                    }}
-                    role="option"
-                    aria-selected={isActive}
-                  >
-                    <span className={styles.panelOptionLabel}>
-                      {statusConfig.label}
-                    </span>
-                    {isActive && (
-                      <HiCheck size={20} className={styles.panelOptionCheck} />
+            {/* Scrollable Content */}
+            <div className={styles.panelContent}>
+              {/* Inquiry Info */}
+              <div className={styles.panelInquiryInfo}>
+                <span className={styles.panelInquiryName}>{inquiry.name || "Unnamed"}</span>
+                {inquiry.email && (
+                  <span className={styles.panelInquiryEmail}>{inquiry.email}</span>
+                )}
+                {(inquiry.selected_package || inquiry.budget != null) && (
+                  <div className={styles.panelInquiryMeta}>
+                    {inquiry.selected_package && (
+                      <span className={styles.panelInquiryTag}>
+                        <HiMiniCube size={25} />
+                        {inquiry.selected_package}
+                      </span>
                     )}
-                  </button>
-                );
-              })}
-            </div>
+                    {inquiry.budget != null && (
+                      <span className={styles.panelInquiryTag}>
+                        <HiCurrencyPound size={25} />
+                        {formatBudget(inquiry.budget)}
+                      </span>
+                    )}
+                  </div>
+                )}
+               
+              </div>
 
-            {/* Footer spacer for safe area */}
-            <div className={styles.panelFooter} />
+              {/* Status Options */}
+              <div className={styles.panelOptions} role="listbox">
+                {STATUS_ORDER.map((status) => {
+                  const statusConfig = STATUS_CONFIG[status];
+                  const isActive = status === inquiry.opportunity_status;
+                  
+                  return (
+                    <button
+                      key={status}
+                      className={`${styles.panelOption} ${statusConfig.className} ${isActive ? styles.panelOptionActive : ""}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStatusSelect(status);
+                      }}
+                      role="option"
+                      aria-selected={isActive}
+                    >
+                      <span className={styles.panelOptionLabel}>
+                        {statusConfig.label}
+                      </span>
+                      {isActive && (
+                        <HiCheck size={20} className={styles.panelOptionCheck} />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Footer spacer for safe area */}
+              <div className={styles.panelFooter} />
+            </div>
           </div>
         </>,
         document.body
