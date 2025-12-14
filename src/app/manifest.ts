@@ -2,6 +2,7 @@ import { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "/",
     name: "gios.build LeadBox",
     short_name: "LeadBox",
     description: "gios.build lead inbox and inquiry management",
