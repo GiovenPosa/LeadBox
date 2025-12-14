@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import RegisterSW from "./components/registerSW";
 
 export const metadata: Metadata = {
   title: "gios.build LeadBox",
@@ -30,6 +31,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body>
+        <RegisterSW />
         {children}
       </body>
     </html>
