@@ -30,6 +30,19 @@
   }
 }
 
+@media (max-width: 768px) {
+  .canvas {
+    padding-bottom: calc(80px + var(--safe-area-bottom));
+  }
+}
+
+@media (max-width: 640px) {
+  .canvas {
+    padding: var(--space-4) var(--space-3);
+    padding-bottom: calc(80px + var(--safe-area-bottom));
+  }
+}
+
 /* ============================================
    PULL-TO-REFRESH INDICATOR
    ============================================ */
