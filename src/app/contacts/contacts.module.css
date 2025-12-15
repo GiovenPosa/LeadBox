@@ -21,6 +21,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
+  flex-direction: column;
   padding: var(--space-6) var(--space-6);
   border-radius: var(--radius-2xl);
   background-color: var(--color-bg-sidebar);
@@ -35,7 +36,6 @@
 
 .card:active {
   background-color: var(--color-bg-hover);
-  transform: scale(0.99);
 }
 
 /* Left column */
@@ -49,7 +49,7 @@
 /* Name */
 .name {
   font-size: var(--text-lg);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-primary);
   text-transform: capitalize;
   line-height: var(--leading-tight);
@@ -60,15 +60,16 @@
 /* Email + phone links */
 .linkRow {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  flex-direction: row;
+  gap: var(--space-3);
+  line-height: 1;
+  
 }
 
 .link {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-md);
+  font-size: var(--text-bs);
   font-weight: 600;
   color: var(--color-text-secondary);
   white-space: nowrap;
@@ -91,6 +92,90 @@
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.infoRow {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-3);
+  justify-content: flex-start;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: var(--color-bg-tertiary);
+  padding: var(--space-4);
+  border-radius: var(--radius-2xl);
+
+}
+
+.infoLabel {
+  font-size: var(--text-bs);
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  margin-top: var(--space-2);
+  line-height: 1;
+}
+
+.infoValue {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  display: inline-flex;
+  align-items: baseline;
+  line-height: 1;
+}
+
+/* New */
+.status_New {
+  background-color: var(--color-status-new-bg);
+  color: var(--color-status-new);
+}
+
+.badge_New {
+  color: var(--color-status-new);
+}
+
+/* Connected -> reuse "contacted" */
+.status_Connected {
+  background-color: var(--color-status-contacted-bg);
+  color: var(--color-status-contacted);
+}
+
+.badge_Connected {
+  color: var(--color-status-contacted);
+}
+
+/* Active -> reuse "won" */
+.status_Active {
+  background-color: var(--color-status-won-bg);
+  color: var(--color-status-won);
+}
+
+.badge_Active {
+  color: var(--color-status-won);
+}
+
+/* Completed -> reuse "won" (for now) */
+.status_Completed {
+  background-color: var(--color-status-won-bg);
+  color: var(--color-status-won);
+}
+
+.badge_Completed {
+  color: var(--color-status-won);
+}
+
+/* Lost -> reuse "lost" */
+.status_Lost {
+  background-color: var(--color-status-lost-bg);
+  color: var(--color-status-lost);
+}
+
+.badge_Lost {
+  color: var(--color-status-lost);
 }
 
 /* Right column (date) */
