@@ -47,13 +47,13 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  overflow: hidden;
+  overflow: visible;
+  z-index: 50;
 }
 
 .pullSpinner {
   display: flex;
   align-items: center;
-  z-index: 5;
   justify-content: center;
   width: 36px;
   height: 36px;
@@ -101,6 +101,8 @@
   overflow-x: hidden;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
+  position: relative;
+  z-index: 1;
 }
 
 /* Only apply transition when settling back, not during active pull */
