@@ -51,12 +51,19 @@ export default function HomePage() {
   }, []);
 
   // Pull-to-refresh hook
-  const { containerRef, pullDistance, isRefreshing, progress } = usePullToRefresh({
+  const { 
+    containerRef, 
+    pullDistance, 
+    isRefreshing, 
+    isSettling,
+    progress,
+    isReady,
+  } = usePullToRefresh({
     onRefresh: async () => {
       await fetchInquiries();
     },
     threshold: 80,
-    maxPull: 100,
+    maxPull: 120,
   });
 
   async function updateStatus(id: string, next: OpportunityStatus) {
@@ -157,6 +164,11 @@ export default function HomePage() {
 
   if (!email) return null;
 
+  // Calculate spinner position - slides down from behind topbar
+  const spinnerY = Math.min(pullDistance * 0.8, 60) - 40;
+  const spinnerOpacity = Math.min(progress * 1.5, 1);
+  const spinnerScale = 0.5 + (progress * 0.5);
+
   return (
     <div className={styles.workspace}>
       {/* Sidebar - Desktop only */}
@@ -175,28 +187,30 @@ export default function HomePage() {
         />
 
         {/* Pull-to-refresh indicator */}
-        <div 
-          className={styles.pullIndicator}
-          style={{
-            height: pullDistance,
-            opacity: progress,
-          }}
-        >
+        <div className={styles.pullIndicator}>
           <div 
-            className={`${styles.pullSpinner} ${isRefreshing ? styles.pullSpinnerActive : ""}`}
+            className={`
+              ${styles.pullSpinner} 
+              ${isSettling ? styles.pullSpinnerSettling : ""} 
+              ${isReady ? styles.pullSpinnerReady : ""}
+              ${isRefreshing ? styles.pullSpinnerRefreshing : ""}
+            `}
             style={{
-              transform: `rotate(${progress * 360}deg)`,
+              transform: isRefreshing 
+                ? "translateY(20px) scale(1)" 
+                : `translateY(${spinnerY}px) scale(${spinnerScale}) rotate(${progress * 270}deg)`,
+              opacity: isRefreshing ? 1 : spinnerOpacity,
             }}
           >
-            <HiArrowPath size={20} />
+            <HiArrowPath size={18} />
           </div>
         </div>
 
         <div 
           ref={containerRef}
-          className={styles.canvas}
+          className={`${styles.canvas} ${isSettling ? styles.canvasSettling : ""}`}
           style={{
-            transform: `translateY(${pullDistance}px)`,
+            transform: pullDistance > 0 ? `translateY(${pullDistance * 0.4}px)` : undefined,
           }}
         >
           {/* Page Header */}

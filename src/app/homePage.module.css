@@ -14,7 +14,6 @@
   padding-top: var(--safe-area-top);
   padding-left: var(--safe-area-left);
   padding-right: var(--safe-area-right);
-  /* No bottom padding - dockbar handles its own safe area */
 }
 
 .main {
@@ -43,30 +42,39 @@
   top: var(--topbar-height);
   left: 0;
   right: 0;
+  height: 60px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  overflow: hidden;
-  z-index: 10;
-  background: var(--color-bg-primary);
+  z-index: 5;
   pointer-events: none;
-  transition: opacity 0.15s ease;
+  overflow: hidden;
 }
 
 .pullSpinner {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-bg-secondary);
+  box-shadow: var(--shadow-md);
   color: var(--color-text-secondary);
-  transition: transform 0.1s ease;
+  /* Transition only applies when settling, not during pull */
 }
 
-.pullSpinnerActive {
-  animation: spinRefresh 0.8s linear infinite;
+.pullSpinnerSettling {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pullSpinnerReady {
+  color: var(--color-accent);
+}
+
+.pullSpinnerRefreshing {
+  animation: spinRefresh 0.7s linear infinite;
 }
 
 @keyframes spinRefresh {
@@ -91,10 +99,13 @@
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  transition: transform 0.2s ease;
-  will-change: transform;
+}
+
+/* Only apply transition when settling back, not during active pull */
+.canvasSettling {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (max-width: 1024px) {
@@ -174,8 +185,9 @@
     margin-left: calc(var(--space-3) * -1);
     margin-right: calc(var(--space-3) * -1);
     padding-left: var(--space-3);
-    padding-right: var(--space-3);
+    padding-right: var(--space-5);
   }
+
 }
 
 .statGroup {
@@ -204,7 +216,7 @@
 
 .statCard:hover {
   background-color: var(--color-bg-tertiary);
-  border-color: var(--color-border-primary);
+  border-color: none;
 }
 
 .statCard:active {
