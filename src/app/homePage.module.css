@@ -145,7 +145,7 @@
 }
 
 .pageTitle {
-  font-size: var(--text-3xl);
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-primary);
   letter-spacing: var(--tracking-tight);
