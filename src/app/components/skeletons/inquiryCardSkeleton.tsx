@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "./inquiryCardSkeleton.module.css";
+import styles from "./skeleton-styles/inquiryCardSkeleton.module.css";
 
 export default function InquiryCardSkeleton() {
   return (
