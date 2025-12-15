@@ -341,9 +341,10 @@ export default function HomePage() {
           {/* Content */}
           <main className={styles.content}>
             {loading && (
-              <div className={styles.loading}>
-                <div className={styles.spinner} />
-                <span>Loading…</span>
+              <div className={styles.cardList}>
+                <InquiryCardSkeleton />
+                <InquiryCardSkeleton />
+                <InquiryCardSkeleton />
               </div>
             )}
 
