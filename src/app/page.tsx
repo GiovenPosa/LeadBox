@@ -10,6 +10,7 @@ import InquiryCard, { BookingInquiry, OpportunityStatus } from "./components/inq
 import { usePullToRefresh } from "./hooks/pullRefresh";
 import styles from "./homePage.module.css";
 import { HiInbox, HiArrowPath } from 'react-icons/hi2';
+import InquiryCardSkeleton from "./components/skeletons/inquiryCardSkeleton";
 
 export default function HomePage() {
   const router = useRouter();
@@ -18,6 +19,9 @@ export default function HomePage() {
   const [email, setEmail] = useState<string | null>(null);
   const [rows, setRows] = useState<BookingInquiry[]>([]);
   const [statusFilter, setStatusFilter] = useState<OpportunityStatus | "all">("all");
+  const [realtimeState, setRealtimeState] = useState<"connecting" | "connected" | "reconnecting">("connecting");
+  const [showReconnectUI, setShowReconnectUI] = useState(false);
+  const isRealtimeReconnecting = realtimeState !== "connected" && rows.length > 0 && showReconnectUI;
 
   const unseenCount = rows.filter(
     (r) => r.opportunity_status === "new" && !r.seen_at
@@ -63,7 +67,7 @@ export default function HomePage() {
       await fetchInquiries();
     },
     threshold: 80,
-    maxPull: 120,
+    maxPull: 100,
   });
 
   async function updateStatus(id: string, next: OpportunityStatus) {
@@ -124,38 +128,105 @@ export default function HomePage() {
   useEffect(() => {
     if (!email) return;
 
-    const channel = supabase
-      .channel("booking_inquiries_live")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "booking_inquiries" },
-        (payload) => {
-          console.log("[realtime payload]", payload);
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let uiTimer: ReturnType<typeof setTimeout> | null = null;
+    let attempt = 0;
+    let cancelled = false;
 
-          if (payload.eventType === "INSERT") {
-            const row = payload.new as BookingInquiry;
-            setRows((prev) => {
-              if (prev.some((r) => r.id === row.id)) return prev;
-              return [row, ...prev].slice(0, 50);
-            });
+    const cleanup = async () => {
+      if (retryTimer) clearTimeout(retryTimer);
+      if (uiTimer) clearTimeout(uiTimer);
+
+      if (channel) {
+        try {
+          await channel.unsubscribe();
+        } catch {}
+        try {
+          supabase.removeChannel(channel);
+        } catch {}
+        channel = null;
+      }
+    };
+
+    const scheduleReconnect = async () => {
+      if (cancelled) return;
+
+      setRealtimeState("reconnecting");
+
+      // Only show skeleton if the reconnect isn't instant
+      uiTimer = setTimeout(() => {
+        if (!cancelled) setShowReconnectUI(true);
+      }, 450);
+
+      // Resync so you never miss inserts/updates
+      await fetchInquiries();
+
+      // Exponential backoff (mobile-friendly)
+      const delay = Math.min(1000 * 2 ** attempt, 15000);
+      attempt = Math.min(attempt + 1, 4);
+
+      retryTimer = setTimeout(() => {
+        if (!cancelled) subscribe();
+      }, delay);
+    };
+
+    const subscribe = () => {
+      if (cancelled) return;
+
+      setRealtimeState(attempt === 0 ? "connecting" : "reconnecting");
+
+      channel = supabase
+        .channel("booking_inquiries_live")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "booking_inquiries" },
+          (payload) => {
+            if (payload.eventType === "INSERT") {
+              const row = payload.new as BookingInquiry;
+              setRows((prev) =>
+                prev.some((r) => r.id === row.id) ? prev : [row, ...prev].slice(0, 50)
+              );
+            } else if (payload.eventType === "UPDATE") {
+              const updated = payload.new as BookingInquiry;
+              setRows((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+            }
+          }
+        )
+        .subscribe(async (status) => {
+          console.log("[realtime status]", status);
+
+          if (cancelled) return;
+
+          if (status === "SUBSCRIBED") {
+            attempt = 0;
+            setRealtimeState("connected");
+            setShowReconnectUI(false);
+            if (uiTimer) clearTimeout(uiTimer);
+            return;
           }
 
-          if (payload.eventType === "UPDATE") {
-            const updated = payload.new as BookingInquiry;
-            setRows((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            await cleanup();
+            await scheduleReconnect();
           }
-        }
-      )
-      .subscribe((status) => {
-        console.log("[realtime status]", status);
-        if (status === "CHANNEL_ERROR") setError("Realtime channel error");
-        if (status === "TIMED_OUT") setError("Realtime timed out");
-      });
+        });
+    };
+
+    subscribe();
+
+    // Extra safety: when returning to the app, refresh + let realtime reconnect
+    const onVis = () => {
+      if (document.visibilityState === "visible") fetchInquiries();
+    };
+    window.addEventListener("visibilitychange", onVis);
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      window.removeEventListener("visibilitychange", onVis);
+      cleanup();
     };
-  }, [email]);
+  }, [email, fetchInquiries]);
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -302,15 +373,23 @@ export default function HomePage() {
                     description="Try changing your filter to see more results."
                   />
                 ) : (
-                  <div className={styles.cardList}>
-                    {filteredRows.map((inquiry) => (
-                      <InquiryCard
-                        key={inquiry.id}
-                        inquiry={inquiry}
-                        onStatusChange={updateStatus}
-                        onSeen={markSeen}
-                      />
-                    ))}
+                    <div className={styles.cardList}>
+                      {isRealtimeReconnecting && (
+                        <>
+                          <InquiryCardSkeleton />
+                          <InquiryCardSkeleton />
+                          <InquiryCardSkeleton />
+                        </>
+                      )}
+
+                      {filteredRows.map((inquiry) => (
+                        <InquiryCard
+                          key={inquiry.id}
+                          inquiry={inquiry}
+                          onStatusChange={updateStatus}
+                          onSeen={markSeen}
+                        />
+                      ))}
                   </div>
                 )}
               </>

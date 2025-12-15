@@ -1,0 +1,187 @@
+/* ============================================
+   INQUIRY CARD SKELETON
+   Mirrors inquiryCard.module.css
+   ============================================ */
+
+.card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-6) var(--space-6);
+  border-radius: var(--radius-2xl);
+  background-color: var(--color-bg-sidebar);
+  position: relative;
+  overflow: hidden;
+}
+
+/* shimmer */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 0, 0, 0.05),
+    transparent
+  );
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+[data-theme="dark"] .card::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.06),
+    transparent
+  );
+}
+
+/* Card Content */
+.cardContent {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Main Row */
+.mainRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.primaryInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Name */
+.nameSkeleton {
+  height: 18px;
+  width: 160px;
+  border-radius: 6px;
+  background: var(--color-bg-tertiary);
+}
+
+/* Status badge */
+.statusSkeleton {
+  height: 24px;
+  width: 88px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-tertiary);
+}
+
+/* Timestamp */
+.timestampSkeleton {
+  height: 12px;
+  width: 60px;
+  border-radius: 6px;
+  background: var(--color-bg-tertiary);
+}
+
+/* Contact row */
+.contact {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+
+.contactSkeleton {
+  height: 14px;
+  width: 180px;
+  border-radius: 6px;
+  background: var(--color-bg-tertiary);
+}
+
+.contactSkeletonShort {
+  height: 14px;
+  width: 120px;
+  border-radius: 6px;
+  background: var(--color-bg-tertiary);
+}
+
+/* Message */
+.messageSkeleton {
+  height: 14px;
+  width: 90%;
+  border-radius: 6px;
+  background: var(--color-bg-tertiary);
+  margin-bottom: var(--space-1);
+}
+
+.messageSkeletonShort {
+  height: 14px;
+  width: 65%;
+  border-radius: 6px;
+  background: var(--color-bg-tertiary);
+}
+
+/* Tags */
+.tagsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.tagSkeleton {
+  height: 26px;
+  width: 100px;
+  border-radius: var(--radius-2xl);
+  background: var(--color-bg-tertiary);
+}
+
+.tagSkeletonSmall {
+  height: 26px;
+  width: 72px;
+  border-radius: var(--radius-2xl);
+  background: var(--color-bg-tertiary);
+}
+
+/* ============================================
+   MOBILE MATCHING
+   ============================================ */
+
+@media (max-width: 768px) {
+  .mainRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .timestampSkeleton {
+    position: absolute;
+    top: var(--space-6);
+    right: var(--space-5);
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: var(--space-3);
+  }
+
+  .timestampSkeleton {
+    top: var(--space-4);
+    right: var(--space-5);
+  }
+
+  .contactSkeleton {
+    width: 140px;
+  }
+
+  .contactSkeletonShort {
+    width: 90px;
+  }
+}
