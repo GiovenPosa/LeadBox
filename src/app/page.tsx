@@ -245,7 +245,7 @@ export default function HomePage() {
   return (
     <div className={styles.workspace}>
       {/* Sidebar - Desktop only */}
-      <Sidebar email={email} onSignOut={signOut} inboxUnseenCount={unseenCount} />
+      <Sidebar email={email} onSignOut={signOut} inboxUnseenCount={unseenCount} activePage="inbox" />
 
       {/* Main Area */}
       <div className={styles.main}>

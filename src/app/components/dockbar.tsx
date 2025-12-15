@@ -25,9 +25,8 @@ export default function DockBar({ activePage, inboxUnseenCount = 0, onSearchClic
         <DockItem
           icon={<HiMiniUsers size={22} />}
           label="Contacts"
-          href="#"
+          href="/contacts"
           active={activePage === "contacts"}
-          disabled
         />
         <DockItem
           icon={<HiMagnifyingGlass size={22} />}

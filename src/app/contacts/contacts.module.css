@@ -1,0 +1,149 @@
+/* contacts.module.css
+   ============================================
+   CONTACTS LIST — matches Inbox card tone
+   ============================================ */
+
+.container {
+  width: 100%;
+}
+
+/* List wrapper */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-8);
+}
+
+/* Contact card */
+.card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-6);
+  border-radius: var(--radius-2xl);
+  background-color: var(--color-bg-sidebar);
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.card:hover {
+  background-color: var(--color-bg-active);
+}
+
+.card:active {
+  background-color: var(--color-bg-hover);
+  transform: scale(0.99);
+}
+
+/* Left column */
+.primary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* Name */
+.name {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-transform: capitalize;
+  line-height: var(--leading-tight);
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Email + phone links */
+.linkRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  min-width: 0;
+  -webkit-user-select: text;
+  user-select: text;
+  transition: color var(--transition-fast);
+}
+
+.link:hover {
+  color: var(--color-accent);
+}
+
+.link:active {
+  color: var(--color-accent-hover);
+}
+
+/* Truncation for long emails on small screens */
+.linkText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Right column (date) */
+.meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+}
+
+.dateLabel {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+}
+
+.date {
+  font-size: var(--text-md);
+  font-weight: 500;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Small ID pill (optional) */
+.idPill {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--color-bg-tertiary);
+  width: max-content;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card {
+    padding: var(--space-5);
+  }
+
+  .meta {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: var(--space-4);
+  }
+
+  .link {
+    font-size: var(--text-sm);
+  }
+}

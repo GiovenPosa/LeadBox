@@ -88,12 +88,13 @@
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  background-color: var(--color-status-new);
+  background-color: var(--color-status-lost);
   color: white;
   border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-weight: 500;
   line-height: 1;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }

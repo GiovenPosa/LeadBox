@@ -8,9 +8,10 @@ type SidebarProps = {
   email: string | null;
   onSignOut: () => void;
   inboxUnseenCount: number;
+  activePage: "inbox" | "contacts" | "analytics";
 };
 
-export default function Sidebar({ email, onSignOut, inboxUnseenCount }: SidebarProps) {
+export default function Sidebar({ email, onSignOut, inboxUnseenCount, activePage }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
@@ -68,14 +69,14 @@ export default function Sidebar({ email, onSignOut, inboxUnseenCount }: SidebarP
             icon={<HiInbox size={20} />}
             label="Inbox"
             href="/"
-            active
+            active={activePage === "inbox"}
             badgeCount={inboxUnseenCount}
           />
           <NavItem 
             icon={<HiMiniUsers size={20} />}
             label="Contacts"
-            href="#"
-            disabled
+            active={activePage === "contacts"}
+            href="/contacts"
           />
           <NavItem 
             icon={<HiMiniChartBar size={20} />}
