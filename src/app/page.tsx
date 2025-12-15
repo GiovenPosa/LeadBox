@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, use } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Sidebar from "./components/sidebar";
@@ -11,6 +11,7 @@ import { usePullToRefresh } from "./hooks/pullRefresh";
 import styles from "./homePage.module.css";
 import { HiInbox, HiArrowPath } from 'react-icons/hi2';
 import InquiryCardSkeleton from "./components/skeletons/inquiryCardSkeleton";
+import { useInbox } from "./context/inboxContext";
 
 export default function HomePage() {
   const router = useRouter();
@@ -23,9 +24,7 @@ export default function HomePage() {
   const [showReconnectUI, setShowReconnectUI] = useState(false);
   const isRealtimeReconnecting = realtimeState !== "connected" && rows.length > 0 && showReconnectUI;
 
-  const unseenCount = rows.filter(
-    (r) => r.opportunity_status === "new" && !r.seen_at
-  ).length;
+  const { unseenCount } = useInbox();
   const newCount = rows.filter((r) => r.opportunity_status === "new").length; 
   const contactedCount = rows.filter((r) => r.opportunity_status === "contacted").length;
   const wonCount = rows.filter((r) => r.opportunity_status === "won").length;

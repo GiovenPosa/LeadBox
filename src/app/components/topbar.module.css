@@ -80,7 +80,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-border-primary);
+  background-color: #DE6449;
   border-radius: 99px;
   font-size: var(--text-xl);
   font-weight: 600;
@@ -224,9 +224,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-border-primary);
+  background-color:#DE6449;
   border-radius: 99px;
-  font-size: var(--text-xl);
+  font-size: var(--text-2xl);
   font-weight: 600;
   color: white;
   flex-shrink: 0;

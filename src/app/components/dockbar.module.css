@@ -51,7 +51,6 @@
 
 .dockItemActive {
   color: var(--color-text-primary);
-  transform: scale(0.98);
 }
 
 .dockItemActive .dockIcon {

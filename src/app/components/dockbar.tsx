@@ -2,6 +2,7 @@
 
 import styles from "./dockbar.module.css";
 import { HiInbox, HiMiniUsers, HiMiniChartBar, HiMagnifyingGlass } from "react-icons/hi2";
+import Link from "next/link";
 
 type DockBarProps = {
   activePage: "inbox" | "contacts" | "search" | "analytics";
@@ -58,18 +59,7 @@ type DockItemProps = {
 
 function DockItem({ icon, label, href, active, disabled, badge, onClick }: DockItemProps) {
   const showBadge = badge !== undefined && badge > 0;
-
-  const handleClick = (e: React.MouseEvent) => {
-    // Prevent navigation if already on this page or disabled
-    if (active || disabled) {
-      e.preventDefault();
-      return;
-    }
-    if (onClick) {
-      e.preventDefault();
-      onClick();
-    }
-  };
+  const className = `${styles.dockItem} ${active ? styles.dockItemActive : ""} ${disabled ? styles.dockItemDisabled : ""}`;
 
   const content = (
     <>
@@ -85,18 +75,38 @@ function DockItem({ icon, label, href, active, disabled, badge, onClick }: DockI
     </>
   );
 
-  const className = `${styles.dockItem} ${active ? styles.dockItemActive : ""} ${disabled ? styles.dockItemDisabled : ""}`;
+  if (onClick) {
+    return (
+      <button onClick={onClick} className={className}>
+        {content}
+      </button>
+    );
+  }
+
+  if (disabled || !href) {
+    return (
+      <span className={className} tabIndex={-1}>
+        {content}
+      </span>
+    );
+  }
+
+  // Active page - no navigation needed
+  if (active) {
+    return (
+      <span className={className} aria-current="page">
+        {content}
+      </span>
+    );
+  }
 
   // Use anchor for all items for consistent behavior
   return (
-    <a
-      href={disabled || onClick ? undefined : href}
-      onClick={handleClick}
+    <Link
+      href={href!}
       className={className}
-      aria-current={active ? "page" : undefined}
-      tabIndex={disabled ? -1 : 0}
     >
       {content}
-    </a>
+    </Link>
   );
 }

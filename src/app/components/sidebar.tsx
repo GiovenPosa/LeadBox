@@ -3,6 +3,8 @@
 import { useState } from "react";
 import styles from "./sidebar.module.css";
 import { HiInbox, HiMiniUsers, HiMiniChartBar } from "react-icons/hi2";
+import Link from "next/link"; 
+import { unauthorized } from "next/navigation";
 
 type SidebarProps = {
   email: string | null;
@@ -137,23 +139,24 @@ type NavItemProps = {
 function NavItem({ icon, label, href, active, disabled, badgeCount }: NavItemProps) {
   const showBadge = !!badgeCount && badgeCount > 0;
 
-  const handleClick = (e: React.MouseEvent) => {
-    // Prevent navigation if already on this page or disabled
-    if (active || disabled) {
-      e.preventDefault();
-    }
-  };
+  const className = `${styles.navItem} ${active ? styles.navItemActive : ""} ${disabled ? styles.navItemDisabled : ""}`;
+
+  if (disabled) {
+    return (
+      <span className={className} tabIndex={-1}>
+        <span className={styles.navIcon}>{icon}</span>
+        <span className={styles.navLabel}>{label}</span>
+      </span>
+    );
+  }
 
   return (
-    <a
-      href={disabled ? undefined : href}
-      onClick={handleClick}
-      className={`${styles.navItem} ${active ? styles.navItemActive : ""} ${disabled ? styles.navItemDisabled : ""}`}
+    <Link
+      href={href}
+      className={className}
       aria-current={active ? "page" : undefined}
-      tabIndex={disabled ? -1 : 0}
     >
       <span className={styles.navIcon}>{icon}</span>
-
       <span className={styles.navLabel}>
         {label}
         {showBadge && <span className={styles.navDot} aria-hidden="true" />}
@@ -164,6 +167,6 @@ function NavItem({ icon, label, href, active, disabled, badgeCount }: NavItemPro
           {badgeCount > 99 ? "99+" : badgeCount}
         </span>
       )}
-    </a>
+    </Link>
   );
 }
