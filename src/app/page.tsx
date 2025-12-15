@@ -35,6 +35,8 @@ export default function HomePage() {
   const filteredRows = statusFilter === "all" 
     ? rows 
     : rows.filter((r) => r.opportunity_status === statusFilter);
+    
+  const skeletonCount = Math.min(filteredRows.length || 3, 3);
 
   // Fetch data function (reusable for initial load and refresh)
   const fetchInquiries = useCallback(async () => {
@@ -340,15 +342,13 @@ export default function HomePage() {
 
           {/* Content */}
           <main className={styles.content}>
-            {loading && (
+            {loading ? (
               <div className={styles.cardList}>
-                <InquiryCardSkeleton />
-                <InquiryCardSkeleton />
-                <InquiryCardSkeleton />
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <InquiryCardSkeleton key={i} />
+                ))}
               </div>
-            )}
-
-            {error && (
+            ) : error ? (
               <div className={styles.errorBanner}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10" />
@@ -357,43 +357,35 @@ export default function HomePage() {
                 </svg>
                 <span>{error}</span>
               </div>
-            )}
-
-            {!loading && !error && (
-              <>
-                {rows.length === 0 ? (
-                  <EmptyState 
-                    icon="📭"
-                    title="No inquiries yet"
-                    description="When someone submits a booking form, it will appear here."
-                  />
-                ) : filteredRows.length === 0 ? (
-                  <EmptyState 
-                    icon="🔍"
-                    title={`No ${statusFilter} inquiries`}
-                    description="Try changing your filter to see more results."
-                  />
+            ) : rows.length === 0 ? (
+              <EmptyState
+                icon="📭"
+                title="No inquiries yet"
+                description="When someone submits a booking form, it will appear here."
+              />
+            ) : filteredRows.length === 0 ? (
+              <EmptyState
+                icon="🔍"
+                title={`No ${statusFilter} inquiries`}
+                description="Try changing your filter to see more results."
+              />
+            ) : (
+              <div className={styles.cardList}>
+                {isRealtimeReconnecting ? (
+                  Array.from({ length: skeletonCount }).map((_, i) => (
+                    <InquiryCardSkeleton key={`skel-${i}`} />
+                  ))
                 ) : (
-                    <div className={styles.cardList}>
-                      {isRealtimeReconnecting && (
-                        <>
-                          <InquiryCardSkeleton />
-                          <InquiryCardSkeleton />
-                          <InquiryCardSkeleton />
-                        </>
-                      )}
-
-                      {filteredRows.map((inquiry) => (
-                        <InquiryCard
-                          key={inquiry.id}
-                          inquiry={inquiry}
-                          onStatusChange={updateStatus}
-                          onSeen={markSeen}
-                        />
-                      ))}
-                  </div>
+                  filteredRows.map((inquiry) => (
+                    <InquiryCard
+                      key={inquiry.id}
+                      inquiry={inquiry}
+                      onStatusChange={updateStatus}
+                      onSeen={markSeen}
+                    />
+                  ))
                 )}
-              </>
+              </div>
             )}
           </main>
         </div>

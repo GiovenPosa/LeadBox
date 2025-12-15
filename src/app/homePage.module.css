@@ -141,6 +141,7 @@
   margin-bottom: var(--space-6);
   -webkit-user-select: none;
   user-select: none;
+  margin-left: var(--space-1)
 }
 
 .pageTitle {

@@ -136,9 +136,17 @@ type NavItemProps = {
 function NavItem({ icon, label, href, active, disabled, badgeCount }: NavItemProps) {
   const showBadge = !!badgeCount && badgeCount > 0;
 
+  const handleClick = (e: React.MouseEvent) => {
+    // Prevent navigation if already on this page or disabled
+    if (active || disabled) {
+      e.preventDefault();
+    }
+  };
+
   return (
     <a
       href={disabled ? undefined : href}
+      onClick={handleClick}
       className={`${styles.navItem} ${active ? styles.navItemActive : ""} ${disabled ? styles.navItemDisabled : ""}`}
       aria-current={active ? "page" : undefined}
       tabIndex={disabled ? -1 : 0}

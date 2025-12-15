@@ -247,19 +247,19 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
             <div className={styles.tagsRow}>
               {inquiry.selected_package && (
                 <span className={`${styles.tag} ${styles.tagPackage}`}>
-                  <HiMiniCube size={20} />
+                  <HiMiniCube size={18} />
                   {inquiry.selected_package}
                 </span>
               )}
               {inquiry.budget != null && (
                 <span className={`${styles.tag} ${styles.tagBudget}`}>
-                  <HiCurrencyPound size={15} />
+                  <HiCurrencyPound size={18} />
                   {formatBudget(inquiry.budget)}
                 </span>
               )}
               {inquiry.source_page && (
                 <span className={`${styles.tag} ${styles.tagSource}`}>
-                  <HiMiniWindow size={20} />
+                  <HiMiniWindow size={18} />
                   {inquiry.source_page}
                 </span>
               )}
@@ -322,13 +322,13 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
                   <div className={styles.panelInquiryMeta}>
                     {inquiry.selected_package && (
                       <span className={styles.panelInquiryTag}>
-                        <HiMiniCube size={25} />
+                        <HiMiniCube size={22} />
                         {inquiry.selected_package}
                       </span>
                     )}
                     {inquiry.budget != null && (
                       <span className={styles.panelInquiryTag}>
-                        <HiCurrencyPound size={25} />
+                        <HiCurrencyPound size={24} />
                         {formatBudget(inquiry.budget)}
                       </span>
                     )}

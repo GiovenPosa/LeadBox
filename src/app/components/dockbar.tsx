@@ -60,6 +60,18 @@ type DockItemProps = {
 function DockItem({ icon, label, href, active, disabled, badge, onClick }: DockItemProps) {
   const showBadge = badge !== undefined && badge > 0;
 
+  const handleClick = (e: React.MouseEvent) => {
+    // Prevent navigation if already on this page or disabled
+    if (active || disabled) {
+      e.preventDefault();
+      return;
+    }
+    if (onClick) {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   const content = (
     <>
       <span className={styles.dockIconWrapper}>
@@ -76,22 +88,11 @@ function DockItem({ icon, label, href, active, disabled, badge, onClick }: DockI
 
   const className = `${styles.dockItem} ${active ? styles.dockItemActive : ""} ${disabled ? styles.dockItemDisabled : ""}`;
 
-  if (onClick) {
-    return (
-      <button
-        className={className}
-        onClick={onClick}
-        disabled={disabled}
-        aria-current={active ? "page" : undefined}
-      >
-        {content}
-      </button>
-    );
-  }
-
+  // Use anchor for all items for consistent behavior
   return (
     <a
-      href={disabled ? undefined : href}
+      href={disabled || onClick ? undefined : href}
+      onClick={handleClick}
       className={className}
       aria-current={active ? "page" : undefined}
       tabIndex={disabled ? -1 : 0}

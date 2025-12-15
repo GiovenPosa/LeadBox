@@ -7,8 +7,9 @@
   display: flex;
   flex-direction: column;
   background-color: var(--color-bg-sidebar);
-  border-right: 1px solid var(--color-border-secondary);
   z-index: 100;
+  border-top-right-radius: var(--radius-xl);
+  border-bottom-right-radius: var(--radius-xl);
   /* Account for safe areas */
   padding-top: var(--safe-area-top);
   padding-left: var(--safe-area-left);
@@ -42,16 +43,16 @@
 }
 
 .workspaceLogo {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  background: #DE6449;
   color: white;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  border-radius: var(--radius-sm);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  border-radius: 99px;
 }
 
 .workspaceName {
@@ -102,8 +103,6 @@
 .searchInput:focus {
   outline: none;
   background-color: var(--color-bg-primary);
-  border-color: var(--color-accent);
-  box-shadow: var(--shadow-focus);
 }
 
 .searchKbd {
@@ -291,12 +290,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-bg-tertiary) 0%, var(--color-bg-secondary) 100%);
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--radius-sm);
+  background: #DE6449;
+  border-radius: 99px;
   font-size: var(--text-xs);
   font-weight: 600;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   flex-shrink: 0;
 }
 
