@@ -322,7 +322,7 @@ export default function ContactsPage() {
               <div>
                 <div className={contactStyles.modalTitle}>{activeContactName}</div>
                 <div className={contactStyles.modalSubtitle}>
-                  {activePhones.length} numbers available
+                  {activeContactEmail}
                 </div>
               </div>
 
@@ -343,7 +343,10 @@ export default function ContactsPage() {
                   className={contactStyles.modalItem}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {p}
+                  <span className={contactStyles.modalItemLabel}>
+                      {p}
+                    </span>
+                    <HiPhone size={20} className={contactStyles.modalItemIcon} />
                 </a>
               ))}
             </div>

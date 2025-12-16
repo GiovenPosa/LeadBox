@@ -47,7 +47,7 @@
 /* Name - Allow selection */
 .name {
   font-size: var(--text-xl);
-  font-weight: 800;
+  font-weight: 700;
   color: var(--color-text-primary);
   white-space: nowrap;
   text-transform: capitalize;
@@ -489,7 +489,7 @@
   align-items: center;
   gap: var(--space-1);
   font-size: var(--text-bs);
-  font-weight: 400;
+  font-weight: 300;
   color: var(--color-text-secondary);
   transition: color var(--transition-fast);
   white-space: nowrap;

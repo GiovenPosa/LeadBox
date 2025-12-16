@@ -49,7 +49,7 @@
 /* Name */
 .name {
   font-size: var(--text-xl);
-  font-weight: 800;
+  font-weight: 700;
   color: var(--color-text-primary);
   text-transform: capitalize;
   line-height: var(--leading-tight);
@@ -68,7 +68,7 @@
   display: inline-flex;
   align-items: center;
   font-size: var(--text-bs);
-  font-weight: 400;
+  font-weight: 300;
   color: var(--color-text-secondary);
   white-space: nowrap;
   min-width: 0;
@@ -118,7 +118,7 @@
 
 .infoValue {
   font-size: var(--text-bs);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text-primary);
   display: inline-flex;
   align-items: baseline;
@@ -241,15 +241,15 @@
 }
 
 .modalTitle {
-  font-size: var(--text-xl);
+  font-size: var(--text-2xl);
   font-weight: 700;
   color: var(--color-text-primary);
   line-height: 1;
 }
 
 .modalSubtitle {
-  font-size: var(--text-md);
-  color: var(--color-text-tertiary);
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
   margin-top: var(--space-1);
 }
 
@@ -270,15 +270,18 @@
 .modalList {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .modalItem {
-  padding: var(--space-4);
-  border-radius: var(--radius-xl);
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-5);
+  border-radius: var(--radius-2xl);
   background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
-  font-weight: 600;
+  font-weight: 500;
+  font-size: var(--text-lg);
 }
 
 .modalItem:hover {
