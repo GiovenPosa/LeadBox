@@ -7,7 +7,7 @@
 /* Cards */
 .formCard {
   background-color: var(--color-bg-secondary);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-md);
 }
 
@@ -131,7 +131,7 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
-  padding: var(--space-6);
+  padding: var(--space-5);
   border-radius: var(--radius-2xl);
   font-size: var(--text-lg);
   font-weight: 500;
@@ -221,7 +221,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--text-md);
+  font-size: var(--text-xl);
   font-weight: 500;
   color: var(--color-text-primary);
 }
@@ -229,13 +229,12 @@
 .input,
 .select,
 .textarea {
-  
   width: 100%;
   border-radius: var(--radius-xl);
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border-secondary);
   padding: 12px 12px;
-  font-size: var(--text-bs);
+  font-size: var(--text-md);
   font-weight: 300;
   color: var(--color-text-primary);
   outline: none;
