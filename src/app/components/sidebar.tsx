@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import styles from "./sidebar.module.css";
-import { HiInbox, HiMiniUsers, HiMiniChartBar } from "react-icons/hi2";
+import { HiInbox, HiMiniUsers, HiMiniChartBar, HiMiniRocketLaunch } from "react-icons/hi2";
 import Link from "next/link"; 
 import { unauthorized } from "next/navigation";
 
@@ -92,7 +92,10 @@ export default function Sidebar({ email, onSignOut, inboxUnseenCount, activePage
 
         <div className={styles.navSection}>
           <div className={styles.navSectionHeader}>
-            <span>Pages</span>
+            <span className={styles.navSectionTitle}>
+              <HiMiniRocketLaunch size={15} />
+              <p>Projects</p>
+            </span>
             <button className={styles.addButton} title="Add page">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="5" x2="12" y2="19" />

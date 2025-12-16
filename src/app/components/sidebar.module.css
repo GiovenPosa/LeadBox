@@ -146,6 +146,12 @@
   letter-spacing: 0.05em;
 }
 
+.navSectionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .addButton {
   display: flex;
   align-items: center;

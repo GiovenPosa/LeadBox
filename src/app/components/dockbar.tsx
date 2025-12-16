@@ -1,11 +1,11 @@
 "use client";
 
 import styles from "./dockbar.module.css";
-import { HiInbox, HiMiniUsers, HiMiniChartBar, HiMagnifyingGlass } from "react-icons/hi2";
+import { HiInbox, HiOutlineInbox, HiMiniUsers, HiOutlineUsers, HiMiniChartBar, HiOutlineChartBar, HiMiniRocketLaunch, HiOutlineRocketLaunch } from "react-icons/hi2";
 import Link from "next/link";
 
 type DockBarProps = {
-  activePage: "inbox" | "contacts" | "search" | "analytics";
+  activePage: "inbox" | "contacts" | "projects" | "analytics";
   inboxUnseenCount?: number;
   onSearchClick?: () => void;
 };
@@ -17,26 +17,30 @@ export default function DockBar({ activePage, inboxUnseenCount = 0, onSearchClic
     <nav className={styles.dockBar} aria-label="Main navigation">
       <div className={styles.dockInner}>
         <DockItem
-          icon={<HiInbox size={22} />}
+          icon={<HiOutlineInbox size={25} />}
+          activeIcon={<HiInbox size={25} />}
           label="Inbox"
           href="/"
           active={activePage === "inbox"}
           badge={showBadge ? inboxUnseenCount : undefined}
         />
         <DockItem
-          icon={<HiMiniUsers size={22} />}
+          icon={<HiOutlineUsers size={25} />}
+          activeIcon={<HiMiniUsers size={25} />}
           label="Contacts"
           href="/contacts"
           active={activePage === "contacts"}
         />
         <DockItem
-          icon={<HiMagnifyingGlass size={22} />}
-          label="Search"
-          active={activePage === "search"}
+          icon={<HiOutlineRocketLaunch size={25} />}
+          activeIcon={<HiMiniRocketLaunch size={25} />}
+          label="Projects"
+          active={activePage === "projects"}
           onClick={onSearchClick}
         />
         <DockItem
-          icon={<HiMiniChartBar size={22} />}
+          icon={<HiOutlineChartBar size={25} />}
+          activeIcon={<HiMiniChartBar size={25} />}
           label="Analytics"
           href="#"
           active={activePage === "analytics"}
@@ -49,6 +53,7 @@ export default function DockBar({ activePage, inboxUnseenCount = 0, onSearchClic
 
 type DockItemProps = {
   icon: React.ReactNode;
+  activeIcon: React.ReactNode;
   label: string;
   href?: string;
   active?: boolean;
@@ -57,14 +62,14 @@ type DockItemProps = {
   onClick?: () => void;
 };
 
-function DockItem({ icon, label, href, active, disabled, badge, onClick }: DockItemProps) {
+function DockItem({ icon, activeIcon, label, href, active, disabled, badge, onClick }: DockItemProps) {
   const showBadge = badge !== undefined && badge > 0;
   const className = `${styles.dockItem} ${active ? styles.dockItemActive : ""} ${disabled ? styles.dockItemDisabled : ""}`;
 
   const content = (
     <>
       <span className={styles.dockIconWrapper}>
-        <span className={styles.dockIcon}>{icon}</span>
+        <span className={styles.dockIcon}>{active ? activeIcon : icon}</span>
         {showBadge && (
           <span className={styles.dockBadge} aria-label={`${badge} new`}>
             {badge > 99 ? "99+" : badge}
