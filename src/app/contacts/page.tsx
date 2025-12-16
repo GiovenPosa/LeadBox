@@ -44,12 +44,6 @@ function resolveContactStatus(c: Contact): ContactStatus {
   return "New";
 }
 
-// Optional: map status -> a CSS module key (so you can style badges later)
-function statusClassKey(status: ContactStatus) {
-  // e.g. contactStyles.status_New etc.
-  return `status_${status}` as const;
-}
-
 export default function ContactsPage() {
   const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);

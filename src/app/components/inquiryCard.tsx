@@ -10,6 +10,8 @@ import {
   HiXMark,
   HiCheck,
 } from "react-icons/hi2";
+import { useRouter } from "next/navigation";
+
 
 export type OpportunityStatus = "new" | "contacted" | "won" | "lost" | "bad";
 
@@ -78,6 +80,9 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
   const [showStatusPanel, setShowStatusPanel] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const router = useRouter()
+
+  
 
   // Track mount state for portal
   useEffect(() => {
@@ -122,8 +127,8 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
   const showNewDot = inquiry.opportunity_status === "new" && !inquiry.seen_at;
 
   const handleCardClick = () => {
-    // ✅ Only mark seen if currently unseen
     if (showNewDot) onSeen(inquiry.id);
+    router.push(`/lead/${inquiry.id}`);
   };
 
   const handleStatusClick = (e: React.MouseEvent) => {
