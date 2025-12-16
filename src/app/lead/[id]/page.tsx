@@ -394,13 +394,6 @@ export default function LeadPage() {
 
            
               <div className={leadStyles.formCard}>
-                <div className={leadStyles.formHeader}>
-                  <div className={leadStyles.formTitle}>
-                    <HiOutlineBolt size={18} />
-                    Screening
-                  </div>
-                  <div className={leadStyles.formSubtitle}>Capture what matters before you commit.</div>
-                </div>
 
                 <div className={leadStyles.formGrid}>
                   <div className={leadStyles.field}>
@@ -449,7 +442,7 @@ export default function LeadPage() {
                       value={form.stage}
                       onChange={(e) => update("stage", e.target.value as SiteStage)}
                     >
-                      {["No site", "Has site", "Redesign", "Landing page", "Ecommerce"].map((v) => (
+                      {["No site", "Has site", "Starter","Redesign", "Landing page"].map((v) => (
                         <option key={v} value={v}>
                           {v}
                         </option>
@@ -588,14 +581,6 @@ export default function LeadPage() {
 
               {/* Meeting notes */}
               <div className={leadStyles.formCard}>
-                <div className={leadStyles.formHeader}>
-                  <div className={leadStyles.formTitle}>
-                    <HiOutlineDocumentText size={18} />
-                    Meeting notes
-                  </div>
-                  <div className={leadStyles.formSubtitle}>Brainstorm, call notes, screening notes. Keep it raw.</div>
-                </div>
-
                 <textarea
                   className={leadStyles.textarea}
                   placeholder={`Example:\n- Goal: more leads from mobile\n- Pain: site feels outdated + slow\n- Must have: pricing page + enquiry funnel\n- Timeline: wants it live before <date>\n`}
@@ -603,19 +588,15 @@ export default function LeadPage() {
                   onChange={(e) => update("meetingNotes", e.target.value)}
                   rows={9}
                 />
+              </div>
 
-                <div className={leadStyles.bottomRow}>
-                  <button className={leadStyles.smallBtn} type="button" onClick={() => router.back()}>
-                    Back
-                  </button>
-
-                  <div className={leadStyles.bottomRight}>
-                    {isDirty && <span className={leadStyles.unsaved}>Unsaved changes</span>}
-                    <button className={leadStyles.smallBtnPrimary} type="button" onClick={saveDraftLocal}>
-                      Save draft
-                    </button>
-                  </div>
-                </div>
+              <div className={leadStyles.bottomRow}>
+                <button className={leadStyles.smallBtn} type="button" onClick={saveDraftLocal}>
+                  Save draft
+                </button>
+                 <button className={leadStyles.smallBtnPrimary} type="button" onClick={saveDraftLocal}>
+                  Create project
+                </button>
               </div>
             
           </main>

@@ -4,17 +4,10 @@
   gap: var(--space-6);
 }
 
-@media (max-width: 1024px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-
 /* Cards */
 .formCard {
   background-color: var(--color-bg-secondary);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
 }
 
@@ -78,12 +71,10 @@
 
 .tagPackage {
   background-color: rgba(139, 92, 246, 0.08);
-  border-color: rgba(139, 92, 246, 0.15);
 }
 
 .tagBudget {
   background-color: rgba(34, 197, 94, 0.08);
-  border-color: rgba(34, 197, 94, 0.15);
 }
 
 .tagSource {
@@ -128,36 +119,6 @@
   border-radius: var(--radius-md);
 }
 
-.actionBtn:hover {
-  background: var(--color-bg-tertiary);
-}
-
-.actionBtn:active {
-  transform: scale(0.98);
-}
-
-.actionBtnSecondary {
-  display: inline-flex;
-  align-items: center;
-  padding: 10px 12px;
-  border-radius: var(--radius-xl);
-  background: transparent;
-  border: 1px solid var(--color-border-secondary);
-  color: var(--color-text-secondary);
-  font-size: var(--text-md);
-  font-weight: 600;
-  transition: transform var(--transition-fast), background-color var(--transition-fast);
-}
-
-.actionBtnSecondary:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
-}
-
-.actionBtnSecondary:active {
-  transform: scale(0.98);
-}
-
 /* Draft */
 .draftRow {
   display: flex;
@@ -169,31 +130,31 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 12px;
-  border-radius: var(--radius-xl);
-  font-size: var(--text-md);
-  font-weight: 700;
+  line-height: 1;
+  padding: var(--space-6);
+  border-radius: var(--radius-2xl);
+  font-size: var(--text-lg);
+  font-weight: 500;
   transition: transform var(--transition-fast), background-color var(--transition-fast);
-  border: 1px solid var(--color-border-secondary);
 }
 
 .smallBtn {
-  background: transparent;
-  color: var(--color-text-secondary);
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
 }
 
 .smallBtn:hover {
-  background: var(--color-bg-tertiary);
+  background: var(--color-);
   color: var(--color-text-primary);
 }
 
 .smallBtnPrimary {
-  background: var(--color-bg-active);
   color: var(--color-text-primary);
+  background-color: #DE6449;
 }
 
 .smallBtnPrimary:hover {
-  background: var(--color-bg-tertiary);
+  opacity: 0.8;
 }
 
 .smallBtn:active,
@@ -216,35 +177,31 @@
   padding: var(--space-5);
 }
 
-.formHeader {
-  margin-bottom: var(--space-4);
-}
-
-.formTitle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-lg);
-  font-weight: 800;
-  color: var(--color-text-primary);
-}
-
-.formSubtitle {
-  margin-top: 6px;
-  font-size: var(--text-md);
-  color: var(--color-text-tertiary);
-  font-weight: 500;
-}
-
 .formGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-4);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768) {
   .formGrid {
     grid-template-columns: 1fr;
+  }
+
+  .bottomRow {
+    margin-bottom: var(--space-10);
+    width: 100%;
+  }
+
+  .smallBtn {
+    padding: 0 auto;
+    width: 30%;
+  }
+
+  .smallBtnPrimary {
+    padding: 0 auto;
+    width: 70%;
+
   }
 }
 
@@ -266,7 +223,7 @@
   align-items: center;
   gap: var(--space-2);
   font-size: var(--text-md);
-  font-weight: 700;
+  font-weight: 500;
   color: var(--color-text-primary);
 }
 
@@ -278,7 +235,8 @@
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border-secondary);
   padding: 12px 12px;
-  font-size: var(--text-md);
+  font-size: var(--text-bs);
+  font-weight: 300;
   color: var(--color-text-primary);
   outline: none;
   transition: border-color var(--transition-fast), background-color var(--transition-fast);
@@ -303,12 +261,12 @@
 }
 
 .chip {
-  padding: 9px 12px;
+  padding: 5px 10px;
   border-radius: 999px;
   border: 1px solid var(--color-border-secondary);
   background: transparent;
-  font-size: var(--text-md);
-  font-weight: 700;
+  font-size: var(--text-bs);
+  font-weight: 300;
   color: var(--color-text-secondary);
   transition: transform var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
 }
@@ -377,15 +335,9 @@
 .bottomRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: var(--space-4);
+  justify-content: flex-start;
   gap: var(--space-3);
-}
-
-.bottomRight {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
+  width: 100%;
 }
 
 .unsaved {
