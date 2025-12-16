@@ -221,9 +221,8 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
               <a
                 href={`mailto:${inquiry.email}`}
                 className={styles.contactLink}
-                onClick={(e) => e.stopPropagation()} // ✅ don't mark seen for mail clicks
+                onClick={(e) => e.stopPropagation()} 
               >
-               
                 <span>{inquiry.email}</span>
               </a>
             )}
@@ -231,16 +230,15 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
               <a
                 href={`tel:${inquiry.phone}`}
                 className={styles.contactLink}
-                onClick={(e) => e.stopPropagation()} // ✅ don't mark seen for tel clicks
+                onClick={(e) => e.stopPropagation()} 
               >
-                
                 <span>{inquiry.phone}</span>
               </a>
             )}
           </div>
 
           {/* Message */}
-          {inquiry.message && <p className={styles.message}>"{inquiry.message}"</p>}
+          {inquiry.message && <p className={styles.message}>{inquiry.message}</p>}
 
           {/* Tags Row */}
           {hasTags && (

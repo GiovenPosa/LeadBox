@@ -246,14 +246,14 @@
 
 .statValue {
   font-size: var(--text-2xl);
-  font-weight: 800;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
 .statLabel {
   font-size: var(--text-md);
   color: var(--color-text-secondary);
-  font-weight: 500;
+  font-weight: 400;
 }
 
 /* ============================================

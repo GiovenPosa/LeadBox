@@ -39,7 +39,7 @@
   justify-content: flex-start;
   padding: 0 var(--space-3);
   padding-bottom: var(--space-4);
-  color: var(--color-text-tertiary);
+  color: var(--color-text-primary);
   transition: all var(--transition-fast);
   touch-action: manipulation;
   min-width: 60px;
@@ -47,14 +47,6 @@
   background: none;
   cursor: pointer;
   font-family: inherit;
-}
-
-.dockItemActive {
-  color: var(--color-text-primary);
-}
-
-.dockItemActive .dockIcon {
-  color: var(--color-text-primary);
 }
 
 .dockItemDisabled {

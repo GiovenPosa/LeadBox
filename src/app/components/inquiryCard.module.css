@@ -6,7 +6,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-1);
-  padding: var(--space-6) var(--space-6);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-2xl);
   background-color: var(--color-bg-sidebar);
   transition: background-color var(--transition-fast), transform var(--transition-fast);
@@ -60,8 +60,8 @@
   position: absolute;
   width: 12px;
   height: 12px;
-  left: -4px;
-  top: -5px;
+  right: -4px;
+  top: -4px;
   border-radius: 999px;
   background-color: var(--color-status-lost);
   /* Pulse animation for attention */
@@ -81,9 +81,9 @@
 .status {
   display: flex;
   align-items: flex-start;
-  padding: 6px 8px;
-  border-radius: var(--radius-md);
-  font-size: var(--text-md);
+  padding: 3px 5px;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
   font-weight: 500;
   text-transform: capitalize;
   transition: all var(--transition-fast);
@@ -298,7 +298,6 @@
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   padding-bottom: var(--space-6);
-
 }
 
 /* Panel Inquiry Info */
@@ -479,8 +478,7 @@
 .contact {
   display: flex;
   align-items: center;
-  gap: var(--space-6);
-  margin-bottom: var(--space-4);
+  gap: var(--space-4);
   flex: 1;
 }
 
@@ -496,6 +494,7 @@
   touch-action: manipulation;
   -webkit-user-select: text;
   user-select: text;
+  border-radius: var(--radius-md);
 }
 
 .contactLink:hover {
@@ -541,8 +540,8 @@
   margin-top: var(--space-1);
   padding: 5px 10px;
   border-radius: var(--radius-2xl);
-  font-size: var(--text-md);
-  font-weight: 400;
+  font-size: var(--text-bs);
+  font-weight: 300;
   text-transform: capitalize;
   -webkit-user-select: none;
   user-select: none;
@@ -570,7 +569,7 @@
 /* Message - Allow selection */
 .message {
   margin-bottom: var(--space-1);
-  font-size: var(--text-md);
+  font-size: var(--text-bs);
   color: var(--color-text-primary);
   font-weight: 300;
   line-height: var(--leading-relaxed);
@@ -617,7 +616,7 @@
 
 @media (max-width: 480px) {
   .card {
-    padding: var(--space-3);
+    padding: var(--space-4);
   }
   
   .handle {
