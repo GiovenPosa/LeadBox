@@ -68,7 +68,7 @@
   display: inline-flex;
   align-items: center;
   font-size: var(--text-bs);
-  font-weight: 600;
+  font-weight: 400;
   color: var(--color-text-secondary);
   white-space: nowrap;
   min-width: 0;
@@ -106,18 +106,18 @@
   background-color: var(--color-bg-tertiary);
   padding: var(--space-4);
   border-radius: var(--radius-lg);
+  line-height: 1;
 }
 
 .infoLabel {
   font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text-secondary);
+  font-weight: 400;
+  color: var(--color-text-primary);
   margin-top: var(--space-1);
-  line-height: 1;
 }
 
 .infoValue {
-  font-size: var(--text-md);
+  font-size: var(--text-bs);
   font-weight: 800;
   color: var(--color-text-primary);
   display: inline-flex;
@@ -208,8 +208,296 @@
   width: max-content;
 }
 
-/* Responsive */
+/* ============================================
+   DESKTOP MODAL (hidden on mobile)
+   ============================================ */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: 50;
+}
+
+.modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(520px, calc(100vw - 32px));
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  z-index: 60;
+  padding: var(--space-6);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.modalTitle {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.modalSubtitle {
+  font-size: var(--text-md);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-1);
+}
+
+.modalClose {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalClose:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.modalList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.modalItem {
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.modalItem:hover {
+  background: var(--color-bg-active);
+}
+
+/* ============================================
+   PHONE BOTTOM SHEET PANEL - Mobile
+   ============================================ */
+
+.panelBackdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0);
+  z-index: 200;
+  transition: background-color 0.3s ease,
+              visibility 0s linear 0.3s;
+  pointer-events: none;
+  visibility: hidden;
+  touch-action: none;
+  -webkit-overflow-scrolling: none;
+  overscroll-behavior: none;
+}
+
+.panelBackdropVisible {
+  background-color: rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
+  visibility: visible;
+  transition: background-color 0.3s ease,
+              visibility 0s linear 0s;
+}
+
+.phonePanel {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 201;
+  background-color: var(--color-bg-secondary);
+  border-top-left-radius: var(--radius-2xl);
+  border-top-right-radius: var(--radius-2xl);
+  box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.15);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+              visibility 0s linear 0.3s;
+  max-height: 85vh;
+  visibility: hidden;
+  pointer-events: none;
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+
+.phonePanelOpen {
+  transform: translateY(0);
+  visibility: visible;
+  pointer-events: auto;
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+              visibility 0s linear 0s;
+}
+
+/* Panel Handle */
+.panelHandle {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-3) 0 var(--space-2);
+}
+
+.panelHandleBar {
+  width: 36px;
+  height: 4px;
+  background-color: var(--color-border-primary);
+  border-radius: 2px;
+}
+
+/* Panel Header */
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-4) var(--space-3);
+}
+
+.panelTitle {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.panelSubtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-1);
+}
+
+.panelCloseButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  color: var(--color-text-tertiary);
+  transition: all var(--transition-fast);
+  touch-action: manipulation;
+}
+
+.panelCloseButton:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.panelCloseButton:active {
+  background-color: var(--color-bg-active);
+}
+
+/* Panel Scrollable Content */
+.panelContent {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  padding-bottom: var(--space-6);
+}
+
+/* Panel Contact Info */
+.panelContactInfo {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  margin: 0 var(--space-4);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-5);
+}
+
+.panelContactName {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-transform: capitalize;
+}
+
+.panelContactEmail {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+}
+
+/* Panel Phone Options */
+.panelOptions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0 var(--space-6);
+}
+
+.panelOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-6) var(--space-6);
+  border: 1px solid transparent;
+  border-radius: var(--radius-2xl);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  touch-action: manipulation;
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.panelOption:hover {
+  background-color: var(--color-bg-active);
+}
+
+.panelOption:active {
+  transform: scale(0.98);
+}
+
+.panelOptionLabel {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.panelOptionIcon {
+  flex-shrink: 0;
+  color: var(--color-accent);
+}
+
+/* Panel Footer - Safe area spacer */
+.panelFooter {
+  height: calc(var(--space-4) + var(--safe-area-bottom));
+  flex-shrink: 0;
+}
+
+/* ============================================
+   RESPONSIVE - Show panel on mobile
+   ============================================ */
+
 @media (max-width: 768px) {
+  /* Hide desktop modal on mobile */
+  .modalOverlay,
+  .modal {
+    display: none;
+  }
+
+  /* Show panel components on mobile */
+  .panelBackdrop {
+    display: block;
+  }
+
+  .phonePanel {
+    display: flex;
+    flex-direction: column;
+  }
+
   .card {
     padding: var(--space-6) var(--space-6);
   }
@@ -232,6 +520,7 @@
 
   .link {
     font-size: var(--text-bs);
+    line-height: 1;
   }
 
   .infoRow {
@@ -244,13 +533,7 @@
 
 
   .infoItem {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    background-color: var(--color-bg-tertiary);
-    padding: var(--space-4);
+    padding: var(--space-3);
     width: 100%;
-    border-radius: var(--radius-lg);
-    margin: 0 auto;
   }
 }

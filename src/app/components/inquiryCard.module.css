@@ -488,8 +488,8 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: var(--text-md);
-  font-weight: 600;
+  font-size: var(--text-bs);
+  font-weight: 400;
   color: var(--color-text-secondary);
   transition: color var(--transition-fast);
   white-space: nowrap;
