@@ -12,8 +12,8 @@
   border-top: 1px solid var(--color-border-secondary);
   background-color: var(--color-bg-primary);
   /* Padding with safe area support */
-  padding: var(--space-2) var(--space-3);
-  padding-bottom: max(var(--space-6), env(safe-area-inset-bottom, 0px));
+  padding: var(--space-3) var(--space-3);
+  padding-bottom: max(var(--space-4), env(safe-area-inset-bottom, 0px));
   -webkit-user-select: none;
   user-select: none;
 }
@@ -21,7 +21,7 @@
 .dockInner {
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
   gap: var(--space-1);
   max-width: 500px;
   margin: 0 auto;
@@ -44,6 +44,17 @@
   background: none;
   cursor: pointer;
   font-family: inherit;
+  gap: var(--space-1);
+  line-height: 1;
+}
+
+.dockItemNotActive {
+  background-color: var(--color-bg-hover);
+}
+
+.dockItemActive .dockIcon,
+.dockItemActive .dockLabel {
+  color: var(--color-text-primary);
 }
 
 .dockItemDisabled {
@@ -65,7 +76,7 @@
   align-items: center;
   justify-content: center;
   transition: color var(--transition-fast);
-  color: var(--color-text-primary);
+  color: var(--color-text-secondary);
 }
 
 /* ---- Badge ---- */
@@ -91,10 +102,10 @@
 /* ---- Label ---- */
 
 .dockLabel {
-  font-size: var(--text-xs);
+  font-size: var(--text-2xs);
   font-weight: 400;
   white-space: nowrap;
-  color: var(--color-text-primary);
+  color: var(--color-text-secondary);
 }
 
 /* ============================================
