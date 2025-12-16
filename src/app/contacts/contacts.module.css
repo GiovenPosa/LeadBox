@@ -19,12 +19,12 @@
 .card {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content:flex-start;
   gap: var(--space-4);
-  flex-direction: column;
+  flex-direction: row;
   padding: var(--space-6) var(--space-6);
   border-radius: var(--radius-2xl);
-  background-color: var(--color-bg-sidebar);
+  background-color: var(--color-bg-secondary);
   transition: background-color var(--transition-fast), transform var(--transition-fast);
   cursor: pointer;
   touch-action: manipulation;
@@ -60,9 +60,9 @@
 /* Email + phone links */
 .linkRow {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: var(--space-3);
-  line-height: 1;
+  line-height: 0.7;
   
 }
 
@@ -97,7 +97,7 @@
 .infoRow {
   display: flex;
   flex-direction: row;
-  gap: var(--space-3);
+  gap: var(--space-2);
   justify-content: flex-start;
 }
 
@@ -107,13 +107,13 @@
   align-items: flex-start;
   background-color: var(--color-bg-tertiary);
   padding: var(--space-4);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-lg);
 
 }
 
 .infoLabel {
   font-size: var(--text-sm);
-  font-weight: 400;
+  font-weight: 500;
   color: var(--color-text-secondary);
   margin-top: var(--space-1);
   line-height: 1;
@@ -121,11 +121,10 @@
 
 .infoValue {
   font-size: var(--text-md);
-  font-weight: 500;
+  font-weight: 800;
   color: var(--color-text-primary);
   display: inline-flex;
   align-items: baseline;
-  line-height: 1;
 }
 
 /* New */
@@ -215,7 +214,7 @@
 /* Responsive */
 @media (max-width: 768px) {
   .card {
-    padding: var(--space-5);
+    padding: var(--space-6) var(--space-6);
   }
 
   .meta {
