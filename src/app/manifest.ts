@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "gios.build lead inbox and inquiry management",
     start_url: "/",
     display: "standalone",
-    background_color: "#0b0b0b",
-    theme_color: "#0b0b0b",
+    background_color: "#121212",
+    theme_color: "#121212",
     orientation: "portrait",
     scope: "/",
     icons: [
