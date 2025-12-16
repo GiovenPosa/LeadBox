@@ -563,7 +563,7 @@ export default function LeadPage() {
                       <span className={leadStyles.toggleDot} />
                       Brand assets ready
                     </button>
-                    <span className={leadStyles.toggleHint}>Logo, colours, fonts, imagery.</span>
+                   
                   </div>
 
                   <div className={leadStyles.fieldFull}>

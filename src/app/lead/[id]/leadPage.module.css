@@ -139,7 +139,7 @@
 }
 
 .smallBtn {
-  background-color: var(--color-bg-tertiary);
+  background-color: var(--color-bg-secondary);
   color: var(--color-text-primary);
 }
 
@@ -183,7 +183,7 @@
   gap: var(--space-4);
 }
 
-@media (max-width: 768) {
+@media (max-width: 768px) {
   .formGrid {
     grid-template-columns: 1fr;
   }
@@ -195,13 +195,12 @@
 
   .smallBtn {
     padding: 0 auto;
-    width: 30%;
+    width: 40%;
   }
 
   .smallBtnPrimary {
     padding: 0 auto;
-    width: 70%;
-
+    width: 60%;
   }
 }
 
@@ -230,6 +229,7 @@
 .input,
 .select,
 .textarea {
+  
   width: 100%;
   border-radius: var(--radius-xl);
   background: var(--color-bg-primary);
@@ -290,12 +290,7 @@
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border-secondary);
-  background: var(--color-bg-primary);
+  margin: var(--space-1) 0;
 }
 
 .toggle {
@@ -303,8 +298,8 @@
   align-items: center;
   gap: var(--space-2);
   font-size: var(--text-md);
-  font-weight: 800;
-  color: var(--color-text-secondary);
+  font-weight: 500;
+  color: var(--color-text-primary);
 }
 
 .toggleDot {
@@ -323,12 +318,6 @@
 .toggleOn .toggleDot {
   border-color: var(--color-accent);
   background: var(--color-accent);
-}
-
-.toggleHint {
-  font-size: var(--text-bs);
-  color: var(--color-text-tertiary);
-  font-weight: 600;
 }
 
 /* Bottom row */
