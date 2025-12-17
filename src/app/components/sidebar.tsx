@@ -10,7 +10,7 @@ type SidebarProps = {
   email: string | null;
   onSignOut: () => void;
   inboxUnseenCount: number;
-  activePage: "inbox" | "contacts" | "analytics";
+  activePage: "inbox" | "contacts" | "analytics" | "projects";
 };
 
 export default function Sidebar({ email, onSignOut, inboxUnseenCount, activePage }: SidebarProps) {
