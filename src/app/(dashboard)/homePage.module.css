@@ -31,6 +31,10 @@
   .main {
     margin-left: 0;
   }
+
+  .hideOnMobile {
+    display: none !important;
+  }
 }
 
 /* ============================================

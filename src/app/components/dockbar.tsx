@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "./dockbar.module.css";
+import styles from "./component-styles/dockbar.module.css";
 import { HiInbox, HiOutlineInbox, HiMiniUsers, HiOutlineUsers, HiMiniChartBar, HiOutlineChartBar, HiMiniRocketLaunch, HiOutlineRocketLaunch } from "react-icons/hi2";
 import Link from "next/link";
 

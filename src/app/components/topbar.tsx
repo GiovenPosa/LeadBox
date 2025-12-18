@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import styles from "./topbar.module.css";
+import styles from "./component-styles/topbar.module.css";
 import { HiMiniBellAlert, HiSun, HiMoon, HiArrowRightOnRectangle, HiXMark } from "react-icons/hi2";
 
 type TopBarProps = {

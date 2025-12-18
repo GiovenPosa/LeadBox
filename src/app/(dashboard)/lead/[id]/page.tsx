@@ -1,15 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter, useParams } from "next/navigation";
 import styles from "../../homePage.module.css";
 import leadStyles from "./leadPage.module.css";
+import cardStyles from "../../../components/component-styles/inquiryCard.module.css";
 import { useDashboard } from "@/src/app/context/dashboardContext";
 import { supabase } from "../../../../lib/supabaseClient";
 import {
   HiMiniWindow,
   HiCurrencyPound,
   HiMiniCube,
+  HiChevronLeft,
+  HiMiniEllipsisHorizontal,
+  HiXMark,
+  HiCheck,
 } from "react-icons/hi2";
 import {
   HiOutlineGlobeAlt,
@@ -78,6 +84,20 @@ type FormState = {
 };
 
 /* =========================================================
+   Status Config (shared with inquiryCard)
+========================================================= */
+
+const STATUS_ORDER: OpportunityStatus[] = ["new", "contacted", "won", "lost", "bad"];
+
+const STATUS_CONFIG: Record<OpportunityStatus, { label: string; className: string }> = {
+  new: { label: "New", className: cardStyles.statusNew },
+  contacted: { label: "Contacted", className: cardStyles.statusContacted },
+  won: { label: "Won", className: cardStyles.statusWon },
+  lost: { label: "Lost", className: cardStyles.statusLost },
+  bad: { label: "Bad", className: cardStyles.statusBad },
+};
+
+/* =========================================================
    Helpers
 ========================================================= */
 
@@ -98,6 +118,32 @@ function formatDateTime(iso: string) {
   });
 }
 
+type MobileHeaderProps = {   
+  name: string;   
+  onBack: () => void; 
+}; 
+
+function MobileHeader({ name, onBack }: MobileHeaderProps) {
+  return (     
+    <header className={leadStyles.mobileHeader}>       
+      <button          
+        className={leadStyles.backButton}          
+        onClick={onBack}         
+        aria-label="Go back"       
+      >         
+        <HiChevronLeft size={30} />       
+      </button>       
+      <h1 className={leadStyles.mobileHeaderTitle}>{name}</h1>  
+       <button          
+        className={leadStyles.editButton}          
+        aria-label="Edit inquiry details"       
+      >         
+        <HiMiniEllipsisHorizontal size={22} />
+      </button>       
+    </header>   
+  ); 
+}
+
 /* =========================================================
    Page
 ========================================================= */
@@ -116,8 +162,49 @@ export default function LeadPage() {
 
   const [savedToast, setSavedToast] = useState<null | "draft">(null);
 
+  // Status panel state
+  const [showStatusMenu, setShowStatusMenu] = useState(false);
+  const [showStatusPanel, setShowStatusPanel] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
   const { setActivePage, setPageTitle, setBreadcrumbs } = useDashboard();
   
+  // Track mount state for portal
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Detect mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Prevent scrolling when panel is open
+  useEffect(() => {
+    if (!showStatusPanel) return;
+
+    const preventScroll = (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest(`.${cardStyles.panelContent}`)) {
+        return;
+      }
+      e.preventDefault();
+    };
+
+    document.addEventListener("touchmove", preventScroll, { passive: false });
+    
+    return () => {
+      document.removeEventListener("touchmove", preventScroll);
+    };
+  }, [showStatusPanel]);
+
   // Set page config on mount
   useEffect(() => {
     setActivePage("lead");
@@ -264,57 +351,93 @@ export default function LeadPage() {
     } catch {}
   }
 
+  function handleBack() {
+    router.back();
+  }
+
+  /* ---------------- Status handlers ---------------- */
+
+  const handleStatusClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (isMobile) {
+      setShowStatusPanel(true);
+    } else {
+      setShowStatusMenu((v) => !v);
+    }
+  };
+
+  const handleStatusSelect = async (status: OpportunityStatus) => {
+    if (!inquiry) return;
+
+    // Optimistic update
+    const prev = inquiry;
+    setInquiry({ ...inquiry, opportunity_status: status });
+    setShowStatusMenu(false);
+    setShowStatusPanel(false);
+
+    // Persist to database
+    const { error } = await supabase
+      .from("booking_inquiries")
+      .update({ opportunity_status: status })
+      .eq("id", inquiry.id);
+
+    if (error) {
+      // Rollback on error
+      setInquiry(prev);
+      setFetchError(error.message);
+    }
+  };
+
+  const closePanel = () => {
+    setShowStatusPanel(false);
+  };
+
   /* ---------------- Loading / Error guards ---------------- */
 
   if (loading) {
     return (
-      <div className={styles.workspace}>
-        <div className={styles.main}>
-          <div className={styles.canvas}>
-            <div className={styles.pageHeader}>
-              <h1 className={styles.pageTitle}>Loading lead…</h1>
-            </div>
+      <>
+        <div className={styles.canvas}>
+          <div className={styles.pageHeader}>
+            <h1 className={styles.pageTitle}>Loading lead…</h1>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (!inquiry) {
     return (
-      <div className={styles.workspace}>
-        <div className={styles.main}>
-          <div className={styles.canvas}>
-            <div className={styles.pageHeader}>
-              <h1 className={styles.pageTitle}>Lead not found</h1>
-            </div>
-
-            {!!fetchError && (
-              <div className={styles.errorBanner}>
-                <span>{fetchError}</span>
-              </div>
-            )}
-
-            <button className={leadStyles.smallBtn} type="button" onClick={() => router.back()}>
-              Back
-            </button>
+      <>
+        <div className={styles.canvas}>
+          <div className={styles.pageHeader}>
+            <h1 className={styles.pageTitle}>Lead not found</h1>
           </div>
+
+          {!!fetchError && (
+            <div className={styles.errorBanner}>
+              <span>{fetchError}</span>
+            </div>
+          )}
+
+          <button className={leadStyles.smallBtn} type="button" onClick={handleBack}>
+            Back
+          </button>
         </div>
-      </div>
+      </>
     );
   }
 
   if (!form || !initial) {
     return (
-      <div className={styles.workspace}>
-        <div className={styles.main}>
-          <div className={styles.canvas}>
-            <div className={styles.pageHeader}>
-              <h1 className={styles.pageTitle}>Preparing form…</h1>
-            </div>
+      <>
+        <div className={styles.canvas}>
+          <div className={styles.pageHeader}>
+            <h1 className={styles.pageTitle}>Preparing form…</h1>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -322,266 +445,418 @@ export default function LeadPage() {
      UI
   ========================================================= */
 
+  const statusConfig = STATUS_CONFIG[inquiry.opportunity_status];
+
   return (
-    <div className={styles.canvas}>
-      <main className={leadStyles.layout}>
-        <div className={leadStyles.card}>
-          <div className={leadStyles.cardHeader}>
-            <h1 className={leadStyles.cardName}>{inquiry.name || "Unnamed lead"}</h1>
-            <span className={leadStyles.metaPill}>
-              {formatDateTime(inquiry.created_at)}
-            </span>
-          </div>
-          <div className={leadStyles.contacts}>
-            {inquiry.email && (
-              <a className={leadStyles.contactsLink} href={`mailto:${inquiry.email}`}>
-                {inquiry.email}
-              </a>
-            )}
-            {inquiry.phone && (
-              <a className={leadStyles.contactsLink} href={`tel:${inquiry.phone}`}>
-                {inquiry.phone}
-              </a>
-            )}
-          </div>
-          {!!inquiry.message && (
-            <div className={leadStyles.noteBlock}>
-              <p className={leadStyles.noteText}>{inquiry.message}</p>
-            </div>
-          )}
-          {hasTags && (
-            <div className={leadStyles.tagsRow}>
-              {inquiry.selected_package && (
-                <span className={`${leadStyles.tag} ${leadStyles.tagPackage}`}>
-                  <HiMiniCube size={18} />
-                  {inquiry.selected_package}
-                </span>
-              )}
-              {inquiry.budget != null && (
-                <span className={`${leadStyles.tag} ${leadStyles.tagBudget}`}>
-                  <HiCurrencyPound size={18} />
-                  {formatBudget(inquiry.budget)}
-                </span>
-              )}
-              {inquiry.source_page && (
-                <span className={`${leadStyles.tag} ${leadStyles.tagSource}`}>
-                  <HiMiniWindow size={18} />
-                  {inquiry.source_page}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-
-        
-          <div className={leadStyles.formCard}>
-
-            <div className={leadStyles.formGrid}>
-              <div className={leadStyles.field}>
-                <label className={leadStyles.label}>
-                  <HiOutlineCalendarDays size={16} />
-                  Timeline
-                </label>
-                <select
-                  className={leadStyles.select}
-                  value={form.timeline}
-                  onChange={(e) => update("timeline", e.target.value as Timeline)}
+    <>
+      {/* Mobile Header with back button */}
+      <MobileHeader name={inquiry.name || "Unnamed lead"} onBack={handleBack} />
+      
+      <div className={styles.canvas}>
+        <main className={leadStyles.layout}>
+          <div className={leadStyles.card}>
+            <div className={leadStyles.cardHeader}>
+              <div className={leadStyles.cardNameRow}>
+                <h1 className={leadStyles.cardName}>{inquiry.name || "Unnamed lead"}</h1>
+                
+                {/* Status Badge */}
+                <div 
+                  className={cardStyles.statusWrapper}
+                  onMouseLeave={() => setShowStatusMenu(false)}
                 >
-                  {["ASAP", "1-2 weeks", "2-4 weeks", "1-2 months", "3+ months", "Not sure"].map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  <button
+                    className={`${cardStyles.status} ${statusConfig.className}`}
+                    onClick={handleStatusClick}
+                    title="Click to change status"
+                    type="button"
+                    aria-expanded={showStatusMenu || showStatusPanel}
+                    aria-haspopup="listbox"
+                  >
+                    {statusConfig.label}
+                  </button>
 
-              <div className={leadStyles.field}>
-                <label className={leadStyles.label}>
-                  <HiOutlineFlag size={16} />
-                  Decision maker?
-                </label>
-                <select
-                  className={leadStyles.select}
-                  value={form.decisionMaker}
-                  onChange={(e) => update("decisionMaker", e.target.value as FormState["decisionMaker"])}
-                >
-                  {["Yes", "No", "Unsure"].map((v) => (
-                    <option key={v} value={v}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className={leadStyles.field}>
-                <label className={leadStyles.label}>
-                  <HiOutlineGlobeAlt size={16} />
-                  Project type
-                </label>
-                <select
-                  className={leadStyles.select}
-                  value={form.stage}
-                  onChange={(e) => update("stage", e.target.value as SiteStage)}
-                >
-                  {["No site", "Has site", "Starter","Redesign", "Landing page"].map((v) => (
-                    <option key={v} value={v}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className={leadStyles.field}>
-                <label className={leadStyles.label}>
-                  <HiOutlineLink size={16} />
-                  Current site URL
-                </label>
-                <input
-                  className={leadStyles.input}
-                  placeholder="https://..."
-                  value={form.websiteUrl}
-                  onChange={(e) => update("websiteUrl", e.target.value)}
-                />
-              </div>
-
-              <div className={leadStyles.fieldFull}>
-                <label className={leadStyles.label}>Goals (pick what applies)</label>
-                <div className={leadStyles.chips}>
-                  {(
-                    [
-                      "More leads",
-                      "Look premium",
-                      "Improve conversion",
-                      "Showcase work",
-                      "Rank on Google",
-                      "Faster site",
-                      "Clear pricing",
-                      "Other",
-                    ] as Goal[]
-                  ).map((g) => {
-                    const active = form.goals.includes(g);
-                    return (
-                      <button
-                        key={g}
-                        type="button"
-                        className={`${leadStyles.chip} ${active ? leadStyles.chipActive : ""}`}
-                        onClick={() => toggleGoal(g)}
-                      >
-                        {g}
-                      </button>
-                    );
-                  })}
+                  {/* Status Dropdown - Desktop only */}
+                  {showStatusMenu && !isMobile && (
+                    <div className={cardStyles.statusMenu} role="listbox">
+                      {STATUS_ORDER.map((status) => (
+                        <button
+                          key={status}
+                          className={`${cardStyles.statusOption} ${STATUS_CONFIG[status].className} ${
+                            status === inquiry.opportunity_status ? cardStyles.statusOptionActive : ""
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStatusSelect(status);
+                          }}
+                          role="option"
+                          aria-selected={status === inquiry.opportunity_status}
+                        >
+                          {STATUS_CONFIG[status].label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-
-              <div className={leadStyles.fieldFull}>
-                <label className={leadStyles.label}>Challenges / blockers</label>
-                <textarea
-                  className={leadStyles.textarea}
-                  placeholder="What’s not working today? What’s stopping them from converting?"
-                  value={form.challenges}
-                  onChange={(e) => update("challenges", e.target.value)}
-                  rows={4}
-                />
+              
+              <span className={leadStyles.metaPill}>
+                {formatDateTime(inquiry.created_at)}
+              </span>
+            </div>
+            <div className={leadStyles.contacts}>
+              {inquiry.email && (
+                <a className={leadStyles.contactsLink} href={`mailto:${inquiry.email}`}>
+                  {inquiry.email}
+                </a>
+              )}
+              {inquiry.phone && (
+                <a className={leadStyles.contactsLink} href={`tel:${inquiry.phone}`}>
+                  {inquiry.phone}
+                </a>
+              )}
+            </div>
+            {!!inquiry.message && (
+              <div className={leadStyles.noteBlock}>
+                <p className={leadStyles.noteText}>{inquiry.message}</p>
               </div>
-
-              <div className={leadStyles.field}>
-                <label className={leadStyles.label}>Content status</label>
-                <select
-                  className={leadStyles.select}
-                  value={form.contentStatus}
-                  onChange={(e) => update("contentStatus", e.target.value as ContentStatus)}
-                >
-                  {["Ready", "Partly ready", "Need help", "Unknown"].map((v) => (
-                    <option key={v} value={v}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
+            )}
+            {hasTags && (
+              <div className={leadStyles.tagsRow}>
+                {inquiry.selected_package && (
+                  <span className={`${leadStyles.tag} ${leadStyles.tagPackage}`}>
+                    <HiMiniCube size={18} />
+                    {inquiry.selected_package}
+                  </span>
+                )}
+                {inquiry.budget != null && (
+                  <span className={`${leadStyles.tag} ${leadStyles.tagBudget}`}>
+                    <HiCurrencyPound size={18} />
+                    {formatBudget(inquiry.budget)}
+                  </span>
+                )}
+                {inquiry.source_page && (
+                  <span className={`${leadStyles.tag} ${leadStyles.tagSource}`}>
+                    <HiMiniWindow size={18} />
+                    {inquiry.source_page}
+                  </span>
+                )}
               </div>
+            )}
+          </div>
 
-              <div className={leadStyles.field}>
-                <label className={leadStyles.label}>SEO priority</label>
-                <select
-                  className={leadStyles.select}
-                  value={form.seoPriority}
-                  onChange={(e) => update("seoPriority", e.target.value as FormState["seoPriority"])}
-                >
-                  {["Low", "Medium", "High"].map((v) => (
-                    <option key={v} value={v}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          
+            <div className={leadStyles.formCard}>
 
-              <div className={leadStyles.fieldFull}>
-                <label className={leadStyles.label}>Pages / sections needed</label>
-                <input
-                  className={leadStyles.input}
-                  placeholder="Home, About, Services, Work, Contact, Pricing..."
-                  value={form.pagesNeeded}
-                  onChange={(e) => update("pagesNeeded", e.target.value)}
-                />
-              </div>
+              <div className={leadStyles.formGrid}>
+                <div className={leadStyles.field}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineCalendarDays size={16} />
+                    Timeline
+                  </label>
+                  <select
+                    className={leadStyles.select}
+                    value={form.timeline}
+                    onChange={(e) => update("timeline", e.target.value as Timeline)}
+                  >
+                    {["ASAP", "1-2 weeks", "2-4 weeks", "1-2 months", "3+ months", "Not sure"].map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className={leadStyles.fieldFull}>
-                <label className={leadStyles.label}>Integrations</label>
-                <input
-                  className={leadStyles.input}
-                  placeholder="Calendly, Stripe, Newsletter, CRM, Analytics..."
-                  value={form.integrations}
-                  onChange={(e) => update("integrations", e.target.value)}
-                />
-              </div>
+                <div className={leadStyles.field}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineFlag size={16} />
+                    Decision maker?
+                  </label>
+                  <select
+                    className={leadStyles.select}
+                    value={form.decisionMaker}
+                    onChange={(e) => update("decisionMaker", e.target.value as FormState["decisionMaker"])}
+                  >
+                    {["Yes", "No", "Unsure"].map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className={leadStyles.toggleRow}>
-                <button
-                  type="button"
-                  className={`${leadStyles.toggle} ${form.brandAssetsReady ? leadStyles.toggleOn : ""}`}
-                  onClick={() => update("brandAssetsReady", !form.brandAssetsReady)}
-                >
-                  <span className={leadStyles.toggleDot} />
-                  Brand assets ready
-                </button>
-                
-              </div>
+                <div className={leadStyles.field}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineGlobeAlt size={16} />
+                    Project type
+                  </label>
+                  <select
+                    className={leadStyles.select}
+                    value={form.stage}
+                    onChange={(e) => update("stage", e.target.value as SiteStage)}
+                  >
+                    {["No site", "Has site", "Starter","Redesign", "Landing page"].map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className={leadStyles.fieldFull}>
-                <label className={leadStyles.label}>Next steps</label>
-                <textarea
-                  className={leadStyles.textarea}
-                  placeholder="Agree a call, request assets, send proposal, book build slot..."
-                  value={form.nextSteps}
-                  onChange={(e) => update("nextSteps", e.target.value)}
-                  rows={3}
-                />
+                <div className={leadStyles.field}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineLink size={16} />
+                    Current site URL
+                  </label>
+                  <input
+                    className={leadStyles.input}
+                    placeholder="https://..."
+                    value={form.websiteUrl}
+                    onChange={(e) => update("websiteUrl", e.target.value)}
+                  />
+                </div>
+
+                <div className={leadStyles.fieldFull}>
+                  <label className={leadStyles.label}>Goals (pick what applies)</label>
+                  <div className={leadStyles.chips}>
+                    {(
+                      [
+                        "More leads",
+                        "Look premium",
+                        "Improve conversion",
+                        "Showcase work",
+                        "Rank on Google",
+                        "Faster site",
+                        "Clear pricing",
+                        "Other",
+                      ] as Goal[]
+                    ).map((g) => {
+                      const active = form.goals.includes(g);
+                      return (
+                        <button
+                          key={g}
+                          type="button"
+                          className={`${leadStyles.chip} ${active ? leadStyles.chipActive : ""}`}
+                          onClick={() => toggleGoal(g)}
+                        >
+                          {g}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className={leadStyles.fieldFull}>
+                  <label className={leadStyles.label}>Challenges / blockers</label>
+                  <textarea
+                    className={leadStyles.textarea}
+                    placeholder="What's not working today? What's stopping them from converting?"
+                    value={form.challenges}
+                    onChange={(e) => update("challenges", e.target.value)}
+                    rows={4}
+                  />
+                </div>
+
+                <div className={leadStyles.field}>
+                  <label className={leadStyles.label}>Content status</label>
+                  <select
+                    className={leadStyles.select}
+                    value={form.contentStatus}
+                    onChange={(e) => update("contentStatus", e.target.value as ContentStatus)}
+                  >
+                    {["Ready", "Partly ready", "Need help", "Unknown"].map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={leadStyles.field}>
+                  <label className={leadStyles.label}>SEO priority</label>
+                  <select
+                    className={leadStyles.select}
+                    value={form.seoPriority}
+                    onChange={(e) => update("seoPriority", e.target.value as FormState["seoPriority"])}
+                  >
+                    {["Low", "Medium", "High"].map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={leadStyles.fieldFull}>
+                  <label className={leadStyles.label}>Pages / sections needed</label>
+                  <input
+                    className={leadStyles.input}
+                    placeholder="Home, About, Services, Work, Contact, Pricing..."
+                    value={form.pagesNeeded}
+                    onChange={(e) => update("pagesNeeded", e.target.value)}
+                  />
+                </div>
+
+                <div className={leadStyles.fieldFull}>
+                  <label className={leadStyles.label}>Integrations</label>
+                  <input
+                    className={leadStyles.input}
+                    placeholder="Calendly, Stripe, Newsletter, CRM, Analytics..."
+                    value={form.integrations}
+                    onChange={(e) => update("integrations", e.target.value)}
+                  />
+                </div>
+
+                <div className={leadStyles.toggleRow}>
+                  <button
+                    type="button"
+                    className={`${leadStyles.toggle} ${form.brandAssetsReady ? leadStyles.toggleOn : ""}`}
+                    onClick={() => update("brandAssetsReady", !form.brandAssetsReady)}
+                  >
+                    <span className={leadStyles.toggleDot} />
+                    Brand assets ready
+                  </button>
+                  
+                </div>
+
+                <div className={leadStyles.fieldFull}>
+                  <label className={leadStyles.label}>Next steps</label>
+                  <textarea
+                    className={leadStyles.textarea}
+                    placeholder="Agree a call, request assets, send proposal, book build slot..."
+                    value={form.nextSteps}
+                    onChange={(e) => update("nextSteps", e.target.value)}
+                    rows={3}
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Meeting notes */}
-          <div className={leadStyles.formCard}>
-            <textarea
-              className={leadStyles.textarea}
-              placeholder={`Example:\n- Goal: more leads from mobile\n- Pain: site feels outdated + slow\n- Must have: pricing page + enquiry funnel\n- Timeline: wants it live before <date>\n`}
-              value={form.meetingNotes}
-              onChange={(e) => update("meetingNotes", e.target.value)}
-              rows={9}
-            />
-          </div>
+            {/* Meeting notes */}
+            <div className={leadStyles.formCard}>
+              <textarea
+                className={leadStyles.textarea}
+                placeholder={`Example:\n- Goal: more leads from mobile\n- Pain: site feels outdated + slow\n- Must have: pricing page + enquiry funnel\n- Timeline: wants it live before <date>\n`}
+                value={form.meetingNotes}
+                onChange={(e) => update("meetingNotes", e.target.value)}
+                rows={9}
+              />
+            </div>
 
-          <div className={leadStyles.bottomRow}>
-            <button className={leadStyles.smallBtn} type="button" onClick={saveDraftLocal}>
-              Save draft
-            </button>
-              <button className={leadStyles.smallBtnPrimary} type="button" onClick={saveDraftLocal}>
-              Create project
-            </button>
-          </div>
-        
-      </main>
-    </div>
+            <div className={leadStyles.bottomRow}>
+              <button className={leadStyles.smallBtn} type="button" onClick={saveDraftLocal}>
+                Save draft
+              </button>
+                <button className={leadStyles.smallBtnPrimary} type="button" onClick={saveDraftLocal}>
+                Create project
+              </button>
+            </div>
+          
+        </main>
+      </div>
 
+      {/* Status Bottom Sheet Panel - Mobile only (rendered via Portal) */}
+      {mounted && createPortal(
+        <>
+          {/* Backdrop */}
+          <div
+            className={`${cardStyles.panelBackdrop} ${showStatusPanel ? cardStyles.panelBackdropVisible : ""}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              closePanel();
+            }}
+            onTouchMove={(e) => e.preventDefault()}
+            aria-hidden="true"
+          />
+
+          {/* Panel */}
+          <div
+            className={`${cardStyles.statusPanel} ${showStatusPanel ? cardStyles.statusPanelOpen : ""}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Change status"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Handle */}
+            <div className={cardStyles.panelHandle}>
+              <div className={cardStyles.panelHandleBar} />
+            </div>
+
+            {/* Header */}
+            <div className={cardStyles.panelHeader}>
+              <h2 className={cardStyles.panelTitle}>Update Status</h2>
+              <button
+                className={cardStyles.panelCloseButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closePanel();
+                }}
+                aria-label="Close"
+              >
+                <HiXMark size={24} />
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className={cardStyles.panelContent}>
+              {/* Inquiry Info */}
+              <div className={cardStyles.panelInquiryInfo}>
+                <span className={cardStyles.panelInquiryName}>{inquiry.name || "Unnamed"}</span>
+                {inquiry.email && (
+                  <span className={cardStyles.panelInquiryEmail}>{inquiry.email}</span>
+                )}
+                {(inquiry.selected_package || inquiry.budget != null) && (
+                  <div className={cardStyles.panelInquiryMeta}>
+                    {inquiry.selected_package && (
+                      <span className={cardStyles.panelInquiryTag}>
+                        <HiMiniCube size={22} />
+                        {inquiry.selected_package}
+                      </span>
+                    )}
+                    {inquiry.budget != null && (
+                      <span className={cardStyles.panelInquiryTag}>
+                        <HiCurrencyPound size={24} />
+                        {formatBudget(inquiry.budget)}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Status Options */}
+              <div className={cardStyles.panelOptions} role="listbox">
+                {STATUS_ORDER.map((status) => {
+                  const config = STATUS_CONFIG[status];
+                  const isActive = status === inquiry.opportunity_status;
+                  
+                  return (
+                    <button
+                      key={status}
+                      className={`${cardStyles.panelOption} ${config.className} ${isActive ? cardStyles.panelOptionActive : ""}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStatusSelect(status);
+                      }}
+                      role="option"
+                      aria-selected={isActive}
+                    >
+                      <span className={cardStyles.panelOptionLabel}>
+                        {config.label}
+                      </span>
+                      {isActive && (
+                        <HiCheck size={20} className={cardStyles.panelOptionCheck} />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Footer spacer for safe area */}
+              <div className={cardStyles.panelFooter} />
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
+    </>
   );
 }

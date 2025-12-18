@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import styles from "./inquiryCard.module.css";
+import styles from "./component-styles/inquiryCard.module.css";
 import {
   HiMiniWindow,
   HiCurrencyPound,

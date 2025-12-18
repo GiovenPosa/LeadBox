@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import styles from "./sidebar.module.css";
+import styles from "./component-styles/sidebar.module.css";
 import { HiInbox, HiMiniUsers, HiMiniChartBar, HiMiniRocketLaunch } from "react-icons/hi2";
 import Link from "next/link"; 
 import { unauthorized } from "next/navigation";

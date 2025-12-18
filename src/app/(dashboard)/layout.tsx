@@ -19,6 +19,9 @@ function DashboardShell({ children }: { children: ReactNode }) {
     return null;
   }
 
+  // Check if we're on a lead page (hide topbar/dockbar on mobile)
+  const isLeadPage = activePage === "lead";
+
   return (
     <div className={styles.workspace}>
       {/* Sidebar - Desktop only */}
@@ -31,22 +34,27 @@ function DashboardShell({ children }: { children: ReactNode }) {
 
       {/* Main Area */}
       <div className={styles.main}>
-        <TopBar
-          title={pageTitle}
-          breadcrumbs={breadcrumbs}
-          email={email}
-          onSignOut={signOut}
-        />
+        {/* TopBar - Hidden on mobile for lead pages */}
+        <div className={isLeadPage ? styles.hideOnMobile : undefined}>
+          <TopBar
+            title={pageTitle}
+            breadcrumbs={breadcrumbs}
+            email={email}
+            onSignOut={signOut}
+          />
+        </div>
 
         {/* Page content rendered here */}
         {children}
       </div>
 
-      {/* Mobile Dock Bar */}
-      <DockBar
-        activePage={activePage === "lead" ? "inbox" : activePage}
-        inboxUnseenCount={unseenCount}
-      />
+      {/* Mobile Dock Bar - Hidden on lead pages */}
+      {!isLeadPage && (
+        <DockBar
+          activePage={activePage === "lead" ? "inbox" : activePage}
+          inboxUnseenCount={unseenCount}
+        />
+      )}
     </div>
   );
 }
