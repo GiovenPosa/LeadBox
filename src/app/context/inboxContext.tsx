@@ -14,6 +14,38 @@ const InboxContext = createContext<InboxContextType>({
   refreshCount: async () => {} 
 });
 
+// ============================================
+// APP BADGE HELPER
+// ============================================
+
+async function updateAppBadge(count: number) {
+  // Method 1: Direct API (works when app is in foreground)
+  if ('setAppBadge' in navigator) {
+    try {
+      if (count > 0) {
+        await (navigator as Navigator & { setAppBadge: (count: number) => Promise<void> }).setAppBadge(count);
+      } else {
+        await (navigator as Navigator & { clearAppBadge: () => Promise<void> }).clearAppBadge();
+      }
+      console.log('[Badge] Set to:', count);
+    } catch (err) {
+      console.error('[Badge] Error:', err);
+    }
+  }
+
+  // Method 2: Message service worker (works as backup)
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: count > 0 ? 'SET_BADGE' : 'CLEAR_BADGE',
+      count: count,
+    });
+  }
+}
+
+// ============================================
+// INBOX PROVIDER
+// ============================================
+
 export function InboxProvider({ children }: { children: ReactNode }) {
   const [unseenCount, setUnseenCount] = useState(0);
 
@@ -26,6 +58,8 @@ export function InboxProvider({ children }: { children: ReactNode }) {
 
     if (!error && count !== null) {
       setUnseenCount(count);
+      // Sync app badge with unseen count
+      updateAppBadge(count);
     }
   }, []);
 
@@ -42,7 +76,7 @@ export function InboxProvider({ children }: { children: ReactNode }) {
       )
       .subscribe();
 
-    // Refresh on visibility change
+    // Refresh on visibility change (also clears badge when app is opened)
     const onVisibility = () => {
       if (document.visibilityState === "visible") refreshCount();
     };
