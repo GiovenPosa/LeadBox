@@ -21,7 +21,17 @@ import {
   HiOutlineGlobeAlt,
   HiOutlineLink,
   HiOutlineCalendarDays,
-  HiOutlineFlag,
+  HiOutlineBuildingOffice2,
+  HiOutlineUserGroup,
+  HiOutlineShoppingBag,
+  HiOutlineDocumentText,
+  HiOutlinePuzzlePiece,
+  HiOutlineRectangleStack,
+  HiOutlineMagnifyingGlass,
+  HiOutlineExclamationTriangle,
+  HiOutlineArrowRightCircle,
+  HiOutlineRocketLaunch,
+  HiOutlinePencilSquare,
 } from "react-icons/hi2";
 
 /* =========================================================
@@ -62,20 +72,29 @@ type Goal =
   | "Rank on Google"
   | "Faster site"
   | "Clear pricing"
+  | "Launch MVP"
+  | "Build credibility"
+  | "User signups"
+  | "Book demos"
+  | "Local visibility"
+  | "Stand out"
+  | "Mobile-first"
+  | "Refresh brand"
   | "Other";
 
-type SiteStage = "No site" | "Has site" | "Redesign" | "Landing page" | "Ecommerce";
-type ContentStatus = "Ready" | "Partly ready" | "Need help" | "Unknown";
+type SelectedPackage = "Starter" | "Redesign" | "Lead System";
+type ContentStatus = "Ready" | "Partly ready" | "Need help" | "Brand assets ready" | "Unknown";
 
 type FormState = {
   timeline: Timeline;
   goals: Goal[];
   challenges: string;
-  stage: SiteStage;
+  selected_package: SelectedPackage;
   websiteUrl: string;
-  decisionMaker: "Yes" | "No" | "Unsure";
+  businessName: string;
+  targetAudience: string;
+  products: string;
   contentStatus: ContentStatus;
-  brandAssetsReady: boolean;
   pagesNeeded: string;
   seoPriority: "Low" | "Medium" | "High";
   integrations: string;
@@ -221,19 +240,25 @@ export default function LeadPage() {
   const initial: FormState | null = useMemo(() => {
     if (!inquiry) return null;
 
-    const pkg = (inquiry.selected_package ?? "").toLowerCase();
-    const inferredStage: SiteStage =
-      pkg.includes("redesign") ? "Redesign" : pkg.includes("ecommerce") ? "Ecommerce" : "Has site";
+    // Map inquiry.selected_package to FormState selected_package
+    const pkg = inquiry.selected_package ?? "";
+    let inferredPackage: SelectedPackage = "Starter";
+    if (pkg.toLowerCase().includes("redesign")) {
+      inferredPackage = "Redesign";
+    } else if (pkg.toLowerCase().includes("lead")) {
+      inferredPackage = "Lead System";
+    }
 
     return {
       timeline: "2-4 weeks",
       goals: [],
       challenges: "",
-      stage: inferredStage,
+      selected_package: inferredPackage,
       websiteUrl: "",
-      decisionMaker: "Unsure",
+      businessName: "",
+      targetAudience: "",
+      products: "",
       contentStatus: "Unknown",
-      brandAssetsReady: false,
       pagesNeeded: "",
       seoPriority: "Medium",
       integrations: "",
@@ -308,10 +333,6 @@ export default function LeadPage() {
     };
   }, [id, router]);
 
-  async function signOut() {
-    await supabase.auth.signOut();
-    router.replace("/login");
-  }     
 
   /* ---------------- Form helpers ---------------- */
 
@@ -327,10 +348,6 @@ export default function LeadPage() {
       return { ...prev, goals: has ? prev.goals.filter((g) => g !== goal) : [...prev.goals, goal] };
     });
     setSavedToast(null);
-  }
-
-  function copyToClipboard(text: string) {
-    navigator.clipboard?.writeText(text);
   }
 
   function saveDraftLocal() {
@@ -567,33 +584,28 @@ export default function LeadPage() {
 
                 <div className={leadStyles.formCardIn}>
                   <label className={leadStyles.label}>
-                    <HiOutlineFlag size={16} />
-                    Decision maker?
+                    <HiOutlineBuildingOffice2 size={16} />
+                    Business Name
                   </label>
-                  <select
-                    className={leadStyles.select}
-                    value={form.decisionMaker}
-                    onChange={(e) => update("decisionMaker", e.target.value as FormState["decisionMaker"])}
-                  >
-                    {["Yes", "No", "Unsure"].map((v) => (
-                      <option key={v} value={v}>
-                        {v}
-                      </option>
-                    ))}
-                  </select>
+                  <input
+                    className={leadStyles.input}
+                    placeholder="Enter business name..."
+                    value={form.businessName}
+                    onChange={(e) => update("businessName", e.target.value)}
+                  />
                 </div>
 
                 <div className={leadStyles.formCardIn}>
                   <label className={leadStyles.label}>
                     <HiOutlineGlobeAlt size={16} />
-                    Project type
+                    Selected Package
                   </label>
                   <select
                     className={leadStyles.select}
-                    value={form.stage}
-                    onChange={(e) => update("stage", e.target.value as SiteStage)}
+                    value={form.selected_package}
+                    onChange={(e) => update("selected_package", e.target.value as SelectedPackage)}
                   >
-                    {["No site", "Has site", "Starter","Redesign", "Landing page"].map((v) => (
+                    {["Starter", "Redesign", "Lead System"].map((v) => (
                       <option key={v} value={v}>
                         {v}
                       </option>
@@ -615,54 +627,42 @@ export default function LeadPage() {
                 </div>
 
                 <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>Goals (pick what applies)</label>
-                  <div className={leadStyles.chips}>
-                    {(
-                      [
-                        "More leads",
-                        "Look premium",
-                        "Improve conversion",
-                        "Showcase work",
-                        "Rank on Google",
-                        "Faster site",
-                        "Clear pricing",
-                        "Other",
-                      ] as Goal[]
-                    ).map((g) => {
-                      const active = form.goals.includes(g);
-                      return (
-                        <button
-                          key={g}
-                          type="button"
-                          className={`${leadStyles.chip} ${active ? leadStyles.chipActive : ""}`}
-                          onClick={() => toggleGoal(g)}
-                        >
-                          {g}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>Challenges / blockers</label>
-                  <textarea
-                    className={leadStyles.textarea}
-                    placeholder="What's not working today? What's stopping them from converting?"
-                    value={form.challenges}
-                    onChange={(e) => update("challenges", e.target.value)}
-                    rows={4}
+                  <label className={leadStyles.label}>
+                    <HiOutlineShoppingBag size={16} />
+                    Products
+                  </label>
+                  <input
+                    className={leadStyles.input}
+                    placeholder="What products/services do they offer?"
+                    value={form.products}
+                    onChange={(e) => update("products", e.target.value)}
                   />
                 </div>
 
                 <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>Content status</label>
+                  <label className={leadStyles.label}>
+                    <HiOutlineUserGroup size={16} />
+                    Target Audience
+                  </label>
+                  <input
+                    className={leadStyles.input}
+                    placeholder="Who are their ideal customers?"
+                    value={form.targetAudience}
+                    onChange={(e) => update("targetAudience", e.target.value)}
+                  />
+                </div>
+
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineDocumentText size={16} />
+                    Content status
+                  </label>
                   <select
                     className={leadStyles.select}
                     value={form.contentStatus}
                     onChange={(e) => update("contentStatus", e.target.value as ContentStatus)}
                   >
-                    {["Ready", "Partly ready", "Need help", "Unknown"].map((v) => (
+                    {["Ready", "Partly ready", "Need help", "Brand assets ready", "Unknown"].map((v) => (
                       <option key={v} value={v}>
                         {v}
                       </option>
@@ -671,7 +671,36 @@ export default function LeadPage() {
                 </div>
 
                 <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>SEO priority</label>
+                  <label className={leadStyles.label}>
+                    <HiOutlinePuzzlePiece size={16} />
+                    Integrations
+                  </label>
+                  <input
+                    className={leadStyles.input}
+                    placeholder="Calendly, Stripe, Newsletter, CRM, Analytics..."
+                    value={form.integrations}
+                    onChange={(e) => update("integrations", e.target.value)}
+                  />
+                </div>
+
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineRectangleStack size={16} />
+                    Pages / sections needed
+                  </label>
+                  <input
+                    className={leadStyles.input}
+                    placeholder="Home, About, Services, Work, Contact, Pricing..."
+                    value={form.pagesNeeded}
+                    onChange={(e) => update("pagesNeeded", e.target.value)}
+                  />
+                </div>
+
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineMagnifyingGlass size={16} />
+                    SEO priority
+                  </label>
                   <select
                     className={leadStyles.select}
                     value={form.seoPriority}
@@ -686,39 +715,24 @@ export default function LeadPage() {
                 </div>
 
                 <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>Pages / sections needed</label>
-                  <input
-                    className={leadStyles.input}
-                    placeholder="Home, About, Services, Work, Contact, Pricing..."
-                    value={form.pagesNeeded}
-                    onChange={(e) => update("pagesNeeded", e.target.value)}
+                  <label className={leadStyles.label}>
+                    <HiOutlineExclamationTriangle size={16} />
+                    Challenges / blockers
+                  </label>
+                  <textarea
+                    className={leadStyles.textarea}
+                    placeholder="What's not working today? What's stopping them from converting?"
+                    value={form.challenges}
+                    onChange={(e) => update("challenges", e.target.value)}
+                    rows={4}
                   />
                 </div>
 
                 <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>Integrations</label>
-                  <input
-                    className={leadStyles.input}
-                    placeholder="Calendly, Stripe, Newsletter, CRM, Analytics..."
-                    value={form.integrations}
-                    onChange={(e) => update("integrations", e.target.value)}
-                  />
-                </div>
-
-                <div className={leadStyles.formCardIn}>
-                  <button
-                    type="button"
-                    className={`${leadStyles.toggle} ${form.brandAssetsReady ? leadStyles.toggleOn : ""}`}
-                    onClick={() => update("brandAssetsReady", !form.brandAssetsReady)}
-                  >
-                    <span className={leadStyles.toggleDot} />
-                    Brand assets ready
-                  </button>
-                  
-                </div>
-
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>Next steps</label>
+                  <label className={leadStyles.label}>
+                    <HiOutlineArrowRightCircle size={16} />
+                    Next steps
+                  </label>
                   <textarea
                     className={leadStyles.textarea}
                     placeholder="Agree a call, request assets, send proposal, book build slot..."
@@ -730,8 +744,53 @@ export default function LeadPage() {
               </div>
             </div>
 
+            <div className={leadStyles.formCardIn}>
+              <label className={leadStyles.label}>
+                <HiOutlineRocketLaunch size={16} />
+                Goals (pick what applies)
+              </label>
+              <div className={leadStyles.chips}>
+                {(
+                  [
+                    "More leads",
+                    "Look premium",
+                    "Improve conversion",
+                    "Showcase work",
+                    "Rank on Google",
+                    "Faster site",
+                    "Clear pricing",
+                    "Launch MVP",
+                    "Build credibility",
+                    "User signups",
+                    "Book demos",
+                    "Local visibility",
+                    "Stand out",
+                    "Mobile-first",
+                    "Refresh brand",
+                    "Other",
+                  ] as Goal[]
+                ).map((g) => {
+                  const active = form.goals.includes(g);
+                  return (
+                    <button
+                      key={g}
+                      type="button"
+                      className={`${leadStyles.chip} ${active ? leadStyles.chipActive : ""}`}
+                      onClick={() => toggleGoal(g)}
+                    >
+                      {g}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Meeting notes */}
             <div className={leadStyles.formCardIn}>
+              <label className={leadStyles.label}>
+                <HiOutlinePencilSquare size={16} />
+                Meeting notes
+              </label>
               <textarea
                 className={leadStyles.textarea}
                 placeholder={`Example:\n- Goal: more leads from mobile\n- Pain: site feels outdated + slow\n- Must have: pricing page + enquiry funnel\n- Timeline: wants it live before <date>\n`}

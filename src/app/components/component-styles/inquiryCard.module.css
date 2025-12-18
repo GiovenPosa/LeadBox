@@ -487,7 +487,7 @@
   align-items: center;
   gap: var(--space-1);
   font-size: var(--text-bs);
-  font-weight: 300;
+  font-weight: 400;
   color: var(--color-text-secondary);
   transition: color var(--transition-fast);
   white-space: nowrap;
@@ -541,7 +541,7 @@
   padding: 5px 10px;
   border-radius: var(--radius-2xl);
   font-size: var(--text-bs);
-  font-weight: 300;
+  font-weight: 400;
   text-transform: capitalize;
   -webkit-user-select: none;
   user-select: none;
@@ -571,7 +571,7 @@
   margin-bottom: var(--space-1);
   font-size: var(--text-bs);
   color: var(--color-text-primary);
-  font-weight: 300;
+  font-weight: 400;
   line-height: var(--leading-relaxed);
   display: -webkit-box;
   -webkit-line-clamp: 2;

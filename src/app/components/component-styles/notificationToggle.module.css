@@ -50,14 +50,6 @@
   cursor: not-allowed;
 }
 
-.iconButton.iconButtonActive {
-  color: var(--color-status-new);
-}
-
-.iconButton.iconButtonActive:hover {
-  color: var(--color-status-new);
-}
-
 .iconSpinner {
   width: 20px;
   height: 20px;

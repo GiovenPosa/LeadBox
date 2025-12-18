@@ -68,7 +68,7 @@
   display: inline-flex;
   align-items: center;
   font-size: var(--text-bs);
-  font-weight: 300;
+  font-weight: 400;
   color: var(--color-text-secondary);
   white-space: nowrap;
   min-width: 0;

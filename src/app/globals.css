@@ -2,7 +2,9 @@
    DESIGN TOKENS - Notion-Inspired Workspace
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Font is loaded via next/font in layout.tsx for better performance */
+/* JetBrains Mono for code blocks */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
   /* ---- Colors: Warm Stone Palette ---- */
@@ -39,13 +41,17 @@
   --color-accent-subtle: #dbeafe;
 
   /* ---- Typography ---- */
-  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* --font-sans is set by next/font in layout.tsx */
+  --font-sans: var(--font-sans, 'Inter'), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
   --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
 
   --text-2xs: 0.65rem;
   --text-xs: 0.75rem;
   --text-sm: 0.8125rem;
+  --text-bs: 0.85rem;
   --text-base: 0.875rem;
+  --text-mc: 0.9rem;
   --text-md: 0.9375rem;
   --text-lg: 1rem;
   --text-xl: 1.125rem;
@@ -56,8 +62,8 @@
   --leading-normal: 1.5;
   --leading-relaxed: 1.625;
 
-  --tracking-tight: -0.01em;
-  --tracking-normal: 0;
+  --tracking-tight: -0.02em;
+  --tracking-normal: -0.011em;
 
   /* ---- Spacing (4px base) ---- */
   --space-0: 0;
@@ -168,6 +174,7 @@ body {
   font-family: var(--font-sans);
   font-size: var(--text-base);
   line-height: var(--leading-normal);
+  letter-spacing: var(--tracking-normal);
   color: var(--color-text-primary);
   background-color: var(--color-bg-primary);
   
@@ -228,6 +235,12 @@ input, textarea {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ---- Headings - tighter tracking for larger text ---- */
+h1, h2, h3 {
+  letter-spacing: var(--tracking-tight);
+  font-weight: 600;
+}
+
 /* ---- Focus States ---- */
 :focus-visible {
   outline: 2px solid var(--color-accent);
@@ -258,6 +271,7 @@ button {
   cursor: pointer;
   color: inherit;
   touch-action: manipulation;
+  letter-spacing: inherit;
 }
 
 /* ---- Inputs ---- */
@@ -270,6 +284,7 @@ input, select, textarea {
   -webkit-user-select: text;
   user-select: text;
   touch-action: manipulation;
+  letter-spacing: inherit;
 }
 
 input::placeholder,

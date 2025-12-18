@@ -72,7 +72,7 @@
   padding: 5px 10px;
   border-radius: var(--radius-2xl);
   font-size: var(--text-md);
-  font-weight: 300;
+  font-weight: 400;
   text-transform: capitalize;
   -webkit-user-select: none;
   user-select: none;
@@ -97,9 +97,9 @@
 
 .noteText {
   margin-bottom: var(--space-1);
-  font-size: var(--text-mc);
+  font-size: var(--text-md);
   color: var(--color-text-primary);
-  font-weight: 300;
+  font-weight: 400;
   line-height: var(--leading-relaxed);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -147,12 +147,12 @@
   padding: var(--space-5);
   border-radius: var(--radius-2xl);
   font-size: var(--text-lg);
-  font-weight: 500;
+  font-weight: 600;
   transition: transform var(--transition-fast), background-color var(--transition-fast);
 }
 
 .smallBtn {
-  background-color: var(--color-bg-secondary);
+  background-color: var(--color-bg-sidebar);
   color: var(--color-text-primary);
 }
 
@@ -162,7 +162,7 @@
 }
 
 .smallBtnPrimary {
-  color: var(--color-text-primary);
+  color: white;
   background-color: #DE6449;
 }
 
@@ -242,7 +242,7 @@
   border: 1px solid var(--color-border-secondary);
   padding: 12px 12px;
   font-size: var(--text-md);
-  font-weight: 300;
+  font-weight: 400;
   color: var(--color-text-primary);
   outline: none;
   transition: border-color var(--transition-fast), background-color var(--transition-fast);
@@ -270,10 +270,10 @@
 .chip {
   padding: 5px 10px;
   border-radius: 999px;
-  border: 1px solid var(--color-border-secondary);
+  border: 1px solid var(--color-border-primary);
   background: transparent;
   font-size: var(--text-bs);
-  font-weight: 300;
+  font-weight: 400;
   color: var(--color-text-secondary);
   transition: transform var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
 }
@@ -341,6 +341,8 @@
   color: var(--color-text-tertiary);
   font-weight: 700;
 }
+
+
 
 /* ============================================
    MOBILE HEADER - Lead Page Only

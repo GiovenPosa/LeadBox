@@ -156,11 +156,6 @@ export default function TopBar({ title, breadcrumbs = [], email, onSignOut }: To
               </div>
             </div>
 
-            {/* Notification Toggle in Panel */}
-            <div className={styles.panelNotifications}>
-              <NotificationToggle variant="switch" />
-            </div>
-
             {/* Actions */}
             <div className={styles.panelActions}>
               <button 
