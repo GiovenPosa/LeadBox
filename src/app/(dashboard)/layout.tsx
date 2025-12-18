@@ -9,6 +9,9 @@ import TopBar from "../components/topbar";
 import DockBar from "../components/dockbar";
 import styles from "./homePage.module.css";
 
+// Type for nav components that don't show "lead" as active
+type NavActivePage = "inbox" | "contacts" | "projects" | "analytics";
+
 function DashboardShell({ children }: { children: ReactNode }) {
   const { email, loading, signOut } = useAuth();
   const { activePage, breadcrumbs, pageTitle } = useDashboard();
@@ -21,6 +24,9 @@ function DashboardShell({ children }: { children: ReactNode }) {
 
   // Check if we're on a lead page (hide topbar/dockbar on mobile)
   const isLeadPage = activePage === "lead";
+  
+  // For nav components, treat "lead" as "inbox" since leads are part of inbox
+  const navActivePage: NavActivePage = isLeadPage ? "inbox" : activePage;
 
   return (
     <div className={styles.workspace}>
@@ -29,7 +35,7 @@ function DashboardShell({ children }: { children: ReactNode }) {
         email={email}
         onSignOut={signOut}
         inboxUnseenCount={unseenCount}
-        activePage={activePage === "lead" ? "inbox" : activePage}
+        activePage={navActivePage}
       />
 
       {/* Main Area */}
@@ -51,7 +57,7 @@ function DashboardShell({ children }: { children: ReactNode }) {
       {/* Mobile Dock Bar - Hidden on lead pages */}
       {!isLeadPage && (
         <DockBar
-          activePage={activePage === "lead" ? "inbox" : activePage}
+          activePage={navActivePage}
           inboxUnseenCount={unseenCount}
         />
       )}
