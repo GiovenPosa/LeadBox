@@ -381,7 +381,7 @@
 
 .mobileHeaderTitle {
   flex: 1;
-  font-size: var(--text-xl);
+  font-size: var(--text-md);
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--color-text-primary);
@@ -406,15 +406,12 @@
     background-color: var(--color-bg-primary);
     align-items: center;
     justify-content: flex-start;
-    gap: var(--space-4);
+    gap: var(--space-1);
     -webkit-user-select: none;
     user-select: none;
     line-height: 1;
   }
 
-  .cardName { 
-    font-size: var(--text-lg);
-  }
 
 
   .backButton {

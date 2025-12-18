@@ -721,7 +721,7 @@ export default function LeadPage() {
                   </label>
                   <textarea
                     className={leadStyles.textarea}
-                    placeholder="What's not working today? What's stopping them from converting?"
+                    placeholder="What's not working today? What's stopping you from converting?"
                     value={form.challenges}
                     onChange={(e) => update("challenges", e.target.value)}
                     rows={4}
