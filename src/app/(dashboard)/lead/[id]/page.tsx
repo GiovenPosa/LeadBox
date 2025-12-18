@@ -211,7 +211,7 @@ export default function LeadPage() {
     setPageTitle("Lead");
     setBreadcrumbs([
       { label: "gios.build", href: "#" },
-      { label: "Inbox", href: "/dashboard" },
+      { label: "Inbox", href: "/" },
       { label: inquiry?.name || "Lead" },
     ]);
   }, [setActivePage, setPageTitle, setBreadcrumbs, inquiry?.name]);
