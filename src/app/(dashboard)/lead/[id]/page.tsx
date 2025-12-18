@@ -546,9 +546,8 @@ export default function LeadPage() {
 
           
             <div className={leadStyles.formCard}>
-
               <div className={leadStyles.formGrid}>
-                <div className={leadStyles.field}>
+                <div className={leadStyles.formCardIn}>
                   <label className={leadStyles.label}>
                     <HiOutlineCalendarDays size={16} />
                     Timeline
@@ -566,7 +565,7 @@ export default function LeadPage() {
                   </select>
                 </div>
 
-                <div className={leadStyles.field}>
+                <div className={leadStyles.formCardIn}>
                   <label className={leadStyles.label}>
                     <HiOutlineFlag size={16} />
                     Decision maker?
@@ -584,7 +583,7 @@ export default function LeadPage() {
                   </select>
                 </div>
 
-                <div className={leadStyles.field}>
+                <div className={leadStyles.formCardIn}>
                   <label className={leadStyles.label}>
                     <HiOutlineGlobeAlt size={16} />
                     Project type
@@ -602,7 +601,7 @@ export default function LeadPage() {
                   </select>
                 </div>
 
-                <div className={leadStyles.field}>
+                <div className={leadStyles.formCardIn}>
                   <label className={leadStyles.label}>
                     <HiOutlineLink size={16} />
                     Current site URL
@@ -615,7 +614,7 @@ export default function LeadPage() {
                   />
                 </div>
 
-                <div className={leadStyles.fieldFull}>
+                <div className={leadStyles.formCardIn}>
                   <label className={leadStyles.label}>Goals (pick what applies)</label>
                   <div className={leadStyles.chips}>
                     {(
@@ -645,7 +644,7 @@ export default function LeadPage() {
                   </div>
                 </div>
 
-                <div className={leadStyles.fieldFull}>
+                <div className={leadStyles.formCardIn}>
                   <label className={leadStyles.label}>Challenges / blockers</label>
                   <textarea
                     className={leadStyles.textarea}
@@ -656,7 +655,7 @@ export default function LeadPage() {
                   />
                 </div>
 
-                <div className={leadStyles.field}>
+                <div className={leadStyles.formCardIn}>
                   <label className={leadStyles.label}>Content status</label>
                   <select
                     className={leadStyles.select}
@@ -671,7 +670,7 @@ export default function LeadPage() {
                   </select>
                 </div>
 
-                <div className={leadStyles.field}>
+                <div className={leadStyles.formCardIn}>
                   <label className={leadStyles.label}>SEO priority</label>
                   <select
                     className={leadStyles.select}
@@ -686,7 +685,7 @@ export default function LeadPage() {
                   </select>
                 </div>
 
-                <div className={leadStyles.fieldFull}>
+                <div className={leadStyles.formCardIn}>
                   <label className={leadStyles.label}>Pages / sections needed</label>
                   <input
                     className={leadStyles.input}
@@ -696,7 +695,7 @@ export default function LeadPage() {
                   />
                 </div>
 
-                <div className={leadStyles.fieldFull}>
+                <div className={leadStyles.formCardIn}>
                   <label className={leadStyles.label}>Integrations</label>
                   <input
                     className={leadStyles.input}
@@ -706,7 +705,7 @@ export default function LeadPage() {
                   />
                 </div>
 
-                <div className={leadStyles.toggleRow}>
+                <div className={leadStyles.formCardIn}>
                   <button
                     type="button"
                     className={`${leadStyles.toggle} ${form.brandAssetsReady ? leadStyles.toggleOn : ""}`}
@@ -718,7 +717,7 @@ export default function LeadPage() {
                   
                 </div>
 
-                <div className={leadStyles.fieldFull}>
+                <div className={leadStyles.formCardIn}>
                   <label className={leadStyles.label}>Next steps</label>
                   <textarea
                     className={leadStyles.textarea}
@@ -732,7 +731,7 @@ export default function LeadPage() {
             </div>
 
             {/* Meeting notes */}
-            <div className={leadStyles.formCard}>
+            <div className={leadStyles.formCardIn}>
               <textarea
                 className={leadStyles.textarea}
                 placeholder={`Example:\n- Goal: more leads from mobile\n- Pain: site feels outdated + slow\n- Must have: pricing page + enquiry funnel\n- Timeline: wants it live before <date>\n`}

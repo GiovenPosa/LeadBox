@@ -4,11 +4,11 @@
   gap: var(--space-4);
 }
 
-/* Cards */
-.formCard {
+.formCardIn {
   background-color: var(--color-bg-secondary);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-md);
+  padding : var(--space-4);
 }
 
 .card {
@@ -186,21 +186,19 @@
 }
 
 /* Form */
-.formCard {
-  padding: var(--space-5);
-}
-
 .formGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-4);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1000px) {
   .formGrid {
     grid-template-columns: 1fr;
   }
+}
 
+@media (max-width: 768px) {
   .bottomRow {
     margin-bottom: var(--space-1);
     width: 100%;
@@ -223,13 +221,6 @@
   gap: var(--space-2);
 }
 
-.fieldFull {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
 .label {
   display: inline-flex;
   align-items: center;
@@ -237,6 +228,9 @@
   font-size: var(--text-xl);
   font-weight: 500;
   color: var(--color-text-primary);
+  margin-left: var(--space-2);
+  margin-bottom: var(--space-2);
+  line-height: 1;
 }
 
 .input,
@@ -252,6 +246,7 @@
   color: var(--color-text-primary);
   outline: none;
   transition: border-color var(--transition-fast), background-color var(--transition-fast);
+
 }
 
 .textarea {
