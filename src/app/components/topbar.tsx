@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import styles from "./component-styles/topbar.module.css";
-import { HiMiniBellAlert, HiSun, HiMoon, HiArrowRightOnRectangle, HiXMark } from "react-icons/hi2";
+import { HiSun, HiMoon, HiArrowRightOnRectangle, HiXMark } from "react-icons/hi2";
+import NotificationToggle from "./notificationToggle";
 
 type TopBarProps = {
   title: string;
@@ -103,10 +104,8 @@ export default function TopBar({ title, breadcrumbs = [], email, onSignOut }: To
             )}
           </button>
 
-          {/* Updates Button */}
-          <button className={styles.iconButton} title="Updates">
-           <HiMiniBellAlert size={23} />
-          </button>
+          {/* Notification Toggle - Now functional! */}
+          <NotificationToggle variant="icon" />
         </div>
       </header>
 
@@ -155,6 +154,11 @@ export default function TopBar({ title, breadcrumbs = [], email, onSignOut }: To
                 </span>
                 <span className={styles.panelUserEmail}>{email}</span>
               </div>
+            </div>
+
+            {/* Notification Toggle in Panel */}
+            <div className={styles.panelNotifications}>
+              <NotificationToggle variant="switch" />
             </div>
 
             {/* Actions */}
