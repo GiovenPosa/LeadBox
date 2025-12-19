@@ -33,6 +33,8 @@ import {
   HiOutlineRocketLaunch,
   HiOutlinePencilSquare,
 } from "react-icons/hi2";
+import { useFitTextWidth } from "../../../hooks/useFitTextWidth";
+
 
 /* =========================================================
    Types
@@ -188,6 +190,8 @@ export default function LeadPage() {
   const [mounted, setMounted] = useState(false);
 
   const { setActivePage, setPageTitle, setBreadcrumbs } = useDashboard();
+  const nameRef = useFitTextWidth<HTMLHeadingElement>(inquiry?.name);
+
   
   // Track mount state for portal
   useEffect(() => {
@@ -474,7 +478,7 @@ export default function LeadPage() {
           <div className={leadStyles.card}>
             <div className={leadStyles.cardHeader}>
               <div className={leadStyles.cardNameRow}>
-                <h1 className={leadStyles.cardName}>{inquiry.name || "Unnamed lead"}</h1>
+                <h1 ref={nameRef} className={leadStyles.cardName}>{inquiry.name || "Unnamed lead"}</h1>
                 
                 {/* Status Badge */}
                 <div 
@@ -802,7 +806,7 @@ export default function LeadPage() {
 
             <div className={leadStyles.bottomRow}>
               <button className={leadStyles.smallBtn} type="button" onClick={saveDraftLocal}>
-                Save draft
+                Save Lead
               </button>
                 <button className={leadStyles.smallBtnPrimary} type="button" onClick={saveDraftLocal}>
                 Create project
