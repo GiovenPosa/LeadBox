@@ -187,17 +187,18 @@
 }
 
 .smallBtn:hover {
-  background: var(--color-);
+  background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
 }
 
 .smallBtnPrimary {
   color: white;
   background-color: #DE6449;
+  opacity: 0.9;
 }
 
 .smallBtnPrimary:hover {
-  opacity: 0.8;
+  opacity: 1;
 }
 
 .smallBtn:active,

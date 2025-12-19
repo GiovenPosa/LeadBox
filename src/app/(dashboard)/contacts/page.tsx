@@ -22,12 +22,13 @@ type Contact = {
   last_inquiry_status: string | null;
 };
 
-type ContactStatus = "New" | "Connected" | "Active" | "Completed" | "Lost" | "Bad";
+type ContactStatus = "New" | "Connected" | "Qualified" |  "Active" | "Completed" | "Lost" | "Bad";
 
 function resolveContactStatus(c: Contact): ContactStatus {
   const s = (c.last_inquiry_status ?? "").toLowerCase();
 
   if (s === "contacted") return "Connected";
+  if (s === "qualified") return "Qualified";
   if (s === "new") return "New";
   if (s === "lost") return "Lost";
   if (s === "bad") return "Bad";

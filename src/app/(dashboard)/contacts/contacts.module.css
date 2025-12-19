@@ -144,6 +144,17 @@
   color: var(--color-status-contacted);
 }
 
+/* Qualified -> reuse "qualified" */
+
+.status_Qualified {
+  background-color: var(--color-status-qualified-bg);
+  color: var(--color-status-qualified);
+}
+
+.badge_Qualified {
+  color: var(--color-status-qualified);
+}
+
 /* Active -> reuse "won" */
 .status_Active {
   background-color: var(--color-status-won-bg);
