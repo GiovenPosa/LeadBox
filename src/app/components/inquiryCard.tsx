@@ -13,7 +13,7 @@ import {
 import { useRouter } from "next/navigation";
 
 
-export type OpportunityStatus = "new" | "contacted" | "won" | "lost" | "bad";
+export type OpportunityStatus = "new" | "contacted" | "qualified" | "won" | "lost" | "bad";
 
 export type BookingInquiry = {
   id: string;
@@ -37,11 +37,12 @@ type InquiryCardProps = {
   onSeen: (id: string) => void;
 };
 
-const STATUS_ORDER: OpportunityStatus[] = ["new", "contacted", "won", "lost", "bad"];
+const STATUS_ORDER: OpportunityStatus[] = ["new", "contacted", "qualified", "won", "lost", "bad"];
 
 const STATUS_CONFIG: Record<OpportunityStatus, { label: string; className: string }> = {
   new: { label: "New", className: styles.statusNew },
   contacted: { label: "Contacted", className: styles.statusContacted },
+  qualified: { label: "Qualified", className: styles.statusQualified },
   won: { label: "Won", className: styles.statusWon },
   lost: { label: "Lost", className: styles.statusLost },
   bad: { label: "Bad", className: styles.statusBad },
@@ -80,7 +81,12 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
   const [showStatusPanel, setShowStatusPanel] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [messageExpanded, setMessageExpanded] = useState(false);
   const router = useRouter()
+
+  // Character limit for truncation (roughly 2 lines)
+  const MESSAGE_TRUNCATE_LENGTH = 80;
+  const isMessageLong = (inquiry.message?.length ?? 0) > MESSAGE_TRUNCATE_LENGTH;
 
   
 
@@ -243,7 +249,25 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
           </div>
 
           {/* Message */}
-          {inquiry.message && <p className={styles.message}>{inquiry.message}</p>}
+          {inquiry.message && (
+            <div className={styles.messageBlock}>
+              <p className={`${styles.message} ${messageExpanded ? styles.messageExpanded : ""}`}>
+                {inquiry.message}
+              </p>
+              {isMessageLong && (
+                <button
+                  className={styles.seeMoreBtn}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMessageExpanded(!messageExpanded);
+                  }}
+                  type="button"
+                >
+                  {messageExpanded ? "See less" : "... See more"}
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Tags Row */}
           {hasTags && (

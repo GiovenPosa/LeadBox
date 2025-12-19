@@ -32,11 +32,10 @@
 
 /* Main Row */
 .mainRow {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-
 }
 
 .primaryInfo {
@@ -112,6 +111,11 @@
 .statusContacted {
   background-color: var(--color-status-contacted-bg);
   color: var(--color-status-contacted);
+}
+
+.statusQualified {
+  background-color: var(--color-status-qualified-bg);
+  color: var(--color-status-qualified);
 }
 
 .statusWon {
@@ -517,7 +521,10 @@
 
 /* Timestamp */
 .timestamp {
-  font-size: var(--text-bs);
+  position: absolute;
+  top: var(--space-6);
+  right: var(--space-5);
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--color-text-tertiary);
   white-space: nowrap;
@@ -567,9 +574,14 @@
   text-transform: none;
 }
 
+/* Message Block */
+.messageBlock {
+  position: relative;
+}
+
 /* Message - Allow selection */
 .message {
-  margin-bottom: var(--space-1);
+  margin-bottom: 0;
   font-size: var(--text-bs);
   color: var(--color-text-primary);
   font-weight: 400;
@@ -581,6 +593,29 @@
   overflow: hidden;
   -webkit-user-select: text;
   user-select: text;
+}
+
+.messageExpanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+}
+
+.seeMoreBtn {
+  display: inline;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.seeMoreBtn:hover {
+  color: var(--color-text-primary);
 }
 
 /* ============================================
@@ -608,11 +643,7 @@
     font-size: var(--text-bs);
   }
 
-  .timestamp {
-    position: absolute;
-    top: var(--space-6);
-    right: var(--space-5);
-  }
+
 }
 
 @media (max-width: 480px) {

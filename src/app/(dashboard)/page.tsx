@@ -32,9 +32,9 @@ export default function InboxPage() {
   const [showReconnectUI, setShowReconnectUI] = useState(false);
   const isRealtimeReconnecting = realtimeState !== "connected" && rows.length > 0 && showReconnectUI;
 
-  const { unseenCount } = useInbox();
   const newCount = rows.filter((r) => r.opportunity_status === "new").length;
   const contactedCount = rows.filter((r) => r.opportunity_status === "contacted").length;
+  const qualifiedCount = rows.filter((r) => r.opportunity_status === "qualified").length;
   const wonCount = rows.filter((r) => r.opportunity_status === "won").length;
   const badCount = rows.filter((r) => r.opportunity_status === "bad").length;
   const lostCount = rows.filter((r) => r.opportunity_status === "lost").length;
@@ -281,6 +281,13 @@ export default function InboxPage() {
               active={statusFilter === "contacted"}
             />
             <StatCard
+              label="Qualified"
+              value={qualifiedCount}
+              variant="orange"
+              onClick={() => setStatusFilter(statusFilter === "qualified" ? "all" : "qualified")}
+              active={statusFilter === "qualified"}
+            />
+            <StatCard
               label="Won"
               value={wonCount}
               variant="green"
@@ -290,7 +297,7 @@ export default function InboxPage() {
             <StatCard
               label="Bad"
               value={badCount}
-              variant="neutral"
+              variant="red"
               onClick={() => setStatusFilter("bad")}
               active={statusFilter === "bad"}
             />
@@ -366,7 +373,7 @@ export default function InboxPage() {
 type StatCardProps = {
   label: string;
   value: number;
-  variant: "blue" | "purple" | "green" | "neutral";
+  variant: "blue" | "purple" | "orange" | "green" | "red" | "neutral";
   onClick: () => void;
   active: boolean;
 };
