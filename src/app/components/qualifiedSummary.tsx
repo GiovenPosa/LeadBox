@@ -107,7 +107,6 @@ export function SummaryItem({ icon, label, value, isLink }: SummaryItemProps) {
     <div className={styles.summaryItem}>
       <div className={styles.summaryItemIcon}>{icon}</div>
       <div className={styles.summaryItemContent}>
-        <span className={styles.summaryItemLabel}>{label}</span>
         {isLink ? (
           <a
             href={value.startsWith("http") ? value : `https://${value}`}
@@ -120,6 +119,7 @@ export function SummaryItem({ icon, label, value, isLink }: SummaryItemProps) {
         ) : (
           <span className={styles.summaryItemValue}>{value}</span>
         )}
+        <span className={styles.summaryItemLabel}>{label}</span>
       </div>
     </div>
   );
@@ -150,7 +150,6 @@ export default function QualifiedSummary({ form, qualifiedAt, onEdit }: Qualifie
         )}
       </div>
       <div className={styles.summarySectionHeader}>
-        <HiOutlineIdentification size={20} />
         <span>Summary</span>
       </div>
 
