@@ -234,7 +234,7 @@
   width: 100%;
   padding: var(--space-5) var(--space-4);
   background-color: var(--color-bg-secondary);
-  outline: 1px solid transparent;
+  border: 1px solid transparent;
   border-radius: var(--radius-2xl);
   font-size: var(--text-bs);
   font-weight: 500;
@@ -252,7 +252,7 @@
 
 .addQualificationBtn:hover {
   background-color: var(--color-bg-secondary);
-  outline-color: var(--color-bg-tertiary);
+  border-color: var(--color-bg-tertiary);
   color: var(--color-text-primary);
 }
 

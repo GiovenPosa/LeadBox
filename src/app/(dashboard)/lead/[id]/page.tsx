@@ -914,17 +914,27 @@ export default function LeadPage() {
 
           {/* Add Qualification Button (for new/unqualified leads) */}
           {!showSummary && !showForm && (
-            <button
-              className={leadStyles.addQualificationBtn}
-              onClick={handleToggleForm}
-              type="button"
-            >
-              <HiOutlinePlusCircle size={20} />
-              <span>Add Qualification</span>
-              {qualification?.status === "draft" && (
-                <span className={leadStyles.draftLabel}>Draft • 1</span>
-              )}
-            </button>
+            <>
+              <button
+                className={leadStyles.addQualificationBtn}
+                onClick={handleToggleForm}
+                type="button"
+                >
+                <HiOutlinePlusCircle size={20} />
+                <span>Add Qualification</span>
+                {qualification?.status === "draft" && (
+                  <span className={leadStyles.draftLabel}>Draft • 1</span>
+                )}
+              </button>
+
+              <button
+                className={leadStyles.addQualificationBtn}
+                type="button"
+                >
+                <HiOutlinePlusCircle size={20} />
+                <span>Add Proposal</span>
+              </button>
+            </>
           )}
 
           {/* Qualification Form (expanded or edit mode) */}
