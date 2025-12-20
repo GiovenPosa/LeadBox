@@ -19,7 +19,8 @@ import {
   HiOutlinePlusCircle,
   HiOutlineMinusCircle,
   HiChevronDown,
-  HiChevronUp
+  HiChevronUp,
+  HiMiniArrowUp,
 } from "react-icons/hi2";
 import {
   HiOutlineGlobeAlt,
@@ -203,7 +204,7 @@ function QualifiedSummary({ form, qualifiedAt, onEdit }: QualifiedSummaryProps) 
     <div className={leadStyles.summaryCard}>
       <div className={leadStyles.summaryHeader}>
         <div className={leadStyles.summaryHeaderLeft}>
-          <HiCheck size={16} className={leadStyles.summaryCheckIcon} />
+          <HiCheck size={18} className={leadStyles.summaryCheckIcon} />
           <h2 className={leadStyles.summaryTitle}>Qualification Complete</h2>
         </div>
         {qualifiedAt && (
@@ -211,6 +212,10 @@ function QualifiedSummary({ form, qualifiedAt, onEdit }: QualifiedSummaryProps) 
             {formatDateTime(qualifiedAt)}
           </span>
         )}
+      </div>
+      <div className={leadStyles.summarySectionHeader}>
+        <HiOutlinePaperClip size={20} />
+        <span>Summary</span>
       </div>
 
       <div className={leadStyles.summaryGrid}>
@@ -341,7 +346,7 @@ function QualifiedSummary({ form, qualifiedAt, onEdit }: QualifiedSummaryProps) 
 
       <button className={leadStyles.editQualificationBtn} onClick={onEdit}>
         <HiOutlinePencilSquare size={20} />
-        Edit Qualification
+        Edit
       </button>
     </div>
   );
@@ -916,6 +921,9 @@ export default function LeadPage() {
             >
               <HiOutlinePlusCircle size={20} />
               <span>Add Qualification</span>
+              {qualification?.status === "draft" && (
+                <span className={leadStyles.draftLabel}>Draft • 1</span>
+              )}
             </button>
           )}
 
@@ -937,6 +945,9 @@ export default function LeadPage() {
                 <h2 className={leadStyles.formCardTitle}>
                   {isEditMode ? "Edit Qualification" : "Add Qualification"}
                 </h2>
+                {qualification?.status === "draft" && (
+                  <span className={leadStyles.draftTitle}>Draft</span>
+                )}
                 {!isEditMode && (
                   <span className={leadStyles.formCardChevron}>
                     {isFormExpanded ? <HiChevronUp size={18} /> : <HiChevronDown size={18} />}
@@ -1175,7 +1186,7 @@ export default function LeadPage() {
 
               <div className={leadStyles.formCardIn}>
                 <label className={leadStyles.label}>
-                  <HiOutlinePencilSquare size={16} />
+                  <HiOutlinePaperClip size={16} />
                   Meeting notes
                 </label>
                 <textarea
@@ -1188,25 +1199,27 @@ export default function LeadPage() {
               </div>
 
               <div className={leadStyles.bottomRow}>
-                {isEditMode && (
-                  <button
+                <div className={leadStyles.leftButtons}>
+                  {isEditMode && (
+                    <button
                     className={leadStyles.smallBtnCancel}
                     type="button"
                     onClick={handleCancelEdit}
-                  >
-                    Cancel
-                  </button>
-                )}
-                {!qualification?.qualified_at && (
-                  <button
+                    >
+                      Cancel
+                    </button>
+                  )}
+                  {isDirty && (
+                    <button
                     className={leadStyles.smallBtn}
                     type="button"
                     onClick={saveDraftRemote}
                     disabled={saving || qualifying}
-                  >
-                    {saving ? "Saving…" : "Save"}
-                  </button>
-                )} 
+                    >
+                      {saving ? "Saving…" : "Save"}
+                    </button>
+                  )} 
+                </div>
                
 
                 <button
@@ -1216,14 +1229,10 @@ export default function LeadPage() {
                   disabled={saving || qualifying}
                   title={isAlreadyQualified ? "Update qualification" : "Qualify this lead"}
                 >
-                  {qualifying
-                    ? "Qualifying…"
-                    : isAlreadyQualified
-                    ? "Update"
-                    : "Qualify"}
+                 <HiMiniArrowUp size={20}/>
                 </button>
 
-                {isDirty && <span className={leadStyles.unsaved}>Unsaved</span>}
+                
               </div>
             </div>
           )}
