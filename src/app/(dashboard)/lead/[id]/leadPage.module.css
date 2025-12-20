@@ -265,7 +265,6 @@
 
 .formCard {
   border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-md);
   overflow: hidden;
 }
 

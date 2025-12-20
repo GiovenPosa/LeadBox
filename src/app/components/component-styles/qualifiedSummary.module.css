@@ -3,7 +3,6 @@
    ============================================ */
 
 .summaryCard {
-  background-color: var(--color-bg-secondary);
   border-radius: var(--radius-2xl);
   padding: var(--space-4);
   box-shadow: var(--shadow-sm);
@@ -148,7 +147,7 @@
 
 .summaryText {
   font-size: var(--text-bs);
-  color: var(--color-text-primary);
+  color: var(--color-text-secondary);
   line-height: var(--leading-relaxed);
   white-space: pre-wrap;
   -webkit-user-select: text;
