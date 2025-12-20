@@ -36,11 +36,18 @@ import {
   HiOutlineExclamationTriangle,
   HiOutlineArrowRightCircle,
   HiOutlineRocketLaunch,
-  HiOutlinePencilSquare,
-  HiOutlinePaperClip
+  HiOutlinePaperClip,
 } from "react-icons/hi2";
 import { useFitTextWidth } from "../../../hooks/useFitTextWidth";
 import { MdPersonPin } from "react-icons/md";
+import QualifiedSummary, {
+  type FormState,
+  type Timeline,
+  type Goal,
+  type SelectedPackage,
+  type ContentStatus,
+} from "../../../components/qualifiedSummary";
+import LeadPageSkeleton from "./skeletons/leadPageSkeleton";
 
 /* =========================================================
    Types
@@ -62,57 +69,6 @@ export type BookingInquiry = {
   source_page: string | null;
   opportunity_status: OpportunityStatus;
   seen_at: string | null;
-};
-
-type Timeline =
-  | "ASAP"
-  | "1-2 weeks"
-  | "2-4 weeks"
-  | "1-2 months"
-  | "3+ months"
-  | "Not sure";
-
-type Goal =
-  | "More leads"
-  | "Look premium"
-  | "Improve conversion"
-  | "Showcase work"
-  | "Rank on Google"
-  | "Faster site"
-  | "Clear pricing"
-  | "Launch MVP"
-  | "Build credibility"
-  | "User signups"
-  | "Book demos"
-  | "Local visibility"
-  | "Stand out"
-  | "Mobile-first"
-  | "Refresh brand"
-  | "Other";
-
-type SelectedPackage = "Starter" | "Redesign" | "Lead System";
-type ContentStatus =
-  | "Ready"
-  | "Partly ready"
-  | "Need help"
-  | "Brand assets ready"
-  | "Unknown";
-
-type FormState = {
-  timeline: Timeline;
-  goals: Goal[];
-  challenges: string;
-  selected_package: SelectedPackage;
-  websiteUrl: string;
-  businessName: string;
-  targetAudience: string;
-  products: string;
-  contentStatus: ContentStatus;
-  pagesNeeded: string;
-  seoPriority: "Low" | "Medium" | "High";
-  integrations: string;
-  nextSteps: string;
-  meetingNotes: string;
 };
 
 type LeadQualificationStatus = "draft" | "qualified";
@@ -179,206 +135,13 @@ function MobileHeader({ name, onBack }: MobileHeaderProps) {
         onClick={onBack}
         aria-label="Go back"
       >
-        <HiChevronLeft size={30} />
+        <HiChevronLeft size={26} />
+        <h1 className={leadStyles.mobileHeaderTitle}>{name}</h1>
       </button>
-      <h1 className={leadStyles.mobileHeaderTitle}>{name}</h1>
       <button className={leadStyles.editButton} aria-label="Edit inquiry details">
         <HiMiniEllipsisHorizontal size={22} />
       </button>
     </header>
-  );
-}
-
-/* =========================================================
-   Qualified Summary Component - Read-only view
-========================================================= */
-
-type QualifiedSummaryProps = {
-  form: FormState;
-  qualifiedAt: string | null;
-  onEdit: () => void;
-};
-
-function QualifiedSummary({ form, qualifiedAt, onEdit }: QualifiedSummaryProps) {
-  return (
-    <div className={leadStyles.summaryCard}>
-      <div className={leadStyles.summaryHeader}>
-        <div className={leadStyles.summaryHeaderLeft}>
-          <HiCheck size={18} className={leadStyles.summaryCheckIcon} />
-          <h2 className={leadStyles.summaryTitle}>Qualification Complete</h2>
-        </div>
-        {qualifiedAt && (
-          <span className={leadStyles.summaryDate}>
-            {formatDateTime(qualifiedAt)}
-          </span>
-        )}
-      </div>
-      <div className={leadStyles.summarySectionHeader}>
-        <HiOutlinePaperClip size={20} />
-        <span>Summary</span>
-      </div>
-
-      <div className={leadStyles.summaryGrid}>
-        {/* Business Info */}
-        {form.businessName && (
-          <SummaryItem
-            icon={<HiOutlineBuildingOffice2 size={20} />}
-            label="Business"
-            value={form.businessName}
-          />
-        )}
-
-        {form.websiteUrl && (
-          <SummaryItem
-            icon={<HiOutlineLink size={20} />}
-            label="Website"
-            value={form.websiteUrl}
-            isLink
-          />
-        )}
-
-        <SummaryItem
-          icon={<HiOutlineGlobeAlt size={20} />}
-          label="Package"
-          value={form.selected_package}
-        />
-
-        <SummaryItem
-          icon={<HiOutlineCalendarDays size={20} />}
-          label="Timeline"
-          value={form.timeline}
-        />
-
-        {form.products && (
-          <SummaryItem
-            icon={<HiOutlineShoppingBag size={20} />}
-            label="Products"
-            value={form.products}
-          />
-        )}
-
-        {form.targetAudience && (
-          <SummaryItem
-            icon={<HiOutlineUserGroup size={20} />}
-            label="Target Audience"
-            value={form.targetAudience}
-          />
-        )}
-
-        <SummaryItem
-          icon={<HiOutlineDocumentText size={20} />}
-          label="Content Status"
-          value={form.contentStatus}
-        />
-
-        <SummaryItem
-          icon={<HiOutlineMagnifyingGlass size={20} />}
-          label="SEO Priority"
-          value={form.seoPriority}
-        />
-
-        {form.pagesNeeded && (
-          <SummaryItem
-            icon={<HiOutlineRectangleStack size={20} />}
-            label="Pages Needed"
-            value={form.pagesNeeded}
-          />
-        )}
-
-        {form.integrations && (
-          <SummaryItem
-            icon={<HiOutlinePuzzlePiece size={20} />}
-            label="Integrations"
-            value={form.integrations}
-          />
-        )}
-      </div>
-
-      {/* Goals */}
-      {form.goals.length > 0 && (
-        <div className={leadStyles.summarySection}>
-          <div className={leadStyles.summarySectionHeader}>
-            <HiOutlineRocketLaunch size={20} />
-            <span>Goals</span>
-          </div>
-          <div className={leadStyles.summaryGoals}>
-            {form.goals.map((goal) => (
-              <span key={goal} className={leadStyles.summaryGoalChip}>
-                {goal}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Challenges */}
-      {form.challenges && (
-        <div className={leadStyles.summarySection}>
-          <div className={leadStyles.summarySectionHeader}>
-            <HiOutlineExclamationTriangle size={20} />
-            <span>Challenges</span>
-          </div>
-          <p className={leadStyles.summaryText}>{form.challenges}</p>
-        </div>
-      )}
-
-      {/* Next Steps */}
-      {form.nextSteps && (
-        <div className={leadStyles.summarySection}>
-          <div className={leadStyles.summarySectionHeader}>
-            <HiOutlineArrowRightCircle size={20} />
-            <span>Next Steps</span>
-          </div>
-          <p className={leadStyles.summaryText}>{form.nextSteps}</p>
-        </div>
-      )}
-
-      {/* Meeting Notes */}
-      {form.meetingNotes && (
-        <div className={leadStyles.summarySection}>
-          <div className={leadStyles.summarySectionHeader}>
-            <HiOutlinePaperClip size={20} />
-            <span>Meeting Notes</span>
-          </div>
-          <p className={leadStyles.summaryText}>{form.meetingNotes}</p>
-        </div>
-      )}
-
-      <button className={leadStyles.editQualificationBtn} onClick={onEdit}>
-        <HiOutlinePencilSquare size={20} />
-        Edit
-      </button>
-    </div>
-  );
-}
-
-type SummaryItemProps = {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  isLink?: boolean;
-};
-
-function SummaryItem({ icon, label, value, isLink }: SummaryItemProps) {
-  return (
-    <div className={leadStyles.summaryItem}>
-      <div className={leadStyles.summaryItemIcon}>{icon}</div>
-      <div className={leadStyles.summaryItemContent}>
-        <span className={leadStyles.summaryItemLabel}>{label}</span>
-        {isLink ? (
-          <a
-            href={value.startsWith("http") ? value : `https://${value}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={leadStyles.summaryItemLink}
-          >
-            {value}
-          </a>
-        ) : (
-          <span className={leadStyles.summaryItemValue}>{value}</span>
-        )}
-      </div>
-    </div>
   );
 }
 
@@ -740,11 +503,12 @@ export default function LeadPage() {
 
   if (loading) {
     return (
-      <div className={styles.canvas}>
-        <div className={styles.pageHeader}>
-          <h1 className={styles.pageTitle}>Loading lead…</h1>
+      <>
+        <MobileHeader name={"Inbox"} onBack={handleBack} />
+        <div className={styles.canvas}>
+          <LeadPageSkeleton />
         </div>
-      </div>
+      </>
     );
   }
 
@@ -786,7 +550,7 @@ export default function LeadPage() {
 
   return (
     <>
-      <MobileHeader name={inquiry.name || "Unnamed lead"} onBack={handleBack} />
+      <MobileHeader name={"Inbox"} onBack={handleBack} />
 
       <div className={styles.canvas}>
         <main className={leadStyles.layout}>
