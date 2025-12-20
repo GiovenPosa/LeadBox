@@ -83,10 +83,9 @@
 }
 
 .summaryItemLabel {
-  font-size: var(--text-bs);
+  font-size: var(--text-sm);
   font-weight: 400;
   color: var(--color-text-secondary);
-  letter-spacing: 0.03em;
 }
 
 .summaryItemValue {
