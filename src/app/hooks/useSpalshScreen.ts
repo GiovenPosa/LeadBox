@@ -21,16 +21,7 @@ export function useSplashScreen(ready: boolean = true, minDuration: number = 200
     const splash = document.getElementById("splash-screen");
     if (!splash) return;
 
-    // Small delay to ensure content is painted
-    const timer = setTimeout(() => {
-      splash.classList.add("hide");
-      
-      // Remove from DOM after transition
-      setTimeout(() => {
-        splash.remove();
-      }, 300);
-    }, 100);
-
-    return () => clearTimeout(timer);
+    // Just hide it with CSS - don't remove from DOM
+    splash.classList.add("hide");
   }, [ready, minTimeElapsed]);
 }

@@ -45,9 +45,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
-        {/* Inline critical splash styles - renders BEFORE JS loads */}
         <style dangerouslySetInnerHTML={{ __html: `
           #splash-screen {
             position: fixed;
@@ -59,13 +58,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             justify-content: center;
             gap: 16px;
             background-color: #121212;
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
           }
           @media (prefers-color-scheme: light) {
             #splash-screen { background-color: #f5f4ef; }
           }
           #splash-screen.hide {
             opacity: 0;
+            visibility: hidden;
             pointer-events: none;
           }
           #splash-screen .splash-icon {
@@ -75,25 +77,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             animation: splashExpand 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           }
           @media (prefers-color-scheme: light) {
-            #splash-screen{ color: #6b6b6b; }
+            #splash-screen { color: #6b6b6b; }
           }
           @keyframes splashExpand {
             0% { opacity: 0; transform: scale(0.5); }
             100% { opacity: 1; transform: scale(1); }
           }
-          @keyframes splashFadeUp {
-            0% { opacity: 0; transform: translateY(10px); }
-            100% { opacity: 1; transform: translateY(0); }
-          }
-          @keyframes splashRing {
-            0% { transform: scale(0.8); opacity: 0.5; }
-            100% { transform: scale(1.6); opacity: 0; }
-          }
         `}} />
       </head>
-      <body className={inter.className}>
-        {/* Splash screen - renders instantly with HTML */}
-        <div id="splash-screen">
+      <body className={inter.className} suppressHydrationWarning>
+        {/* Splash screen */}
+        <div id="splash-screen" aria-hidden="true">
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <img 
               src="/icons/icon2-512.png" 
@@ -102,7 +96,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               width={100}
               height={100}
             />
-            <div className="splash-ring" />
           </div>
         </div>
 
