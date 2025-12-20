@@ -5,7 +5,6 @@
 .summaryCard {
   border-radius: var(--radius-2xl);
   padding: var(--space-4);
-  border: 1px solid var(--color-bg-tertiary)
 }
 
 .summaryHeader {
@@ -123,7 +122,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
   font-size: var(--text-bs);
   font-weight: 500;
   color: var(--color-text-primary);

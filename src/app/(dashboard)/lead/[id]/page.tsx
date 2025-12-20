@@ -39,7 +39,6 @@ import {
   HiOutlinePaperClip,
 } from "react-icons/hi2";
 import { useFitTextWidth } from "../../../hooks/useFitTextWidth";
-import { MdPersonPin } from "react-icons/md";
 import QualifiedSummary, {
   type FormState,
   type Timeline,

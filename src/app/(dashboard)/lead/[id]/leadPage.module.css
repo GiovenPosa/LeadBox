@@ -235,7 +235,6 @@
   gap: var(--space-2);
   width: 100%;
   padding: var(--space-5) var(--space-4);
-  border: 1px solid var(--color-bg-tertiary);
   border-radius: var(--radius-2xl);
   font-size: var(--text-bs);
   font-weight: 400;
@@ -264,7 +263,6 @@
 
 .formCard {
   border-radius: var(--radius-2xl);
-  border: 1px solid var(--color-bg-tertiary);
   overflow: hidden;
 }
 
