@@ -48,6 +48,7 @@ import QualifiedSummary, {
   type ContentStatus,
 } from "../../../components/qualifiedSummary";
 import LeadPageSkeleton from "./skeletons/leadPageSkeleton";
+import { useBlockIosEdgeBackSwipe } from "@/src/app/hooks/useBlockIosEdgeBackSwipe";
 
 /* =========================================================
    Types
@@ -188,6 +189,9 @@ export default function LeadPage() {
   const isNoteLong = (inquiry?.message?.length ?? 0) > NOTE_TRUNCATE_LENGTH;
 
   useEffect(() => setMounted(true), []);
+
+  // Block edge swipe on main page
+  useBlockIosEdgeBackSwipe(true, { edgePx: 20, blockRightEdge: false });
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);

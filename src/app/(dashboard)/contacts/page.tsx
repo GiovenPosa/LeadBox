@@ -7,6 +7,7 @@ import { useDashboard } from "../../context/dashboardContext";
 import styles from "../homePage.module.css";
 import contactStyles from "./contacts.module.css";
 import { HiMiniUsers, HiXMark, HiPhone } from "react-icons/hi2";
+import { useBlockIosEdgeBackSwipe } from "../../hooks/useBlockIosEdgeBackSwipe";
 
 type Contact = {
   id: string;
@@ -39,6 +40,9 @@ function resolveContactStatus(c: Contact): ContactStatus {
 
 export default function ContactsPage() {
   const { setActivePage, setPageTitle, setBreadcrumbs } = useDashboard();
+
+  // Block edge swip in root pages
+  useBlockIosEdgeBackSwipe(true, { edgePx: 20, blockRightEdge: false });
 
   // Set page config on mount
   useEffect(() => {
