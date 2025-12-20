@@ -1,67 +1,72 @@
+// app/(dashboard)/layout.tsx
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "../context/authContext";
 import { DashboardProvider, useDashboard } from "../context/dashboardContext";
 import { useInbox } from "../context/inboxContext";
 import Sidebar from "../components/sidebar";
 import TopBar from "../components/topbar";
 import DockBar from "../components/dockbar";
+import SplashScreen from "../components/splashScreen";
 import styles from "./homePage.module.css";
 
-// Type for nav components that don't show "lead" as active
 type NavActivePage = "inbox" | "contacts" | "projects" | "analytics";
 
 function DashboardShell({ children }: { children: ReactNode }) {
   const { email, loading, signOut } = useAuth();
   const { activePage, breadcrumbs, pageTitle } = useDashboard();
   const { unseenCount } = useInbox();
+  const [showSplash, setShowSplash] = useState(true);
 
-  // Show nothing while checking auth
+  // Hide splash when auth is done
+  useEffect(() => {
+    if (!loading && email) {
+      // Small delay so content has time to render
+      const timer = setTimeout(() => setShowSplash(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, email]);
+
+  // Show splash while loading OR if not authenticated yet
   if (loading || !email) {
-    return null;
+    return <SplashScreen />;
   }
 
-  // Check if we're on a lead page (hide topbar/dockbar on mobile)
   const isLeadPage = activePage === "lead";
-  
-  // For nav components, treat "lead" as "inbox" since leads are part of inbox
   const navActivePage: NavActivePage = isLeadPage ? "inbox" : activePage;
 
   return (
-    <div className={styles.workspace}>
-      {/* Sidebar - Desktop only */}
-      <Sidebar
-        email={email}
-        onSignOut={signOut}
-        inboxUnseenCount={unseenCount}
-        activePage={navActivePage}
-      />
+    <>
+      {showSplash && <SplashScreen />}
+      <div className={styles.workspace}>
+        <Sidebar
+          email={email}
+          onSignOut={signOut}
+          inboxUnseenCount={unseenCount}
+          activePage={navActivePage}
+        />
 
-      {/* Main Area */}
-      <div className={styles.main}>
-        {/* TopBar - Hidden on mobile for lead pages */}
-        <div className={isLeadPage ? styles.hideOnMobile : undefined}>
-          <TopBar
-            title={pageTitle}
-            breadcrumbs={breadcrumbs}
-            email={email}
-            onSignOut={signOut}
-          />
+        <div className={styles.main}>
+          <div className={isLeadPage ? styles.hideOnMobile : undefined}>
+            <TopBar
+              title={pageTitle}
+              breadcrumbs={breadcrumbs}
+              email={email}
+              onSignOut={signOut}
+            />
+          </div>
+          {children}
         </div>
 
-        {/* Page content rendered here */}
-        {children}
+        {!isLeadPage && (
+          <DockBar
+            activePage={navActivePage}
+            inboxUnseenCount={unseenCount}
+          />
+        )}
       </div>
-
-      {/* Mobile Dock Bar - Hidden on lead pages */}
-      {!isLeadPage && (
-        <DockBar
-          activePage={navActivePage}
-          inboxUnseenCount={unseenCount}
-        />
-      )}
-    </div>
+    </>
   );
 }
 
