@@ -10,7 +10,7 @@ export default function SplashScreen({ onFinish }: { onFinish?: () => void }) {
 
   useEffect(() => {
     // Brief moment to show the animation
-    const visibleTimer = setTimeout(() => setPhase("visible"), 100);
+    const visibleTimer = setTimeout(() => setPhase("visible"), 1000);
     
     return () => clearTimeout(visibleTimer);
   }, []);
