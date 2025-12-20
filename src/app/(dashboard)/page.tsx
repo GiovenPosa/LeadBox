@@ -9,6 +9,7 @@ import { usePullToRefresh } from "../hooks/pullRefresh";
 import styles from "./homePage.module.css";
 import { HiInbox, HiArrowPath } from "react-icons/hi2";
 import InquiryCardSkeleton from "../components/skeletons/inquiryCardSkeleton";
+import { useBlockIosEdgeSwipe } from "../hooks/useBlockIosEdgeBackSwipe";
 
 
 export default function InboxPage() {
@@ -43,6 +44,14 @@ export default function InboxPage() {
     statusFilter === "all" ? rows : rows.filter((r) => r.opportunity_status === statusFilter);
 
   const skeletonCount = Math.min(filteredRows.length || 3, 3);
+
+  // Block edge swipe on main page
+  useBlockIosEdgeSwipe(true, {
+    edgePx: 24,
+    blockLeft: true,
+    blockRight: true,
+  });
+
 
   // Fetch data function
   const fetchInquiries = useCallback(async () => {
