@@ -76,7 +76,7 @@
 .summaryItemContent {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 5px;
   min-width: 0;
   line-height: 1;
 }
