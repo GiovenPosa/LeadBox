@@ -16,6 +16,10 @@ import {
   HiMiniEllipsisHorizontal,
   HiXMark,
   HiCheck,
+  HiOutlinePlusCircle,
+  HiOutlineMinusCircle,
+  HiChevronDown,
+  HiChevronUp
 } from "react-icons/hi2";
 import {
   HiOutlineGlobeAlt,
@@ -32,8 +36,10 @@ import {
   HiOutlineArrowRightCircle,
   HiOutlineRocketLaunch,
   HiOutlinePencilSquare,
+  HiOutlinePaperClip
 } from "react-icons/hi2";
 import { useFitTextWidth } from "../../../hooks/useFitTextWidth";
+import { MdPersonPin } from "react-icons/md";
 
 /* =========================================================
    Types
@@ -183,6 +189,195 @@ function MobileHeader({ name, onBack }: MobileHeaderProps) {
 }
 
 /* =========================================================
+   Qualified Summary Component - Read-only view
+========================================================= */
+
+type QualifiedSummaryProps = {
+  form: FormState;
+  qualifiedAt: string | null;
+  onEdit: () => void;
+};
+
+function QualifiedSummary({ form, qualifiedAt, onEdit }: QualifiedSummaryProps) {
+  return (
+    <div className={leadStyles.summaryCard}>
+      <div className={leadStyles.summaryHeader}>
+        <div className={leadStyles.summaryHeaderLeft}>
+          <HiCheck size={16} className={leadStyles.summaryCheckIcon} />
+          <h2 className={leadStyles.summaryTitle}>Qualification Complete</h2>
+        </div>
+        {qualifiedAt && (
+          <span className={leadStyles.summaryDate}>
+            {formatDateTime(qualifiedAt)}
+          </span>
+        )}
+      </div>
+
+      <div className={leadStyles.summaryGrid}>
+        {/* Business Info */}
+        {form.businessName && (
+          <SummaryItem
+            icon={<HiOutlineBuildingOffice2 size={20} />}
+            label="Business"
+            value={form.businessName}
+          />
+        )}
+
+        {form.websiteUrl && (
+          <SummaryItem
+            icon={<HiOutlineLink size={20} />}
+            label="Website"
+            value={form.websiteUrl}
+            isLink
+          />
+        )}
+
+        <SummaryItem
+          icon={<HiOutlineGlobeAlt size={20} />}
+          label="Package"
+          value={form.selected_package}
+        />
+
+        <SummaryItem
+          icon={<HiOutlineCalendarDays size={20} />}
+          label="Timeline"
+          value={form.timeline}
+        />
+
+        {form.products && (
+          <SummaryItem
+            icon={<HiOutlineShoppingBag size={20} />}
+            label="Products"
+            value={form.products}
+          />
+        )}
+
+        {form.targetAudience && (
+          <SummaryItem
+            icon={<HiOutlineUserGroup size={20} />}
+            label="Target Audience"
+            value={form.targetAudience}
+          />
+        )}
+
+        <SummaryItem
+          icon={<HiOutlineDocumentText size={20} />}
+          label="Content Status"
+          value={form.contentStatus}
+        />
+
+        <SummaryItem
+          icon={<HiOutlineMagnifyingGlass size={20} />}
+          label="SEO Priority"
+          value={form.seoPriority}
+        />
+
+        {form.pagesNeeded && (
+          <SummaryItem
+            icon={<HiOutlineRectangleStack size={20} />}
+            label="Pages Needed"
+            value={form.pagesNeeded}
+          />
+        )}
+
+        {form.integrations && (
+          <SummaryItem
+            icon={<HiOutlinePuzzlePiece size={20} />}
+            label="Integrations"
+            value={form.integrations}
+          />
+        )}
+      </div>
+
+      {/* Goals */}
+      {form.goals.length > 0 && (
+        <div className={leadStyles.summarySection}>
+          <div className={leadStyles.summarySectionHeader}>
+            <HiOutlineRocketLaunch size={20} />
+            <span>Goals</span>
+          </div>
+          <div className={leadStyles.summaryGoals}>
+            {form.goals.map((goal) => (
+              <span key={goal} className={leadStyles.summaryGoalChip}>
+                {goal}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Challenges */}
+      {form.challenges && (
+        <div className={leadStyles.summarySection}>
+          <div className={leadStyles.summarySectionHeader}>
+            <HiOutlineExclamationTriangle size={20} />
+            <span>Challenges</span>
+          </div>
+          <p className={leadStyles.summaryText}>{form.challenges}</p>
+        </div>
+      )}
+
+      {/* Next Steps */}
+      {form.nextSteps && (
+        <div className={leadStyles.summarySection}>
+          <div className={leadStyles.summarySectionHeader}>
+            <HiOutlineArrowRightCircle size={20} />
+            <span>Next Steps</span>
+          </div>
+          <p className={leadStyles.summaryText}>{form.nextSteps}</p>
+        </div>
+      )}
+
+      {/* Meeting Notes */}
+      {form.meetingNotes && (
+        <div className={leadStyles.summarySection}>
+          <div className={leadStyles.summarySectionHeader}>
+            <HiOutlinePaperClip size={20} />
+            <span>Meeting Notes</span>
+          </div>
+          <p className={leadStyles.summaryText}>{form.meetingNotes}</p>
+        </div>
+      )}
+
+      <button className={leadStyles.editQualificationBtn} onClick={onEdit}>
+        <HiOutlinePencilSquare size={20} />
+        Edit Qualification
+      </button>
+    </div>
+  );
+}
+
+type SummaryItemProps = {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  isLink?: boolean;
+};
+
+function SummaryItem({ icon, label, value, isLink }: SummaryItemProps) {
+  return (
+    <div className={leadStyles.summaryItem}>
+      <div className={leadStyles.summaryItemIcon}>{icon}</div>
+      <div className={leadStyles.summaryItemContent}>
+        <span className={leadStyles.summaryItemLabel}>{label}</span>
+        {isLink ? (
+          <a
+            href={value.startsWith("http") ? value : `https://${value}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={leadStyles.summaryItemLink}
+          >
+            {value}
+          </a>
+        ) : (
+          <span className={leadStyles.summaryItemValue}>{value}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
    Page
 ========================================================= */
 
@@ -204,6 +399,11 @@ export default function LeadPage() {
   const [qualifying, setQualifying] = useState(false);
 
   const [toast, setToast] = useState<null | "draft" | "qualified">(null);
+
+  // Form expanded state - for new/unqualified leads
+  const [isFormExpanded, setIsFormExpanded] = useState(false);
+  // Edit mode - for qualified leads wanting to edit
+  const [isEditMode, setIsEditMode] = useState(false);
 
   // Status panel state
   const [showStatusMenu, setShowStatusMenu] = useState(false);
@@ -255,6 +455,15 @@ export default function LeadPage() {
     inquiry?.selected_package || inquiry?.budget != null || inquiry?.source_page
   );
 
+  // Determine if this lead is already qualified
+  const isAlreadyQualified = qualification?.status === "qualified";
+  
+  // Show form if: expanded by user OR editing a qualified lead
+  const showForm = isFormExpanded || isEditMode;
+  
+  // Show summary if: qualified and not editing
+  const showSummary = isAlreadyQualified && !isEditMode;
+
   // Build a base default initial, then override with saved qualification.form_data if it exists.
   const initial: FormState | null = useMemo(() => {
     if (!inquiry) return null;
@@ -286,7 +495,6 @@ export default function LeadPage() {
       return {
         ...base,
         ...qualification.form_data,
-        // ensure package stays in the correct union if you changed options later
         selected_package: qualification.form_data.selected_package ?? base.selected_package,
         goals: qualification.form_data.goals ?? [],
       };
@@ -366,7 +574,6 @@ export default function LeadPage() {
       if (cancelled) return;
 
       if (qualErr) {
-        // don't block the page for this — just show an error banner
         setFetchError(qualErr.message);
         setQualification(null);
       } else {
@@ -410,6 +617,20 @@ export default function LeadPage() {
     window.setTimeout(() => setToast(null), 1400);
   }
 
+  function handleToggleForm() {
+    setIsFormExpanded((prev) => !prev);
+  }
+
+  function handleEditQualification() {
+    setIsEditMode(true);
+  }
+
+  function handleCancelEdit() {
+    setIsEditMode(false);
+    // Reset form to initial state
+    if (initial) setForm(initial);
+  }
+
   /* ---------------- Supabase persistence ---------------- */
 
   async function upsertQualification(nextStatus: LeadQualificationStatus) {
@@ -426,7 +647,6 @@ export default function LeadPage() {
       updated_at: nowIso,
     };
 
-    // If your table uses a different unique key, adjust onConflict accordingly
     const { data, error } = await supabase
       .from("lead_qualifications")
       .upsert(payload, { onConflict: "inquiry_id" })
@@ -459,21 +679,20 @@ export default function LeadPage() {
     setFetchError(null);
 
     try {
-      // 1) persist the qualification as qualified
       await upsertQualification("qualified");
 
-      // 2) optionally move the inquiry along your pipeline
-      //    (swap 'contacted' to whatever you want on qualify)
       const { error: statusErr } = await supabase
         .from("booking_inquiries")
         .update({ opportunity_status: "qualified" })
         .eq("id", inquiry.id);
 
-
       if (statusErr) throw statusErr;
 
-      // optimistic local update
       setInquiry((prev) => (prev ? { ...prev, opportunity_status: "qualified" } : prev));
+      
+      // Exit edit mode and collapse form after qualifying
+      setIsEditMode(false);
+      setIsFormExpanded(false);
 
       showToast("qualified");
     } catch (e: any) {
@@ -559,7 +778,6 @@ export default function LeadPage() {
   ========================================================= */
 
   const statusConfig = STATUS_CONFIG[inquiry.opportunity_status];
-  const isAlreadyQualified = qualification?.status === "qualified";
 
   return (
     <>
@@ -573,6 +791,7 @@ export default function LeadPage() {
             </div>
           )}
 
+          {/* Lead Header Card */}
           <div className={leadStyles.card}>
             <div className={leadStyles.cardHeader}>
               <div className={leadStyles.cardNameRow}>
@@ -679,273 +898,335 @@ export default function LeadPage() {
             )}
           </div>
 
-          <div className={leadStyles.formCard}>
-            <div className={leadStyles.formGrid}>
-              <div className={leadStyles.formCardIn}>
-                <label className={leadStyles.label}>
-                  <HiOutlineCalendarDays size={16} />
-                  Timeline
-                </label>
-                <select
-                  className={leadStyles.select}
-                  value={form.timeline}
-                  onChange={(e) => update("timeline", e.target.value as Timeline)}
-                >
-                  {["ASAP", "1-2 weeks", "2-4 weeks", "1-2 months", "3+ months", "Not sure"].map(
-                    (t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    )
-                  )}
-                </select>
-              </div>
+          {/* Qualified Summary View */}
+          {showSummary && (
+            <QualifiedSummary
+              form={form}
+              qualifiedAt={qualification?.qualified_at ?? null}
+              onEdit={handleEditQualification}
+            />
+          )}
 
-              <div className={leadStyles.formCardIn}>
-                <label className={leadStyles.label}>
-                  <HiOutlineBuildingOffice2 size={16} />
-                  Business Name
-                </label>
-                <input
-                  className={leadStyles.input}
-                  placeholder="Enter business name..."
-                  value={form.businessName}
-                  onChange={(e) => update("businessName", e.target.value)}
-                />
-              </div>
+          {/* Add Qualification Button (for new/unqualified leads) */}
+          {!showSummary && !showForm && (
+            <button
+              className={leadStyles.addQualificationBtn}
+              onClick={handleToggleForm}
+              type="button"
+            >
+              <HiOutlinePlusCircle size={20} />
+              <span>Add Qualification</span>
+            </button>
+          )}
 
-              <div className={leadStyles.formCardIn}>
-                <label className={leadStyles.label}>
-                  <HiOutlineGlobeAlt size={16} />
-                  Selected Package
-                </label>
-                <select
-                  className={leadStyles.select}
-                  value={form.selected_package}
-                  onChange={(e) =>
-                    update("selected_package", e.target.value as SelectedPackage)
-                  }
-                >
-                  {["Starter", "Redesign", "Lead System"].map((v) => (
-                    <option key={v} value={v}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Qualification Form (expanded or edit mode) */}
+          {showForm && (
+            <div className={leadStyles.formCard}>
+              <button
+                className={leadStyles.formCardHeader}
+                onClick={isEditMode ? handleCancelEdit : handleToggleForm}
+                type="button"
+              >
+                {isEditMode ? (
+                  <HiXMark size={18} />
+                ) : isFormExpanded ? (
+                  <HiOutlineMinusCircle size={18} />
+                ) : (
+                  <HiOutlinePlusCircle size={18} />
+                )}
+                <h2 className={leadStyles.formCardTitle}>
+                  {isEditMode ? "Edit Qualification" : "Add Qualification"}
+                </h2>
+                {!isEditMode && (
+                  <span className={leadStyles.formCardChevron}>
+                    {isFormExpanded ? <HiChevronUp size={18} /> : <HiChevronDown size={18} />}
+                  </span>
+                )}
+              </button>
 
-              <div className={leadStyles.formCardIn}>
-                <label className={leadStyles.label}>
-                  <HiOutlineLink size={16} />
-                  Current site URL
-                </label>
-                <input
-                  className={leadStyles.input}
-                  placeholder="https://..."
-                  value={form.websiteUrl}
-                  onChange={(e) => update("websiteUrl", e.target.value)}
-                />
-              </div>
+              <div className={leadStyles.formGrid}>
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineCalendarDays size={16} />
+                    Timeline
+                  </label>
+                  <select
+                    className={leadStyles.select}
+                    value={form.timeline}
+                    onChange={(e) => update("timeline", e.target.value as Timeline)}
+                  >
+                    {["ASAP", "1-2 weeks", "2-4 weeks", "1-2 months", "3+ months", "Not sure"].map(
+                      (t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
 
-              <div className={leadStyles.formCardIn}>
-                <label className={leadStyles.label}>
-                  <HiOutlineShoppingBag size={16} />
-                  Products
-                </label>
-                <input
-                  className={leadStyles.input}
-                  placeholder="What products/services do they offer?"
-                  value={form.products}
-                  onChange={(e) => update("products", e.target.value)}
-                />
-              </div>
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineBuildingOffice2 size={16} />
+                    Business Name
+                  </label>
+                  <input
+                    className={leadStyles.input}
+                    placeholder="Enter business name..."
+                    value={form.businessName}
+                    onChange={(e) => update("businessName", e.target.value)}
+                  />
+                </div>
 
-              <div className={leadStyles.formCardIn}>
-                <label className={leadStyles.label}>
-                  <HiOutlineUserGroup size={16} />
-                  Target Audience
-                </label>
-                <input
-                  className={leadStyles.input}
-                  placeholder="Who are their ideal customers?"
-                  value={form.targetAudience}
-                  onChange={(e) => update("targetAudience", e.target.value)}
-                />
-              </div>
-
-              <div className={leadStyles.formCardIn}>
-                <label className={leadStyles.label}>
-                  <HiOutlineDocumentText size={16} />
-                  Content status
-                </label>
-                <select
-                  className={leadStyles.select}
-                  value={form.contentStatus}
-                  onChange={(e) => update("contentStatus", e.target.value as ContentStatus)}
-                >
-                  {["Ready", "Partly ready", "Need help", "Brand assets ready", "Unknown"].map(
-                    (v) => (
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineGlobeAlt size={16} />
+                    Selected Package
+                  </label>
+                  <select
+                    className={leadStyles.select}
+                    value={form.selected_package}
+                    onChange={(e) =>
+                      update("selected_package", e.target.value as SelectedPackage)
+                    }
+                  >
+                    {["Starter", "Redesign", "Lead System"].map((v) => (
                       <option key={v} value={v}>
                         {v}
                       </option>
-                    )
-                  )}
-                </select>
-              </div>
+                    ))}
+                  </select>
+                </div>
 
-              <div className={leadStyles.formCardIn}>
-                <label className={leadStyles.label}>
-                  <HiOutlinePuzzlePiece size={16} />
-                  Integrations
-                </label>
-                <input
-                  className={leadStyles.input}
-                  placeholder="Calendly, Stripe, Newsletter, CRM, Analytics..."
-                  value={form.integrations}
-                  onChange={(e) => update("integrations", e.target.value)}
-                />
-              </div>
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineLink size={16} />
+                    Current site URL
+                  </label>
+                  <input
+                    className={leadStyles.input}
+                    placeholder="https://..."
+                    value={form.websiteUrl}
+                    onChange={(e) => update("websiteUrl", e.target.value)}
+                  />
+                </div>
 
-              <div className={leadStyles.formCardIn}>
-                <label className={leadStyles.label}>
-                  <HiOutlineRectangleStack size={16} />
-                  Pages / sections needed
-                </label>
-                <input
-                  className={leadStyles.input}
-                  placeholder="Home, About, Services, Work, Contact, Pricing..."
-                  value={form.pagesNeeded}
-                  onChange={(e) => update("pagesNeeded", e.target.value)}
-                />
-              </div>
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineShoppingBag size={16} />
+                    Products
+                  </label>
+                  <input
+                    className={leadStyles.input}
+                    placeholder="What products/services do they offer?"
+                    value={form.products}
+                    onChange={(e) => update("products", e.target.value)}
+                  />
+                </div>
 
-              <div className={leadStyles.formCardIn}>
-                <label className={leadStyles.label}>
-                  <HiOutlineMagnifyingGlass size={16} />
-                  SEO priority
-                </label>
-                <select
-                  className={leadStyles.select}
-                  value={form.seoPriority}
-                  onChange={(e) =>
-                    update("seoPriority", e.target.value as FormState["seoPriority"])
-                  }
-                >
-                  {["Low", "Medium", "High"].map((v) => (
-                    <option key={v} value={v}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineUserGroup size={16} />
+                    Target Audience
+                  </label>
+                  <input
+                    className={leadStyles.input}
+                    placeholder="Who are their ideal customers?"
+                    value={form.targetAudience}
+                    onChange={(e) => update("targetAudience", e.target.value)}
+                  />
+                </div>
 
-              <div className={leadStyles.formCardIn}>
-                <label className={leadStyles.label}>
-                  <HiOutlineExclamationTriangle size={16} />
-                  Challenges / blockers
-                </label>
-                <textarea
-                  className={leadStyles.textarea}
-                  placeholder="What's not working today? What's stopping you from converting?"
-                  value={form.challenges}
-                  onChange={(e) => update("challenges", e.target.value)}
-                  rows={4}
-                />
-              </div>
-
-              <div className={leadStyles.formCardIn}>
-                <label className={leadStyles.label}>
-                  <HiOutlineArrowRightCircle size={16} />
-                  Next steps
-                </label>
-                <textarea
-                  className={leadStyles.textarea}
-                  placeholder="Agree a call, request assets, send proposal, book build slot..."
-                  value={form.nextSteps}
-                  onChange={(e) => update("nextSteps", e.target.value)}
-                  rows={3}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className={leadStyles.formCardIn}>
-            <label className={leadStyles.label}>
-              <HiOutlineRocketLaunch size={16} />
-              Goals (pick what applies)
-            </label>
-            <div className={leadStyles.chips}>
-              {(
-                [
-                  "More leads",
-                  "Look premium",
-                  "Improve conversion",
-                  "Showcase work",
-                  "Rank on Google",
-                  "Faster site",
-                  "Clear pricing",
-                  "Launch MVP",
-                  "Build credibility",
-                  "User signups",
-                  "Book demos",
-                  "Local visibility",
-                  "Stand out",
-                  "Mobile-first",
-                  "Refresh brand",
-                  "Other",
-                ] as Goal[]
-              ).map((g) => {
-                const active = form.goals.includes(g);
-                return (
-                  <button
-                    key={g}
-                    type="button"
-                    className={`${leadStyles.chip} ${active ? leadStyles.chipActive : ""}`}
-                    onClick={() => toggleGoal(g)}
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineDocumentText size={16} />
+                    Content status
+                  </label>
+                  <select
+                    className={leadStyles.select}
+                    value={form.contentStatus}
+                    onChange={(e) => update("contentStatus", e.target.value as ContentStatus)}
                   >
-                    {g}
+                    {["Ready", "Partly ready", "Need help", "Brand assets ready", "Unknown"].map(
+                      (v) => (
+                        <option key={v} value={v}>
+                          {v}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlinePuzzlePiece size={16} />
+                    Integrations
+                  </label>
+                  <input
+                    className={leadStyles.input}
+                    placeholder="Calendly, Stripe, Newsletter, CRM, Analytics..."
+                    value={form.integrations}
+                    onChange={(e) => update("integrations", e.target.value)}
+                  />
+                </div>
+
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineRectangleStack size={16} />
+                    Pages / sections needed
+                  </label>
+                  <input
+                    className={leadStyles.input}
+                    placeholder="Home, About, Services, Work, Contact, Pricing..."
+                    value={form.pagesNeeded}
+                    onChange={(e) => update("pagesNeeded", e.target.value)}
+                  />
+                </div>
+
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineMagnifyingGlass size={16} />
+                    SEO priority
+                  </label>
+                  <select
+                    className={leadStyles.select}
+                    value={form.seoPriority}
+                    onChange={(e) =>
+                      update("seoPriority", e.target.value as FormState["seoPriority"])
+                    }
+                  >
+                    {["Low", "Medium", "High"].map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineExclamationTriangle size={16} />
+                    Challenges / blockers
+                  </label>
+                  <textarea
+                    className={leadStyles.textarea}
+                    placeholder="What's not working today? What's stopping you from converting?"
+                    value={form.challenges}
+                    onChange={(e) => update("challenges", e.target.value)}
+                    rows={4}
+                  />
+                </div>
+
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineArrowRightCircle size={16} />
+                    Next steps
+                  </label>
+                  <textarea
+                    className={leadStyles.textarea}
+                    placeholder="Agree a call, request assets, send proposal, book build slot..."
+                    value={form.nextSteps}
+                    onChange={(e) => update("nextSteps", e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              <div className={leadStyles.formCardIn}>
+                <label className={leadStyles.label}>
+                  <HiOutlineRocketLaunch size={16} />
+                  Goals (pick what applies)
+                </label>
+                <div className={leadStyles.chips}>
+                  {(
+                    [
+                      "More leads",
+                      "Look premium",
+                      "Improve conversion",
+                      "Showcase work",
+                      "Rank on Google",
+                      "Faster site",
+                      "Clear pricing",
+                      "Launch MVP",
+                      "Build credibility",
+                      "User signups",
+                      "Book demos",
+                      "Local visibility",
+                      "Stand out",
+                      "Mobile-first",
+                      "Refresh brand",
+                      "Other",
+                    ] as Goal[]
+                  ).map((g) => {
+                    const active = form.goals.includes(g);
+                    return (
+                      <button
+                        key={g}
+                        type="button"
+                        className={`${leadStyles.chip} ${active ? leadStyles.chipActive : ""}`}
+                        onClick={() => toggleGoal(g)}
+                      >
+                        {g}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className={leadStyles.formCardIn}>
+                <label className={leadStyles.label}>
+                  <HiOutlinePencilSquare size={16} />
+                  Meeting notes
+                </label>
+                <textarea
+                  className={leadStyles.textarea}
+                  placeholder={`Example:\n- Goal: more leads from mobile\n- Pain: site feels outdated + slow\n- Must have: pricing page + enquiry funnel\n- Timeline: wants it live before <date>\n`}
+                  value={form.meetingNotes}
+                  onChange={(e) => update("meetingNotes", e.target.value)}
+                  rows={9}
+                />
+              </div>
+
+              <div className={leadStyles.bottomRow}>
+                {isEditMode && (
+                  <button
+                    className={leadStyles.smallBtnCancel}
+                    type="button"
+                    onClick={handleCancelEdit}
+                  >
+                    Cancel
                   </button>
-                );
-              })}
+                )}
+                {!qualification?.qualified_at && (
+                  <button
+                    className={leadStyles.smallBtn}
+                    type="button"
+                    onClick={saveDraftRemote}
+                    disabled={saving || qualifying}
+                  >
+                    {saving ? "Saving…" : "Save"}
+                  </button>
+                )} 
+               
+
+                <button
+                  className={leadStyles.smallBtnPrimary}
+                  type="button"
+                  onClick={qualifyRemote}
+                  disabled={saving || qualifying}
+                  title={isAlreadyQualified ? "Update qualification" : "Qualify this lead"}
+                >
+                  {qualifying
+                    ? "Qualifying…"
+                    : isAlreadyQualified
+                    ? "Update"
+                    : "Qualify"}
+                </button>
+
+                {isDirty && <span className={leadStyles.unsaved}>Unsaved</span>}
+              </div>
             </div>
-          </div>
-
-          <div className={leadStyles.formCardIn}>
-            <label className={leadStyles.label}>
-              <HiOutlinePencilSquare size={16} />
-              Meeting notes
-            </label>
-            <textarea
-              className={leadStyles.textarea}
-              placeholder={`Example:\n- Goal: more leads from mobile\n- Pain: site feels outdated + slow\n- Must have: pricing page + enquiry funnel\n- Timeline: wants it live before <date>\n`}
-              value={form.meetingNotes}
-              onChange={(e) => update("meetingNotes", e.target.value)}
-              rows={9}
-            />
-          </div>
-
-          <div className={leadStyles.bottomRow}>
-            <button
-              className={leadStyles.smallBtn}
-              type="button"
-              onClick={saveDraftRemote}
-              disabled={saving || qualifying}
-            >
-              {saving ? "Saving…" : "Save"}
-            </button>
-
-            <button
-              className={leadStyles.smallBtnPrimary}
-              type="button"
-              onClick={qualifyRemote}
-              disabled={saving || qualifying || isAlreadyQualified}
-              title={isAlreadyQualified ? "Already qualified" : "Qualify this lead"}
-            >
-              {qualifying ? "Qualifying…" : isAlreadyQualified ? "Qualified" : "Qualify"}
-            </button>
-
-            {isDirty && <span className={leadStyles.unsaved}>Unsaved</span>}
-          </div>
+          )}
 
           {!!toast && (
             <div className={leadStyles.toast}>
