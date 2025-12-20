@@ -687,7 +687,7 @@ export default function LeadPage() {
                 <HiOutlinePlusCircle size={20} />
                 <span>Add Qualification</span>
                 {qualification?.status === "draft" && (
-                  <span className={leadStyles.draftLabel}>Draft • 1</span>
+                  <span className={leadStyles.draftLabel}>Draft</span>
                 )}
               </button>
 
@@ -704,30 +704,48 @@ export default function LeadPage() {
           {/* Qualification Form (expanded or edit mode) */}
           {showForm && (
             <div className={leadStyles.formCard}>
-              <button
-                className={leadStyles.formCardHeader}
-                onClick={isEditMode ? handleCancelEdit : handleToggleForm}
-                type="button"
-              >
-                {isEditMode ? (
-                  <HiXMark size={18} />
-                ) : isFormExpanded ? (
-                  <HiOutlineMinusCircle size={18} />
-                ) : (
-                  <HiOutlinePlusCircle size={18} />
-                )}
-                <h2 className={leadStyles.formCardTitle}>
-                  {isEditMode ? "Edit Qualification" : "Add Qualification"}
-                </h2>
-                {qualification?.status === "draft" && (
-                  <span className={leadStyles.draftTitle}>Draft</span>
-                )}
-                {!isEditMode && (
-                  <span className={leadStyles.formCardChevron}>
-                    {isFormExpanded ? <HiChevronUp size={18} /> : <HiChevronDown size={18} />}
-                  </span>
-                )}
-              </button>
+              <div className={leadStyles.topRow}>
+                <button
+                  className={leadStyles.formCardHeader}
+                  onClick={isEditMode ? handleCancelEdit : handleToggleForm}
+                  type="button"
+                >
+                  {isEditMode ? (
+                    <HiXMark size={18} />
+                  ) : isFormExpanded ? (
+                    <HiOutlineMinusCircle size={20} />
+                  ) : (
+                    <HiOutlinePlusCircle size={20} />
+                  )}
+                  <h2 className={leadStyles.formCardTitle}>
+                    {isEditMode ? "Edit Qualification" : "Add Qualification"}
+                  </h2>
+                  {qualification?.status === "draft" && (
+                    <span className={leadStyles.draftTitle}>Draft</span>
+                  )}
+                </button>
+                <div className={leadStyles.rightButtons}>
+                  {isDirty && (
+                    <button
+                      className={leadStyles.smallBtn}
+                      type="button"
+                      onClick={saveDraftRemote}
+                      disabled={saving || qualifying}
+                      >
+                      {saving ? "Saving…" : "Save"}
+                    </button>
+                  )} 
+                  <button
+                    className={leadStyles.smallBtnPrimary}
+                    type="button"
+                    onClick={qualifyRemote}
+                    disabled={saving || qualifying}
+                    title={isAlreadyQualified ? "Update qualification" : "Qualify this lead"}
+                  >
+                  <HiMiniArrowUp size={20}/>
+                  </button>
+                </div>
+              </div>
 
               <div className={leadStyles.formGrid}>
                 <div className={leadStyles.formCardIn}>
@@ -972,42 +990,7 @@ export default function LeadPage() {
                 />
               </div>
 
-              <div className={leadStyles.bottomRow}>
-                <div className={leadStyles.leftButtons}>
-                  {isEditMode && (
-                    <button
-                    className={leadStyles.smallBtnCancel}
-                    type="button"
-                    onClick={handleCancelEdit}
-                    >
-                      Cancel
-                    </button>
-                  )}
-                  {isDirty && (
-                    <button
-                    className={leadStyles.smallBtn}
-                    type="button"
-                    onClick={saveDraftRemote}
-                    disabled={saving || qualifying}
-                    >
-                      {saving ? "Saving…" : "Save"}
-                    </button>
-                  )} 
-                </div>
-               
-
-                <button
-                  className={leadStyles.smallBtnPrimary}
-                  type="button"
-                  onClick={qualifyRemote}
-                  disabled={saving || qualifying}
-                  title={isAlreadyQualified ? "Update qualification" : "Qualify this lead"}
-                >
-                 <HiMiniArrowUp size={20}/>
-                </button>
-
-                
-              </div>
+             
             </div>
           )}
 

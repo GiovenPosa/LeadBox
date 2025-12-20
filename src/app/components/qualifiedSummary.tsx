@@ -140,7 +140,7 @@ export default function QualifiedSummary({ form, qualifiedAt, onEdit }: Qualifie
     <div className={styles.summaryCard}>
       <div className={styles.summaryHeader}>
         <div className={styles.summaryHeaderLeft}>
-          <HiCheck size={18} className={styles.summaryCheckIcon} />
+          <HiCheck size={20} className={styles.summaryCheckIcon} />
           <h2 className={styles.summaryTitle}>Qualification Complete</h2>
         </div>
         {qualifiedAt && (
