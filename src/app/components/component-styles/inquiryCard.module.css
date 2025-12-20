@@ -17,11 +17,11 @@
 }
 
 .card:hover {
-  background-color: var(--color-bg-active);
+  background-color: var(--color-bg-tertiary);
 }
 
 .card:active {
-  background-color: var(--color-bg-hover);
+  background-color: var(--color-bg-active);
 }
 
 /* Card Content */

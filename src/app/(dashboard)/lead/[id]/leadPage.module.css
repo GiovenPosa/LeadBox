@@ -237,7 +237,7 @@
   border: 1px solid transparent;
   border-radius: var(--radius-2xl);
   font-size: var(--text-bs);
-  font-weight: 500;
+  font-weight: 400;
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--transition-base);
@@ -251,8 +251,7 @@
 }
 
 .addQualificationBtn:hover {
-  background-color: var(--color-bg-secondary);
-  border-color: var(--color-bg-tertiary);
+  background-color: var(--color-bg-tertiary);
   color: var(--color-text-primary);
 }
 
@@ -267,7 +266,6 @@
 .formCard {
   background-color: var(--color-bg-secondary);
   border-radius: var(--radius-2xl);
-  outline: 1px solid var(--color-bg-tertiary);
   box-shadow: var(--shadow-md);
   overflow: hidden;
 }
