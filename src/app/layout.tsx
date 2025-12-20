@@ -58,7 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             align-items: center;
             justify-content: center;
             gap: 16px;
-            background-color: #000000ff;
+            background-color: #121212;
             transition: opacity 0.3s ease-out, transform 0.3s ease-out;
           }
           @media (prefers-color-scheme: light) {
@@ -72,19 +72,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             width: 100px;
             height: 100px;
             border-radius: 18px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
             animation: splashExpand 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           }
-          #splash-screen .splash-name {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 18px;
-            font-weight: 600;
-            color: #d0d0d0ff;
-            opacity: 0;
-            animation: splashFadeUp 0.4s ease-out 0.2s forwards;
-          }
           @media (prefers-color-scheme: light) {
-            #splash-screen .splash-name { color: #6b6b6b; }
+            #splash-screen{ color: #6b6b6b; }
           }
           @keyframes splashExpand {
             0% { opacity: 0; transform: scale(0.5); }
@@ -105,15 +96,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div id="splash-screen">
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <img 
-              src="/icons/icon-512.png" 
+              src="/icons/icon2-512.png" 
               alt="" 
               className="splash-icon"
-              width={80}
-              height={80}
+              width={100}
+              height={100}
             />
             <div className="splash-ring" />
           </div>
-          <span className="splash-name">LeadBox</span>
         </div>
 
         <ServiceWorkerRegister />
