@@ -235,7 +235,7 @@
   padding: var(--space-2) var(--space-4);
   border-radius: 99px;
   font-weight: 600;
-  font-size: var(--text-bs);
+  font-size: var(--text-md);
   cursor: pointer;
   transition: all var(--transition-fast);
   background-color: transparent;
