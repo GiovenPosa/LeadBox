@@ -54,6 +54,8 @@ import LeadPageSkeleton from "./skeletons/leadPageSkeleton";
 
 export type OpportunityStatus = "new" | "contacted" | "qualified" | "won" | "lost" | "bad";
 
+export type CarouselTab = "qualification" | "proposal" | "onboarding";
+
 export type BookingInquiry = {
   id: string;
   created_at: string;
@@ -171,6 +173,9 @@ export default function LeadPage() {
   const [isFormExpanded, setIsFormExpanded] = useState(false);
   // Edit mode - for qualified leads wanting to edit
   const [isEditMode, setIsEditMode] = useState(false);
+  
+  // Carousel tab state
+  const [activeTab, setActiveTab] = useState<CarouselTab>("qualification");
 
   // Status panel state
   const [showStatusMenu, setShowStatusMenu] = useState(false);
@@ -667,47 +672,84 @@ export default function LeadPage() {
           </div>
 
           <div className={leadStyles.carouselRow}>
-            <span className={leadStyles.carouselItem}>
+            <button
+              className={`${leadStyles.carouselItem} ${activeTab === "qualification" ? leadStyles.carouselItemActive : ""}`}
+              onClick={() => setActiveTab("qualification")}
+              type="button"
+            >
               Qualification
-            </span>
-            <span className={leadStyles.carouselItem}>
+            </button>
+            <button
+              className={`${leadStyles.carouselItem} ${activeTab === "proposal" ? leadStyles.carouselItemActive : ""}`}
+              onClick={() => setActiveTab("proposal")}
+              type="button"
+            >
               Proposal
-            </span>
-            <span className={leadStyles.carouselItem}>
+            </button>
+            <button
+              className={`${leadStyles.carouselItem} ${activeTab === "onboarding" ? leadStyles.carouselItemActive : ""}`}
+              onClick={() => setActiveTab("onboarding")}
+              type="button"
+            >
               Onboarding
-            </span>
+            </button>
           </div>
 
-          {/* Qualified Summary View */}
-          {showSummary && (
-            <QualifiedSummary
-              form={form}
-              qualifiedAt={qualification?.qualified_at ?? null}
-              onEdit={handleEditQualification}
-            />
-          )}
-
-          {/* Add Qualification Button (for new/unqualified leads) */}
-          {!showSummary && !showForm && (
+          {/* Qualification Tab Content */}
+          {activeTab === "qualification" && (
             <>
-              <button
-                className={leadStyles.addQualificationBtn}
-                onClick={handleToggleForm}
-                type="button"
-                >
-                <HiOutlinePlusCircle size={20} />
-                <span>Add Qualification</span>
-                {qualification?.status === "draft" && (
-                  <span className={leadStyles.draftLabel}>Draft</span>
-                )}
-              </button>
+              {/* Qualified Summary View */}
+              {showSummary && (
+                <QualifiedSummary
+                  form={form}
+                  qualifiedAt={qualification?.qualified_at ?? null}
+                  onEdit={handleEditQualification}
+                />
+              )}
 
-              
+              {/* Add Qualification Button (for new/unqualified leads) */}
+              {!showSummary && !showForm && (
+                <button
+                  className={leadStyles.addQualificationBtn}
+                  onClick={handleToggleForm}
+                  type="button"
+                >
+                  <HiOutlinePlusCircle size={20} />
+                  <span>Add Qualification</span>
+                  {qualification?.status === "draft" && (
+                    <span className={leadStyles.draftLabel}>Draft</span>
+                  )}
+                </button>
+              )}
             </>
           )}
 
+          {/* Proposal Tab Content */}
+          {activeTab === "proposal" && (
+            <button
+              className={leadStyles.addQualificationBtn}
+              onClick={() => {/* TODO: Add proposal form */}}
+              type="button"
+            >
+              <HiOutlinePlusCircle size={20} />
+              <span>Add Proposal</span>
+            </button>
+          )}
+
+          {/* Onboarding Tab Content */}
+          {activeTab === "onboarding" && (
+            <button
+              className={leadStyles.addQualificationBtn}
+              onClick={() => {/* TODO: Add onboarding form */}}
+              type="button"
+            >
+              <HiOutlinePlusCircle size={20} />
+              <span>Add Onboarding</span>
+            </button>
+          )}
+
           {/* Qualification Form (expanded or edit mode) */}
-          {showForm && (
+          {activeTab === "qualification" && showForm && (
             <div className={leadStyles.formCard}>
               <div className={leadStyles.topRow}>
                 <button
