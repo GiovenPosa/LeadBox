@@ -149,8 +149,11 @@ export default function QualifiedSummary({ form, qualifiedAt, onEdit }: Qualifie
           </span>
         )}
       </div>
-      <div className={styles.summarySectionHeader}>
+      <div className={`${styles.summarySectionHeader} ${styles.summarySectionHeaderSpaced}`}>
         <span>Summary</span>
+        <button className={styles.editQualificationBtn} onClick={onEdit}>
+          <HiOutlinePencilSquare size={16} />
+        </button>
       </div>
 
       <div className={styles.summaryGrid}>
@@ -279,10 +282,7 @@ export default function QualifiedSummary({ form, qualifiedAt, onEdit }: Qualifie
         </div>
       )}
 
-      <button className={styles.editQualificationBtn} onClick={onEdit}>
-        <HiOutlinePencilSquare size={18} />
-        Edit
-      </button>
+      
     </div>
   );
 }

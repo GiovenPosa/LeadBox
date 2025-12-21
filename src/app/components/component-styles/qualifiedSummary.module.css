@@ -123,6 +123,11 @@
   font-size: var(--text-bs);
   font-weight: 500;
   color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.summarySectionHeaderSpaced {
+  justify-content: space-between;
 }
 
 .summaryGoals {
@@ -155,23 +160,12 @@
 .editQualificationBtn {
   display: inline-flex;
   align-items: center;
-  line-height: 1;
-  justify-content: center;
-  gap: var(--space-1);
-  width: 100%;
-  margin-top: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  background-color: var(--color-bg-tertiary);
-  border-radius: var(--radius-xl);
-  font-size: var(--text-md);
-  font-weight: 500;
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .editQualificationBtn:hover {
-  background-color: var(--color-bg-active);
   color: var(--color-text-primary);
 }
 

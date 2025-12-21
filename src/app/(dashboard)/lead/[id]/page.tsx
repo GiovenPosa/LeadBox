@@ -666,6 +666,18 @@ export default function LeadPage() {
             )}
           </div>
 
+          <div className={leadStyles.carouselRow}>
+            <span className={leadStyles.carouselItem}>
+              Qualification
+            </span>
+            <span className={leadStyles.carouselItem}>
+              Proposal
+            </span>
+            <span className={leadStyles.carouselItem}>
+              Onboarding
+            </span>
+          </div>
+
           {/* Qualified Summary View */}
           {showSummary && (
             <QualifiedSummary
@@ -690,13 +702,7 @@ export default function LeadPage() {
                 )}
               </button>
 
-              <button
-                className={leadStyles.addQualificationBtn}
-                type="button"
-                >
-                <HiOutlinePlusCircle size={20} />
-                <span>Add Proposal</span>
-              </button>
+              
             </>
           )}
 
@@ -932,63 +938,65 @@ export default function LeadPage() {
                     rows={3}
                   />
                 </div>
+
               </div>
 
-              <div className={leadStyles.formCardIn}>
-                <label className={leadStyles.label}>
-                  <HiOutlineRocketLaunch size={16} />
-                  Goals (pick what applies)
-                </label>
-                <div className={leadStyles.chips}>
-                  {(
-                    [
-                      "More leads",
-                      "Look premium",
-                      "Improve conversion",
-                      "Showcase work",
-                      "Rank on Google",
-                      "Faster site",
-                      "Clear pricing",
-                      "Launch MVP",
-                      "Build credibility",
-                      "User signups",
-                      "Book demos",
-                      "Local visibility",
-                      "Stand out",
-                      "Mobile-first",
-                      "Refresh brand",
-                      "Other",
-                    ] as Goal[]
-                  ).map((g) => {
-                    const active = form.goals.includes(g);
-                    return (
-                      <button
-                        key={g}
-                        type="button"
-                        className={`${leadStyles.chip} ${active ? leadStyles.chipActive : ""}`}
-                        onClick={() => toggleGoal(g)}
-                      >
-                        {g}
-                      </button>
-                    );
-                  })}
+              <div className={leadStyles.formGridBot} >
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlineRocketLaunch size={16} />
+                    Goals (pick what applies)
+                  </label>
+                  <div className={leadStyles.chips}>
+                    {(
+                      [
+                        "More leads",
+                        "Look premium",
+                        "Improve conversion",
+                        "Showcase work",
+                        "Rank on Google",
+                        "Faster site",
+                        "Clear pricing",
+                        "Launch MVP",
+                        "Build credibility",
+                        "User signups",
+                        "Book demos",
+                        "Local visibility",
+                        "Stand out",
+                        "Mobile-first",
+                        "Refresh brand",
+                        "Other",
+                      ] as Goal[]
+                    ).map((g) => {
+                      const active = form.goals.includes(g);
+                      return (
+                        <button
+                          key={g}
+                          type="button"
+                          className={`${leadStyles.chip} ${active ? leadStyles.chipActive : ""}`}
+                          onClick={() => toggleGoal(g)}
+                        >
+                          {g}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className={leadStyles.formCardIn}>
+                  <label className={leadStyles.label}>
+                    <HiOutlinePaperClip size={16} />
+                    Meeting notes
+                  </label>
+                  <textarea
+                    className={leadStyles.textarea}
+                    placeholder={`Example:\n- Goal: more leads from mobile\n- Pain: site feels outdated + slow\n- Must have: pricing page + enquiry funnel\n- Timeline: wants it live before <date>\n`}
+                    value={form.meetingNotes}
+                    onChange={(e) => update("meetingNotes", e.target.value)}
+                    rows={9}
+                  />
                 </div>
               </div>
-
-              <div className={leadStyles.formCardIn}>
-                <label className={leadStyles.label}>
-                  <HiOutlinePaperClip size={16} />
-                  Meeting notes
-                </label>
-                <textarea
-                  className={leadStyles.textarea}
-                  placeholder={`Example:\n- Goal: more leads from mobile\n- Pain: site feels outdated + slow\n- Must have: pricing page + enquiry funnel\n- Timeline: wants it live before <date>\n`}
-                  value={form.meetingNotes}
-                  onChange={(e) => update("meetingNotes", e.target.value)}
-                  rows={9}
-                />
-              </div>
-
              
             </div>
           )}

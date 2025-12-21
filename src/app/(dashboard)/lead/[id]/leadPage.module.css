@@ -54,7 +54,7 @@
   align-items: center;
   gap: var(--space-2);
   margin-top: var(--space-1);
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--space-4);
   flex-wrap: wrap;
 }
 
@@ -62,10 +62,9 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  margin-top: var(--space-1);
   padding: 5px 10px;
   border-radius: var(--radius-2xl);
-  font-size: var(--text-md);
+  font-size: var(--text-bs);
   font-weight: 400;
   text-transform: capitalize;
   -webkit-user-select: none;
@@ -219,16 +218,40 @@
 }
 
 /* ============================================
+   CAROUSEL ROW STYLES
+   ============================================ */
+
+.carouselRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2)
+}
+
+.carouselItem {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-bg-secondary);
+  border-radius: 99px;
+  font-weight: 500;
+  font-size: var(--text-md);
+  cursor: pointer;
+}
+
+/* ============================================
    ADD QUALIFICATION BUTTON - Collapsed State
    ============================================ */
 
 .addQualificationBtn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: flex-start;
   gap: var(--space-1);
   width: 100%;
-  padding: var(--space-4);
+  line-height: 1;
+  padding: var(--space-4) 0;
   border-radius: 99px;
   font-size: var(--text-bs);
   font-weight: 400;
@@ -242,12 +265,8 @@
   color: var(--color-text-tertiary);
 }
 
-.addQualificationBtn:hover {
-  background-color: var(--color-bg-active);
-}
 
-.addQualificationBtn:active {
-  
+.addQualificationBtn:hover {
   color: var(--color-text-primary);
 }
 
@@ -306,6 +325,14 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-3)
+}
+
+.formGridBot {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: var(--space-2);
+  gap: var(--space-3);
 }
 
 @media (max-width: 1000px) {
@@ -411,6 +438,7 @@
   justify-content: space-between;
   width: 100%;
   padding: var(--space-3) 0;
+  margin-bottom: var(--space-1);
 }
 
 .unsaved {
