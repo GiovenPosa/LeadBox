@@ -54,7 +54,7 @@
   align-items: center;
   gap: var(--space-2);
   margin-top: var(--space-1);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
   flex-wrap: wrap;
 }
 
@@ -228,18 +228,24 @@
   justify-content: flex-start;
   flex-direction: row;
   gap: var(--space-3);
-  margin-bottom: var(--space-2)
+  margin-bottom: var(--space-3)
 }
 
 .carouselItem {
-  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-bg-primary);
+  border: 1px solid transparent;
   border-radius: 99px;
-  font-weight: 400;
-  font-size: var(--text-md);
+  flex-shrink: 0;
+  transition: all var(--transition-base);
   cursor: pointer;
-  transition: all var(--transition-fast);
-  background-color: transparent;
-  color: var(--color-text-primary);
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 
@@ -253,7 +259,6 @@
 .carouselItemActive {
   background-color: var(--color-bg-secondary);
   color: var(--color-text-primary);
-  font-weight: 500;
 }
 
 /* ============================================
