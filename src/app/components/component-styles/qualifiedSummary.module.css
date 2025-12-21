@@ -4,22 +4,19 @@
 
 .summaryCard {
   border-radius: var(--radius-2xl);
-  padding: var(--space-4);
 }
 
 .summaryHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-1);
-  padding-bottom: var(--space-4);
 }
 
 .summaryHeaderLeft {
   display: inline-flex;
   align-items: center;
-  padding-top: 3px;
-  gap: var(--space-2);
+  padding: var(--space-4);
+  gap: var(--space-1);
 }
 
 .summaryCheckIcon {
