@@ -47,6 +47,7 @@ import QualifiedSummary, {
   type ContentStatus,
 } from "../../../components/qualifiedSummary";
 import LeadPageSkeleton from "./skeletons/leadPageSkeleton";
+import Toast, { type ToastType } from "../../../components/toast";
 
 /* =========================================================
    Types
@@ -167,7 +168,7 @@ export default function LeadPage() {
   const [saving, setSaving] = useState(false);
   const [qualifying, setQualifying] = useState(false);
 
-  const [toast, setToast] = useState<null | "draft" | "qualified">(null);
+  const [toast, setToast] = useState<ToastType>(null);
 
   // Form expanded state - for new/unqualified leads
   const [isFormExpanded, setIsFormExpanded] = useState(false);
@@ -384,9 +385,8 @@ export default function LeadPage() {
     router.back();
   }
 
-  function showToast(kind: "draft" | "qualified") {
-    setToast(kind);
-    window.setTimeout(() => setToast(null), 1400);
+  function handleToastComplete() {
+    setToast(null);
   }
 
   function handleToggleForm() {
@@ -434,12 +434,14 @@ export default function LeadPage() {
     if (!inquiry || !form) return;
     setSaving(true);
     setFetchError(null);
+    setToast("saving");  
 
     try {
       await upsertQualification("draft");
-      showToast("draft");
+      setToast("saved");  
     } catch (e: any) {
       setFetchError(e?.message ?? "Failed to save draft.");
+      setToast(null);  // Clear on error
     } finally {
       setSaving(false);
     }
@@ -449,6 +451,7 @@ export default function LeadPage() {
     if (!inquiry || !form) return;
     setQualifying(true);
     setFetchError(null);
+    setToast("qualifying"); 
 
     try {
       await upsertQualification("qualified");
@@ -466,9 +469,10 @@ export default function LeadPage() {
       setIsEditMode(false);
       setIsFormExpanded(false);
 
-      showToast("qualified");
+      setToast("qualified");
     } catch (e: any) {
       setFetchError(e?.message ?? "Failed to qualify lead.");
+      setToast(null);
     } finally {
       setQualifying(false);
     }
@@ -554,6 +558,7 @@ export default function LeadPage() {
 
   return (
     <>
+      <Toast type={toast} onComplete={handleToastComplete} />
       <MobileHeader name={"Inbox"} onBack={handleBack} />
 
       <div className={styles.canvas}>
@@ -1043,11 +1048,6 @@ export default function LeadPage() {
             </div>
           )}
 
-          {!!toast && (
-            <div className={leadStyles.toast}>
-              {toast === "draft" ? "Saved" : "Qualified ✓"}
-            </div>
-          )}
         </main>
       </div>
 

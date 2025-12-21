@@ -152,7 +152,7 @@ export default function QualifiedSummary({ form, qualifiedAt, onEdit }: Qualifie
       <div className={`${styles.summarySectionHeader} ${styles.summarySectionHeaderSpaced}`}>
         <span>Summary</span>
         <button className={styles.editQualificationBtn} onClick={onEdit}>
-          <HiOutlinePencilSquare size={16} />
+          <HiOutlinePencilSquare size={18} />
         </button>
       </div>
 

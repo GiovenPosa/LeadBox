@@ -1,0 +1,83 @@
+/* ============================================
+   TOAST NOTIFICATION STYLES
+   ============================================ */
+
+.toastContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  padding-top: calc(var(--safe-area-top) + var(--space-4));
+  pointer-events: none;
+  
+  /* Initial state - hidden above viewport */
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toastVisible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.toast {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 150px;
+  height: 40px;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: 99px;
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-lg);
+  pointer-events: auto;
+}
+
+/* Variant styles */
+.toastNeutral {
+  background-color: var(--color-bg-secondary);
+}
+
+.checkIcon {
+  color: var(--color-status-won);
+}
+
+.toastIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toastLabel {
+  font-size: var(--text-md);
+  font-weight: 400;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Spinner animation */
+.spinner {
+  animation: spinToast 0.8s linear infinite;
+}
+
+@keyframes spinToast {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .toast {
+  background-color: var(--color-bg-tertiary);
+}
