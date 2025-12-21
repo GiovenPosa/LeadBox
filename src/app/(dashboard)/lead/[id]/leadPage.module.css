@@ -239,6 +239,7 @@
   padding: var(--space-2) var(--space-3);
   background-color: var(--color-bg-primary);
   border: 1px solid transparent;
+  font-weight: 500;
   border-radius: 99px;
   flex-shrink: 0;
   transition: all var(--transition-base);
