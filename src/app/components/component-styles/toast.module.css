@@ -30,8 +30,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  width: 150px;
-  height: 40px;
+  padding: var(--space-2) var(--space-3);
   background-color: var(--color-bg-secondary);
   border: 1px solid var(--color-border-primary);
   border-radius: 99px;
@@ -54,10 +53,11 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+
 }
 
 .toastLabel {
-  font-size: var(--text-md);
+  font-size: var(--text-bs);
   font-weight: 400;
   line-height: 1;
   white-space: nowrap;

@@ -16,9 +16,9 @@ const TOAST_CONFIG: Record<
   Exclude<ToastType, null>,
   { label: string; icon: "loading" | "success"; variant: "neutral" | "success" }
 > = {
-  saving: { label: "Saving...", icon: "loading", variant: "neutral" },
+  saving: { label: "Saving", icon: "loading", variant: "neutral" },
   saved: { label: "Saved", icon: "success", variant: "neutral" },
-  qualifying: { label: "Qualifying...", icon: "loading", variant: "neutral" },
+  qualifying: { label: "Qualifying", icon: "loading", variant: "neutral" },
   qualified: { label: "Qualified", icon: "success", variant: "success" },
 };
 
