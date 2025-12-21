@@ -227,14 +227,14 @@
   align-items: center;
   justify-content: flex-start;
   flex-direction: row;
-  gap: var(--space-4);
+  gap: var(--space-3);
   margin-bottom: var(--space-2)
 }
 
 .carouselItem {
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-3);
   border-radius: 99px;
-  font-weight: 600;
+  font-weight: 500;
   font-size: var(--text-md);
   cursor: pointer;
   transition: all var(--transition-fast);
