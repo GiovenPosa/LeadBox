@@ -7,6 +7,7 @@ import { useDashboard } from "../../context/dashboardContext";
 import styles from "../homePage.module.css";
 import contactStyles from "./contacts.module.css";
 import { HiMiniUsers, HiXMark, HiPhone } from "react-icons/hi2";
+import { useBlockIosEdgeSwipe } from "../../hooks/useBlockIosEdgeBackSwipe";
 
 type Contact = {
   id: string;
@@ -59,6 +60,9 @@ export default function ContactsPage() {
   const [activeContactEmail, setActiveContactEmail] = useState<string>("");
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  // Block iOS edge swipe back gesture
+  useBlockIosEdgeSwipe(true);
 
   // Track mount state for portal
   useEffect(() => {
