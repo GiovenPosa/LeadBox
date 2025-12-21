@@ -227,15 +227,15 @@
   align-items: center;
   justify-content: flex-start;
   flex-direction: row;
-  gap: var(--space-3);
+  gap: var(--space-4);
   margin-bottom: var(--space-2)
 }
 
 .carouselItem {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
   border-radius: 99px;
-  font-weight: 500;
-  font-size: var(--text-md);
+  font-weight: 600;
+  font-size: var(--text-bs);
   cursor: pointer;
   transition: all var(--transition-fast);
   background-color: transparent;
@@ -251,7 +251,7 @@
 }
 
 .carouselItemActive {
-  background-color: var(--color-bg-tertiary);
+  background-color: var(--color-bg-secondary);
   color: var(--color-text-primary);
 }
 
