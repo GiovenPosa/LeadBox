@@ -570,7 +570,7 @@
 }
 
 .tagSource {
-  background-color: var(--color-bg-tertiary);
+  background-color: rgba(235, 10, 133, 0.09);
   text-transform: none;
 }
 
