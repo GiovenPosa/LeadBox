@@ -8,10 +8,10 @@
 
 :root {
   /* ---- Colors: Warm Stone Palette ---- */
-  --color-bg-primary: #f5f4ef;
-  --color-bg-secondary: #ffffff;
+  --color-bg-primary: #FFFDFD;
+  --color-bg-secondary: #F8F8F8;
   --color-bg-tertiary: #f5f5f4;
-  --color-bg-sidebar: #fbfbfa;
+  --color-bg-sidebar: #F8F8F8;
   --color-bg-hover: rgba(0, 0, 0, 0.03);
   --color-bg-active: rgba(0, 0, 0, 0.05);
 
