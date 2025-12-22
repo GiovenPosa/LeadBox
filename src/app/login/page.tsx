@@ -4,6 +4,7 @@ import { useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import styles from "./loginPage.module.css";
+import { useSplashScreen } from "../hooks/useSpalshScreen";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  useSplashScreen(true);
 
   async function signIn(e: React.FormEvent) {
     e.preventDefault();
