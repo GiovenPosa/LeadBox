@@ -142,6 +142,9 @@ export default function QualifiedSummary({ form, qualifiedAt, onEdit }: Qualifie
         <div className={styles.summaryHeaderLeft}>
           <HiCheck size={16} className={styles.summaryCheckIcon} />
           <h2 className={styles.summaryTitle}>Qualification Complete</h2>
+          <button className={styles.editQualificationBtn} onClick={onEdit}>
+            <HiOutlinePencilSquare size={18} />
+          </button>
         </div>
         {qualifiedAt && (
           <span className={styles.summaryDate}>
@@ -151,9 +154,6 @@ export default function QualifiedSummary({ form, qualifiedAt, onEdit }: Qualifie
       </div>
       <div className={`${styles.summarySectionHeader} ${styles.summarySectionHeaderSpaced}`}>
         <span>Summary</span>
-        <button className={styles.editQualificationBtn} onClick={onEdit}>
-          <HiOutlinePencilSquare size={18} />
-        </button>
       </div>
 
       <div className={styles.summaryGrid}>
