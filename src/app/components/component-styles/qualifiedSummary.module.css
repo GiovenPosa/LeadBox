@@ -55,9 +55,9 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  background-color: var(--color-bg-secondary);
+  background-color: var(--color-bg-tertiary);
   border-radius: var(--radius-2xl);
-  padding: var(--space-3);
+  padding: var(--space-4);
 }
 
 .summaryItemIcon {
@@ -69,6 +69,7 @@
   flex-shrink: 0;
   border-radius: var(--radius-md);
   color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
 }
 
 .summaryItemContent {
@@ -110,9 +111,9 @@
 .summarySection {
   margin-bottom: var(--space-4);
   padding-top: var(--space-4);
-  background-color: var(--color-bg-secondary);
+  background-color: var(--color-bg-tertiary);
   border-radius: var(--radius-2xl);
-  padding: var(--space-3);
+  padding: var(--space-4);
 }
 
 .summarySection:first-of-type {
@@ -121,7 +122,7 @@
 }
 
 .summarySectionHeader {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--space-2);
   margin-bottom: var(--space-3);

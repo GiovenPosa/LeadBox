@@ -236,7 +236,7 @@ export default function QualifiedSummary({ form, qualifiedAt, onEdit }: Qualifie
       {form.goals.length > 0 && (
         <div className={styles.summarySection}>
           <div className={styles.summarySectionHeader}>
-            <HiOutlineRocketLaunch size={20} />
+            <HiOutlineRocketLaunch size={18} />
             <span>Goals</span>
           </div>
           <div className={styles.summaryGoals}>
@@ -253,7 +253,7 @@ export default function QualifiedSummary({ form, qualifiedAt, onEdit }: Qualifie
       {form.challenges && (
         <div className={styles.summarySection}>
           <div className={styles.summarySectionHeader}>
-            <HiOutlineExclamationTriangle size={20} />
+            <HiOutlineExclamationTriangle size={18} />
             <span>Challenges</span>
           </div>
           <p className={styles.summaryText}>{form.challenges}</p>
@@ -264,7 +264,7 @@ export default function QualifiedSummary({ form, qualifiedAt, onEdit }: Qualifie
       {form.nextSteps && (
         <div className={styles.summarySection}>
           <div className={styles.summarySectionHeader}>
-            <HiOutlineArrowRightCircle size={20} />
+            <HiOutlineArrowRightCircle size={18} />
             <span>Next Steps</span>
           </div>
           <p className={styles.summaryText}>{form.nextSteps}</p>
@@ -275,7 +275,7 @@ export default function QualifiedSummary({ form, qualifiedAt, onEdit }: Qualifie
       {form.meetingNotes && (
         <div className={styles.summarySection}>
           <div className={styles.summarySectionHeader}>
-            <HiOutlinePaperClip size={20} />
+            <HiOutlinePaperClip size={18} />
             <span>Meeting Notes</span>
           </div>
           <p className={styles.summaryText}>{form.meetingNotes}</p>
