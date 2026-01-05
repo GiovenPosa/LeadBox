@@ -341,3 +341,38 @@
   color: var(--color-text-tertiary);
   max-width: 300px;
 }
+
+/* ============================================
+   INFINITE SCROLL SENTINEL
+   The invisible element that triggers loadMore
+   when it enters the viewport
+   ============================================ */
+
+.sentinel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-6) var(--space-4);
+  min-height: 80px;
+}
+
+.loadingMore {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.endMessage {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  padding: var(--space-2) var(--space-4);
+}
+
+/* On mobile, add extra bottom padding for dockbar clearance */
+@media (max-width: 768px) {
+  .sentinel {
+    padding-bottom: calc(var(--space-8) + var(--safe-area-bottom));
+  }
+}

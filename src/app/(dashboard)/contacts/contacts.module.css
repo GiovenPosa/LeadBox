@@ -42,8 +42,9 @@
 .primary {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
   min-width: 0;
+  margin-right: var(--space-5);
+  width: 200px;
 }
 
 /* Name */
@@ -96,7 +97,7 @@
   display: flex;
   flex-direction: row;
   gap: var(--space-2);
-  
+  margin: auto 0;
 }
 
 .infoItem {
@@ -107,6 +108,7 @@
   padding: var(--space-3);
   border-radius: var(--radius-md);
   line-height: 1;
+  width: 100px;
 }
 
 .infoLabel {
@@ -118,7 +120,7 @@
 
 .infoValue {
   font-size: var(--text-bs);
-  font-weight: 400;
+  font-weight: 600;
   color: var(--color-text-primary);
   display: inline-flex;
   align-items: baseline;
@@ -521,7 +523,11 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 860px) {
+  .primary {
+    width: 100%;
+  }
+
   .card {
     padding: var(--space-4);
     flex-direction: column;
@@ -530,11 +536,6 @@
   .linkRow {
     flex-direction: row;
     gap: var(--space-4);
-  }
-
-  .link {
-    font-size: var(--text-bs);
-    line-height: 1;
   }
 
   .infoRow {
