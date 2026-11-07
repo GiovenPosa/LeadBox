@@ -1,11 +1,11 @@
 "use client";
 
 import styles from "./component-styles/dockbar.module.css";
-import { HiInbox, HiOutlineInbox, HiMiniUsers, HiOutlineUsers, HiMiniChartBar, HiOutlineChartBar, HiMiniRocketLaunch, HiOutlineRocketLaunch } from "react-icons/hi2";
+import { HiInbox, HiOutlineInbox, HiMiniPaperAirplane, HiOutlinePaperAirplane, HiMiniUsers, HiOutlineUsers, HiMiniChartBar, HiOutlineChartBar, HiMiniRocketLaunch, HiOutlineRocketLaunch } from "react-icons/hi2";
 import Link from "next/link";
 
 type DockBarProps = {
-  activePage: "inbox" | "contacts" | "projects" | "analytics";
+  activePage: "inbox" | "outreach" | "contacts" | "projects" | "analytics";
   inboxUnseenCount?: number;
   onSearchClick?: () => void;
 };
@@ -23,6 +23,13 @@ export default function DockBar({ activePage, inboxUnseenCount = 0, onSearchClic
           href="/"
           active={activePage === "inbox"}
           badge={showBadge ? inboxUnseenCount : undefined}
+        />
+        <DockItem
+          icon={<HiOutlinePaperAirplane size={25} />}
+          activeIcon={<HiMiniPaperAirplane size={25} />}
+          label="Outreach"
+          href="/outreach"
+          active={activePage === "outreach"}
         />
         <DockItem
           icon={<HiOutlineUsers size={25} />}

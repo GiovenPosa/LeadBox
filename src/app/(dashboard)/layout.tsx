@@ -10,7 +10,7 @@ import TopBar from "../components/topbar";
 import DockBar from "../components/dockbar";
 import styles from "./homePage.module.css";
 
-type NavActivePage = "inbox" | "contacts" | "projects" | "analytics";
+type NavActivePage = "inbox" | "outreach" | "contacts" | "projects" | "analytics";
 
 function DashboardShell({ children }: { children: ReactNode }) {
   const { email, loading, signOut } = useAuth();
