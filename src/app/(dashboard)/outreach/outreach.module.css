@@ -16,30 +16,8 @@
 
 /* The button is taller than the 30px title row; pulling its margins in keeps
    the row at the title's height, so the pills sit where they do on Inbox */
-.headerRow .addBtn {
+.headerAction {
   margin-block: calc(var(--space-2) * -1);
-}
-
-.addBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-md);
-  font-weight: 600;
-  color: var(--color-text-inverse);
-  background-color: var(--color-text-primary);
-  transition: opacity var(--transition-fast);
-}
-
-.addBtn:hover {
-  opacity: 0.9;
-}
-
-.addBtn:disabled {
-  opacity: 0.4;
-  cursor: default;
 }
 
 .emptyAdd {
@@ -50,40 +28,29 @@
   color: var(--color-status-lost);
 }
 
-/* ---- Toolbar ---- */
+/* ---- Empty and loading states: centred in the space below the chips ---- */
+
+.fillCanvas {
+  display: flex;
+  flex-direction: column;
+}
+
+.fillContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.fillCenter {
+  flex: 1;
+  /* a touch above true centre reads as centred */
+  padding-bottom: calc(var(--space-16) + var(--space-8));
+}
+
+/* ---- Toolbar (the Toolbar component styles itself) ---- */
 
 .toolbar {
-  display: flex;
-  justify-content: flex-end;
   margin-bottom: var(--space-3);
-}
-
-.search {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  width: min(280px, 100%);
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-xl);
-  background-color: var(--color-bg-secondary);
-  color: var(--color-text-tertiary);
-  border: 1px solid transparent;
-  transition: border-color var(--transition-fast);
-}
-
-.search:focus-within {
-  border-color: var(--color-status-new);
-}
-
-.search input {
-  flex: 1;
-  min-width: 0;
-  padding: 9px 0;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: var(--text-base);
-  color: var(--color-text-primary);
 }
 
 .noMatches {
@@ -154,6 +121,18 @@
 
 .empty {
   color: var(--color-text-tertiary);
+}
+
+/* channel name with its icon, in the table and on cards */
+.channel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  vertical-align: bottom;
+}
+
+.channel svg {
+  flex: none;
 }
 
 /* ---- Cells ---- */
@@ -352,15 +331,4 @@
     display: flex;
   }
 
-  .toolbar {
-    justify-content: stretch;
-  }
-
-  .search {
-    width: 100%;
-  }
-
-  .search input {
-    font-size: 16px;
-  }
 }

@@ -3,6 +3,7 @@
 import { useEffect, useId, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import styles from "./component-styles/confirmDialog.module.css";
+import Button from "./button";
 
 export type ConfirmVariant = "neutral" | "danger";
 
@@ -75,17 +76,12 @@ export default function ConfirmDialog({
           {message}
         </p>
         <div className={styles.actions}>
-          <button type="button" className={styles.cancelBtn} onClick={onCancel} disabled={busy}>
+          <Button variant="secondary" onClick={onCancel} disabled={busy}>
             {cancelLabel}
-          </button>
-          <button
-            type="button"
-            className={`${styles.confirmBtn} ${variant === "danger" ? styles.confirmDanger : styles.confirmNeutral}`}
-            onClick={onConfirm}
-            disabled={busy}
-          >
+          </Button>
+          <Button variant={variant === "danger" ? "danger" : "primary"} onClick={onConfirm} busy={busy}>
             {busy ? busyLabel ?? confirmLabel : confirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </>,

@@ -51,6 +51,7 @@ import LeadPageSkeleton from "./skeletons/leadPageSkeleton";
 import Toast, { type ToastType } from "../../../components/toast";
 import { Field, Select, TextArea, TextInput } from "../../../components/formFields";
 import ConfirmDialog from "../../../components/confirmDialog";
+import Button from "../../../components/button";
 import { deleteInquiries } from "../../../../lib/deleteInquiries";
 
 /* =========================================================
@@ -1016,14 +1017,15 @@ export default function LeadPage() {
             </div>
           )}
 
-          <button
+          <Button
+            variant="ghostDanger"
+            size="sm"
+            icon={<HiOutlineTrash size={18} />}
             className={leadStyles.deleteLeadBtn}
             onClick={() => setConfirmDelete(true)}
-            type="button"
           >
-            <HiOutlineTrash size={18} />
-            <span>Delete lead</span>
-          </button>
+            Delete lead
+          </Button>
         </main>
       </div>
 

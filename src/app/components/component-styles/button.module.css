@@ -1,0 +1,142 @@
+/* ============================================
+   BUTTON - one pill, five colour variants, two sizes
+   ============================================ */
+
+/* The shape and states live here once; variants only set the three colours */
+.button {
+  --btn-bg: transparent;
+  --btn-fg: var(--color-text-primary);
+  --btn-hover-bg: var(--color-bg-hover);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  border-radius: 999px;
+  background-color: var(--btn-bg);
+  color: var(--btn-fg);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  position: relative;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--transition-fast), opacity var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.button:hover:not(:disabled) {
+  background-color: var(--btn-hover-bg);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-status-new);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+}
+
+/* an inline svg sits on the text baseline with a gap below it; block centres it */
+.icon svg {
+  display: block;
+}
+
+/* Trim the font's uneven built-in space above and below the letters, so the
+   label sits in the true centre of the pill. Browsers without text-box fall
+   back to line-height: 1, set on .button. */
+.label {
+  display: block;
+  text-box: trim-both cap alphabetic;
+}
+
+/* ---- Sizes ----
+   Fixed heights with flex centring, so vertical padding can't skew the label */
+
+.md {
+  height: 36px;
+  padding: 0 var(--space-4);
+  font-size: var(--text-md);
+}
+
+.sm {
+  height: 32px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-base);
+}
+
+/* an icon looks lighter than text, so its side gets a little less padding */
+.md.withIcon {
+  padding-left: calc(var(--space-4) - 3px);
+}
+
+.sm.withIcon {
+  padding-left: calc(var(--space-3) - 3px);
+}
+
+/* Icon only: as wide as it is tall. After .withIcon, so it wins at equal weight */
+.md.iconOnly {
+  width: 36px;
+  padding: 0;
+}
+
+.sm.iconOnly {
+  width: 32px;
+  padding: 0;
+}
+
+/* a blue dot in the top-right corner */
+.indicator::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-status-new);
+  box-shadow: 0 0 0 2px var(--color-bg-primary);
+}
+
+/* ---- Variants ---- */
+
+.primary {
+  /* the app's blue, the same as the focus ring on inputs; white text in both themes */
+  --btn-bg: var(--color-status-new);
+  --btn-fg: #ffffff;
+  --btn-hover-bg: color-mix(in srgb, var(--color-status-new) 88%, #000000);
+}
+
+.secondary {
+  --btn-bg: var(--color-bg-active);
+  --btn-fg: var(--color-text-primary);
+  --btn-hover-bg: color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+}
+
+.danger {
+  /* white on red in both themes; the inverse text colour turns dark in dark mode */
+  --btn-bg: var(--color-status-lost);
+  --btn-fg: #ffffff;
+  --btn-hover-bg: color-mix(in srgb, var(--color-status-lost) 88%, #000000);
+}
+
+.ghost {
+  --btn-hover-bg: var(--color-bg-hover);
+}
+
+.ghostDanger {
+  --btn-fg: var(--color-status-lost);
+  --btn-hover-bg: var(--color-status-lost-bg);
+}

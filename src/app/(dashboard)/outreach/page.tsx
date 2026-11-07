@@ -6,11 +6,16 @@ import { useDashboard } from "../../context/dashboardContext";
 import { useBlockIosEdgeSwipe } from "../../hooks/useBlockIosEdgeBackSwipe";
 import styles from "../homePage.module.css";
 import outreachStyles from "./outreach.module.css";
-import { HiMiniPaperAirplane, HiMiniPlus, HiMiniMagnifyingGlass } from "react-icons/hi2";
+import { HiMiniPaperAirplane, HiMiniPlus } from "react-icons/hi2";
 import OutreachEditor from "../../components/outreachEditor";
 import ConfirmDialog from "../../components/confirmDialog";
+import Button from "../../components/button";
+import Toolbar, { type ToolbarFilterGroup } from "../../components/toolbar";
+import { ChannelIcon } from "../../components/channelIcon";
 import {
+  CHANNELS,
   CLOSED_STAGES,
+  INDUSTRIES,
   OUTREACH_COLUMNS,
   STAGES,
   channelLabel,
@@ -53,9 +58,38 @@ const DUE_CLASS: Record<Exclude<DueState, null>, string> = {
 
 const DUE_RANK: Record<string, number> = { overdue: 0, today: 1, soon: 2, later: 3, none: 4 };
 
+const SORT_OPTIONS = [
+  { value: "due", label: "Follow-up due" },
+  { value: "recent", label: "Recently messaged" },
+  { value: "oldest", label: "Oldest messaged" },
+  { value: "name", label: "Business A–Z" },
+  { value: "updated", label: "Recently updated" },
+];
+
+const FILTER_GROUPS: ToolbarFilterGroup[] = [
+  { key: "industry", label: "Industry", options: INDUSTRIES },
+  { key: "channel", label: "Channel", options: CHANNELS },
+];
+
+function sortRows(rows: OutreachRow[], sort: string) {
+  const list = [...rows];
+  switch (sort) {
+    case "recent":
+      return list.sort((a, b) => b.first_contacted_on.localeCompare(a.first_contacted_on));
+    case "oldest":
+      return list.sort((a, b) => a.first_contacted_on.localeCompare(b.first_contacted_on));
+    case "name":
+      return list.sort((a, b) => a.business_name.localeCompare(b.business_name, "en-GB"));
+    case "updated":
+      return list.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+    default:
+      return sortByDue(list);
+  }
+}
+
 // Most urgent follow-ups first, then the most recently messaged
-function sortRows(rows: OutreachRow[]) {
-  return [...rows].sort((a, b) => {
+function sortByDue(rows: OutreachRow[]) {
+  return rows.sort((a, b) => {
     const da = dueState(a) ?? "none";
     const db = dueState(b) ?? "none";
     if (DUE_RANK[da] !== DUE_RANK[db]) return DUE_RANK[da] - DUE_RANK[db];
@@ -95,6 +129,8 @@ export default function OutreachPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("due");
+  const [attrFilter, setAttrFilter] = useState<Record<string, string[]>>({});
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<OutreachRow | null>(null);
@@ -146,15 +182,19 @@ export default function OutreachPage() {
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
+    const industries = attrFilter.industry ?? [];
+    const channels = attrFilter.channel ?? [];
     const filtered = rows.filter((r) => {
       if (filter === "due" && !isDue(r)) return false;
       if (filter !== "all" && filter !== "due" && r.stage !== filter) return false;
+      if (industries.length && !industries.includes(r.industry)) return false;
+      if (channels.length && !channels.includes(r.channel)) return false;
       if (!q) return true;
       return [r.business_name, r.town, r.handle, r.next_step, r.notes]
         .some((v) => v?.toLowerCase().includes(q));
     });
-    return sortRows(filtered);
-  }, [rows, filter, search]);
+    return sortRows(filtered, sort);
+  }, [rows, filter, search, sort, attrFilter]);
 
   /* ---------------- Actions ---------------- */
 
@@ -206,7 +246,7 @@ export default function OutreachPage() {
 
   return (
     <>
-      <div className={styles.canvas}>
+      <div className={`${styles.canvas} ${outreachStyles.fillCanvas}`}>
         <div className={outreachStyles.headerRow}>
           <div className={styles.pageHeader}>
             <div className={styles.pageIcon}>
@@ -215,15 +255,16 @@ export default function OutreachPage() {
             <h1 className={styles.pageTitle}>Outreach</h1>
           </div>
 
-          <button
-            type="button"
-            className={outreachStyles.addBtn}
+          <Button
+            variant="primary"
+            size="sm"
+            icon={<HiMiniPlus size={18} />}
+            className={outreachStyles.headerAction}
             onClick={openNew}
             disabled={missingTable}
           >
-            <HiMiniPlus size={18} />
             Add
-          </button>
+          </Button>
         </div>
 
         {/* Filters */}
@@ -261,11 +302,11 @@ export default function OutreachPage() {
           </div>
         </div>
 
-        <main className={styles.content}>
+        <main className={`${styles.content} ${outreachStyles.fillContent}`}>
           {loading ? (
-            <div className={styles.loading}>Loading outreach…</div>
+            <div className={`${styles.loading} ${outreachStyles.fillCenter}`}>Loading outreach…</div>
           ) : missingTable ? (
-            <div className={styles.emptyState}>
+            <div className={`${styles.emptyState} ${outreachStyles.fillCenter}`}>
               <h3 className={styles.emptyTitle}>The outreach table isn&apos;t set up yet</h3>
               <p className={styles.emptyDescription}>
                 Run supabase/migrations/20261107_outreach.sql in the Supabase SQL Editor, then reload.
@@ -276,34 +317,28 @@ export default function OutreachPage() {
               <span>{error}</span>
             </div>
           ) : rows.length === 0 ? (
-            <div className={styles.emptyState}>
+            <div className={`${styles.emptyState} ${outreachStyles.fillCenter}`}>
               <h3 className={styles.emptyTitle}>No outreach yet</h3>
               <p className={styles.emptyDescription}>
                 Log a business each time you message one, and follow-ups will show up here when they&apos;re due.
               </p>
-              <button
-                type="button"
-                className={`${outreachStyles.addBtn} ${outreachStyles.emptyAdd}`}
+              <Button
+                variant="primary"
+                icon={<HiMiniPlus size={18} />}
+                className={outreachStyles.emptyAdd}
                 onClick={openNew}
               >
-                <HiMiniPlus size={18} />
                 Add your first
-              </button>
+              </Button>
             </div>
           ) : (
             <>
-              <div className={outreachStyles.toolbar}>
-                <label className={outreachStyles.search}>
-                  <HiMiniMagnifyingGlass size={16} aria-hidden="true" />
-                  <input
-                    type="search"
-                    placeholder="Search businesses"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    aria-label="Search businesses"
-                  />
-                </label>
-              </div>
+              <Toolbar
+                className={outreachStyles.toolbar}
+                search={{ value: search, onChange: setSearch, placeholder: "Search businesses" }}
+                filter={{ groups: FILTER_GROUPS, value: attrFilter, onChange: setAttrFilter }}
+                sort={{ options: SORT_OPTIONS, value: sort, onChange: setSort, defaultValue: "due" }}
+              />
 
               {visible.length === 0 ? (
                 <p className={outreachStyles.noMatches}>Nothing matches that filter.</p>
@@ -337,7 +372,12 @@ export default function OutreachPage() {
                               <BusinessCell row={row} />
                             </td>
                             <td className={outreachStyles.muted}>{industryLabel(row.industry)}</td>
-                            <td className={outreachStyles.muted}>{channelLabel(row.channel)}</td>
+                            <td className={outreachStyles.muted}>
+                              <span className={outreachStyles.channel}>
+                                <ChannelIcon channel={row.channel} />
+                                {channelLabel(row.channel)}
+                              </span>
+                            </td>
                             <td>
                               <span title={formatShortDate(row.first_contacted_on)}>
                                 {formatAgo(row.first_contacted_on)}
@@ -376,8 +416,12 @@ export default function OutreachPage() {
                           <StagePill stage={row.stage} />
                         </div>
                         <p className={outreachStyles.cardMeta}>
-                          {industryLabel(row.industry)} · {channelLabel(row.channel)} ·{" "}
-                          {formatAgo(row.first_contacted_on)}
+                          {industryLabel(row.industry)} ·{" "}
+                          <span className={outreachStyles.channel}>
+                            <ChannelIcon channel={row.channel} size={14} />
+                            {channelLabel(row.channel)}
+                          </span>{" "}
+                          · {formatAgo(row.first_contacted_on)}
                         </p>
                         {row.objection && <ObjectionCell row={row} />}
                         {(row.next_step || row.next_step_due) && (

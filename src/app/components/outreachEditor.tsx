@@ -19,7 +19,9 @@ import {
   HiOutlinePaperClip,
 } from "react-icons/hi2";
 import styles from "./component-styles/outreachEditor.module.css";
-import { Field, Select, TextArea, TextInput } from "./formFields";
+import { Dropdown, Field, TextArea, TextInput, type DropdownOption } from "./formFields";
+import { ChannelIcon } from "./channelIcon";
+import Button from "./button";
 import { supabase } from "../../lib/supabaseClient";
 import {
   CHANNELS,
@@ -29,11 +31,9 @@ import {
   STAGES,
   todayISO,
   type Channel,
-  type Industry,
   type Objection,
   type OutreachInput,
   type OutreachRow,
-  type Stage,
 } from "../../lib/outreach";
 
 type OutreachEditorProps = {
@@ -44,6 +44,14 @@ type OutreachEditorProps = {
   onSaved: (row: OutreachRow) => void;
   onRequestDelete: (row: OutreachRow) => void;
 };
+
+// Channels show their icon in the dropdown
+const CHANNEL_OPTIONS: DropdownOption<Channel>[] = CHANNELS.map((c) => ({
+  ...c,
+  icon: <ChannelIcon channel={c.value} />,
+}));
+
+const OBJECTION_OPTIONS: DropdownOption<Objection | "">[] = [{ value: "", label: "None" }, ...OBJECTIONS];
 
 // A new row starts as a DM sent today, with the playbook's follow-up in 5 days
 function blankForm(): OutreachInput {
@@ -207,30 +215,20 @@ export default function OutreachEditor({
 
             <div className={styles.row}>
               <Field icon={<HiOutlineTag size={16} />} label="Industry" htmlFor="outreach-industry">
-                <Select
+                <Dropdown
                   id="outreach-industry"
                   value={form.industry}
-                  onChange={(e) => update("industry", e.target.value as Industry)}
-                >
-                  {INDUSTRIES.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </Select>
+                  options={INDUSTRIES}
+                  onChange={(v) => update("industry", v)}
+                />
               </Field>
               <Field icon={<HiOutlineChatBubbleLeftRight size={16} />} label="Channel" htmlFor="outreach-channel">
-                <Select
+                <Dropdown
                   id="outreach-channel"
                   value={form.channel}
-                  onChange={(e) => update("channel", e.target.value as Channel)}
-                >
-                  {CHANNELS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </Select>
+                  options={CHANNEL_OPTIONS}
+                  onChange={(v) => update("channel", v)}
+                />
               </Field>
             </div>
 
@@ -266,34 +264,23 @@ export default function OutreachEditor({
                 />
               </Field>
               <Field icon={<HiOutlineFlag size={16} />} label="Stage" htmlFor="outreach-stage">
-                <Select
+                <Dropdown
                   id="outreach-stage"
                   value={form.stage}
-                  onChange={(e) => update("stage", e.target.value as Stage)}
-                >
-                  {STAGES.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </Select>
+                  options={STAGES}
+                  onChange={(v) => update("stage", v)}
+                />
               </Field>
             </div>
 
             <div className={styles.section}>
               <Field icon={<HiOutlineHandRaised size={16} />} label="Objection" htmlFor="outreach-objection">
-                <Select
+                <Dropdown
                   id="outreach-objection"
                   value={form.objection ?? ""}
-                  onChange={(e) => update("objection", (e.target.value || null) as Objection | null)}
-                >
-                  <option value="">None</option>
-                  {OBJECTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </Select>
+                  options={OBJECTION_OPTIONS}
+                  onChange={(v) => update("objection", v || null)}
+                />
               </Field>
               {form.objection && (
                 <Field icon={<HiOutlineChatBubbleBottomCenterText size={16} />} label="What they said" htmlFor="outreach-reason">
@@ -340,25 +327,25 @@ export default function OutreachEditor({
             </Field>
           </div>
 
+          {/* Cancel on the left; Delete (when editing) and the main action on the right */}
           <footer className={styles.footer}>
-            {row && (
-              <button
-                type="button"
-                className={styles.deleteBtn}
-                onClick={() => onRequestDelete(row)}
-                disabled={saving}
-              >
-                <HiOutlineTrash size={18} />
-                Delete
-              </button>
-            )}
+            <Button variant="secondary" onClick={onClose} disabled={saving}>
+              Cancel
+            </Button>
             <div className={styles.footerActions}>
-              <button type="button" className={styles.cancelBtn} onClick={onClose} disabled={saving}>
-                Cancel
-              </button>
-              <button type="submit" className={styles.saveBtn} disabled={saving}>
+              {row && (
+                <Button
+                  variant="ghostDanger"
+                  icon={<HiOutlineTrash size={18} />}
+                  onClick={() => onRequestDelete(row)}
+                  disabled={saving}
+                >
+                  Delete
+                </Button>
+              )}
+              <Button type="submit" variant="primary" busy={saving}>
                 {saving ? "Saving…" : row ? "Save" : "Add"}
-              </button>
+              </Button>
             </div>
           </footer>
         </form>
