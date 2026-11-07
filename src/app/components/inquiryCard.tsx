@@ -9,8 +9,11 @@ import {
   HiMiniCube,
   HiXMark,
   HiCheck,
+  HiTrash,
+  HiOutlineTrash,
 } from "react-icons/hi2";
 import { useRouter } from "next/navigation";
+import { useSwipeToDelete } from "../hooks/useSwipeToDelete";
 
 
 export type OpportunityStatus = "new" | "contacted" | "qualified" | "won" | "lost" | "bad";
@@ -35,6 +38,8 @@ type InquiryCardProps = {
   inquiry: BookingInquiry;
   onStatusChange: (id: string, status: OpportunityStatus) => void;
   onSeen: (id: string) => void;
+  /** "button": the desktop hover button (asks first). "swipe": a committed mobile swipe. */
+  onDelete: (id: string, via: "button" | "swipe") => void;
 };
 
 const STATUS_ORDER: OpportunityStatus[] = ["new", "contacted", "qualified", "won", "lost", "bad"];
@@ -75,7 +80,7 @@ function formatBudget(budget: number): string {
   return `£${budget}`;
 }
 
-export default function InquiryCard({ inquiry, onStatusChange, onSeen }: InquiryCardProps) {
+export default function InquiryCard({ inquiry, onStatusChange, onSeen, onDelete }: InquiryCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [showStatusPanel, setShowStatusPanel] = useState(false);
@@ -83,6 +88,20 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
   const [mounted, setMounted] = useState(false);
   const [messageExpanded, setMessageExpanded] = useState(false);
   const router = useRouter()
+
+  const {
+    rowRef: swipeRowRef,
+    cardRef: swipeCardRef,
+    actionRef: swipeActionRef,
+    open: swipeOpen,
+    armed: swipeArmed,
+    close: closeSwipe,
+    commit: commitSwipe,
+    consumeSwipe,
+  } = useSwipeToDelete({
+    enabled: isMobile,
+    onCommit: () => onDelete(inquiry.id, "swipe"),
+  });
 
   // Character limit for truncation (roughly 2 lines)
   const MESSAGE_TRUNCATE_LENGTH = 80;
@@ -133,6 +152,12 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
   const showNewDot = inquiry.opportunity_status === "new" && !inquiry.seen_at;
 
   const handleCardClick = () => {
+    // the click that ends a sideways swipe, or a tap on an open row, just closes it
+    if (consumeSwipe()) return;
+    if (swipeOpen) {
+      closeSwipe();
+      return;
+    }
     if (showNewDot) onSeen(inquiry.id);
     router.push(`/lead/${inquiry.id}`);
   };
@@ -159,7 +184,29 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
 
   return (
     <>
+      <div ref={swipeRowRef} className={styles.swipeRow}>
+      {isMobile && (
+        <div
+          ref={swipeActionRef}
+          className={`${styles.swipeAction} ${swipeArmed ? styles.swipeActionArmed : ""}`}
+        >
+          <button
+            type="button"
+            className={styles.swipeDeleteBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              commitSwipe();
+            }}
+            tabIndex={swipeOpen ? 0 : -1}
+            aria-hidden={!swipeOpen}
+          >
+            <HiTrash size={20} />
+            <span>Delete</span>
+          </button>
+        </div>
+      )}
       <article
+        ref={swipeCardRef}
         className={styles.card}
         onClick={handleCardClick}
         onMouseEnter={() => setIsHovered(true)}
@@ -293,7 +340,22 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen }: Inquiry
             </div>
           )}
         </div>
+
+        {/* Desktop: appears on hover, asks before deleting */}
+        <button
+          type="button"
+          className={styles.hoverDelete}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(inquiry.id, "button");
+          }}
+          aria-label={`Delete ${inquiry.name || "lead"}`}
+          title="Delete lead"
+        >
+          <HiOutlineTrash size={16} />
+        </button>
       </article>
+      </div>
 
       {/* Status Bottom Sheet Panel - Mobile only (rendered via Portal) */}
       {mounted && createPortal(

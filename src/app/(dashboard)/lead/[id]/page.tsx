@@ -21,6 +21,7 @@ import {
   HiChevronDown,
   HiChevronUp,
   HiMiniArrowUp,
+  HiOutlineTrash,
 } from "react-icons/hi2";
 import {
   HiOutlineGlobeAlt,
@@ -48,6 +49,9 @@ import QualifiedSummary, {
 } from "../../../components/qualifiedSummary";
 import LeadPageSkeleton from "./skeletons/leadPageSkeleton";
 import Toast, { type ToastType } from "../../../components/toast";
+import { Field, Select, TextArea, TextInput } from "../../../components/formFields";
+import ConfirmDialog from "../../../components/confirmDialog";
+import { deleteInquiries } from "../../../../lib/deleteInquiries";
 
 /* =========================================================
    Types
@@ -169,6 +173,9 @@ export default function LeadPage() {
   const [qualifying, setQualifying] = useState(false);
 
   const [toast, setToast] = useState<ToastType>(null);
+
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Form expanded state - for new/unqualified leads
   const [isFormExpanded, setIsFormExpanded] = useState(false);
@@ -507,6 +514,23 @@ export default function LeadPage() {
 
   const closePanel = () => setShowStatusPanel(false);
 
+  /* ---------------- Delete ---------------- */
+
+  async function deleteLead() {
+    if (!inquiry) return;
+    setDeleting(true);
+    setFetchError(null);
+
+    try {
+      await deleteInquiries([inquiry.id]);
+      router.replace("/");
+    } catch (e) {
+      setConfirmDelete(false);
+      setFetchError(e instanceof Error ? e.message : "Couldn't delete this lead.");
+      setDeleting(false);
+    }
+  }
+
   /* ---------------- Loading / Error guards ---------------- */
 
   if (loading) {
@@ -800,13 +824,9 @@ export default function LeadPage() {
               </div>
 
               <div className={leadStyles.formGrid}>
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>
-                    <HiOutlineCalendarDays size={16} />
-                    Timeline
-                  </label>
-                  <select
-                    className={leadStyles.select}
+                <Field icon={<HiOutlineCalendarDays size={16} />} label="Timeline" htmlFor="q-timeline">
+                  <Select
+                    id="q-timeline"
                     value={form.timeline}
                     onChange={(e) => update("timeline", e.target.value as Timeline)}
                   >
@@ -817,29 +837,21 @@ export default function LeadPage() {
                         </option>
                       )
                     )}
-                  </select>
-                </div>
+                  </Select>
+                </Field>
 
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>
-                    <HiOutlineBuildingOffice2 size={16} />
-                    Business Name
-                  </label>
-                  <input
-                    className={leadStyles.input}
+                <Field icon={<HiOutlineBuildingOffice2 size={16} />} label="Business Name" htmlFor="q-business-name">
+                  <TextInput
+                    id="q-business-name"
                     placeholder="Enter business name..."
                     value={form.businessName}
                     onChange={(e) => update("businessName", e.target.value)}
                   />
-                </div>
+                </Field>
 
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>
-                    <HiOutlineGlobeAlt size={16} />
-                    Selected Package
-                  </label>
-                  <select
-                    className={leadStyles.select}
+                <Field icon={<HiOutlineGlobeAlt size={16} />} label="Selected Package" htmlFor="q-selected-package">
+                  <Select
+                    id="q-selected-package"
                     value={form.selected_package}
                     onChange={(e) =>
                       update("selected_package", e.target.value as SelectedPackage)
@@ -850,55 +862,39 @@ export default function LeadPage() {
                         {v}
                       </option>
                     ))}
-                  </select>
-                </div>
+                  </Select>
+                </Field>
 
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>
-                    <HiOutlineLink size={16} />
-                    Current site URL
-                  </label>
-                  <input
-                    className={leadStyles.input}
+                <Field icon={<HiOutlineLink size={16} />} label="Current site URL" htmlFor="q-current-site-url">
+                  <TextInput
+                    id="q-current-site-url"
                     placeholder="https://..."
                     value={form.websiteUrl}
                     onChange={(e) => update("websiteUrl", e.target.value)}
                   />
-                </div>
+                </Field>
 
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>
-                    <HiOutlineShoppingBag size={16} />
-                    Products
-                  </label>
-                  <input
-                    className={leadStyles.input}
+                <Field icon={<HiOutlineShoppingBag size={16} />} label="Products" htmlFor="q-products">
+                  <TextInput
+                    id="q-products"
                     placeholder="What products/services do they offer?"
                     value={form.products}
                     onChange={(e) => update("products", e.target.value)}
                   />
-                </div>
+                </Field>
 
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>
-                    <HiOutlineUserGroup size={16} />
-                    Target Audience
-                  </label>
-                  <input
-                    className={leadStyles.input}
+                <Field icon={<HiOutlineUserGroup size={16} />} label="Target Audience" htmlFor="q-target-audience">
+                  <TextInput
+                    id="q-target-audience"
                     placeholder="Who are their ideal customers?"
                     value={form.targetAudience}
                     onChange={(e) => update("targetAudience", e.target.value)}
                   />
-                </div>
+                </Field>
 
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>
-                    <HiOutlineDocumentText size={16} />
-                    Content status
-                  </label>
-                  <select
-                    className={leadStyles.select}
+                <Field icon={<HiOutlineDocumentText size={16} />} label="Content status" htmlFor="q-content-status">
+                  <Select
+                    id="q-content-status"
                     value={form.contentStatus}
                     onChange={(e) => update("contentStatus", e.target.value as ContentStatus)}
                   >
@@ -909,42 +905,30 @@ export default function LeadPage() {
                         </option>
                       )
                     )}
-                  </select>
-                </div>
+                  </Select>
+                </Field>
 
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>
-                    <HiOutlinePuzzlePiece size={16} />
-                    Integrations
-                  </label>
-                  <input
-                    className={leadStyles.input}
+                <Field icon={<HiOutlinePuzzlePiece size={16} />} label="Integrations" htmlFor="q-integrations">
+                  <TextInput
+                    id="q-integrations"
                     placeholder="Calendly, Stripe, Newsletter, CRM, Analytics..."
                     value={form.integrations}
                     onChange={(e) => update("integrations", e.target.value)}
                   />
-                </div>
+                </Field>
 
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>
-                    <HiOutlineRectangleStack size={16} />
-                    Pages / sections needed
-                  </label>
-                  <input
-                    className={leadStyles.input}
+                <Field icon={<HiOutlineRectangleStack size={16} />} label="Pages / sections needed" htmlFor="q-pages-sections-needed">
+                  <TextInput
+                    id="q-pages-sections-needed"
                     placeholder="Home, About, Services, Work, Contact, Pricing..."
                     value={form.pagesNeeded}
                     onChange={(e) => update("pagesNeeded", e.target.value)}
                   />
-                </div>
+                </Field>
 
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>
-                    <HiOutlineMagnifyingGlass size={16} />
-                    SEO priority
-                  </label>
-                  <select
-                    className={leadStyles.select}
+                <Field icon={<HiOutlineMagnifyingGlass size={16} />} label="SEO priority" htmlFor="q-seo-priority">
+                  <Select
+                    id="q-seo-priority"
                     value={form.seoPriority}
                     onChange={(e) =>
                       update("seoPriority", e.target.value as FormState["seoPriority"])
@@ -955,45 +939,33 @@ export default function LeadPage() {
                         {v}
                       </option>
                     ))}
-                  </select>
-                </div>
+                  </Select>
+                </Field>
 
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>
-                    <HiOutlineExclamationTriangle size={16} />
-                    Challenges / blockers
-                  </label>
-                  <textarea
-                    className={leadStyles.textarea}
+                <Field icon={<HiOutlineExclamationTriangle size={16} />} label="Challenges / blockers" htmlFor="q-challenges-blockers">
+                  <TextArea
+                    id="q-challenges-blockers"
                     placeholder="What's not working today? What's stopping you from converting?"
                     value={form.challenges}
                     onChange={(e) => update("challenges", e.target.value)}
                     rows={4}
                   />
-                </div>
+                </Field>
 
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>
-                    <HiOutlineArrowRightCircle size={16} />
-                    Next steps
-                  </label>
-                  <textarea
-                    className={leadStyles.textarea}
+                <Field icon={<HiOutlineArrowRightCircle size={16} />} label="Next steps" htmlFor="q-next-steps">
+                  <TextArea
+                    id="q-next-steps"
                     placeholder="Agree a call, request assets, send proposal, book build slot..."
                     value={form.nextSteps}
                     onChange={(e) => update("nextSteps", e.target.value)}
                     rows={3}
                   />
-                </div>
+                </Field>
 
               </div>
 
               <div className={leadStyles.formGridBot} >
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>
-                    <HiOutlineRocketLaunch size={16} />
-                    Goals (pick what applies)
-                  </label>
+                <Field icon={<HiOutlineRocketLaunch size={16} />} label="Goals (pick what applies)">
                   <div className={leadStyles.chips}>
                     {(
                       [
@@ -1028,28 +1000,44 @@ export default function LeadPage() {
                       );
                     })}
                   </div>
-                </div>
+                </Field>
 
-                <div className={leadStyles.formCardIn}>
-                  <label className={leadStyles.label}>
-                    <HiOutlinePaperClip size={16} />
-                    Meeting notes
-                  </label>
-                  <textarea
-                    className={leadStyles.textarea}
+                <Field icon={<HiOutlinePaperClip size={16} />} label="Meeting notes" htmlFor="q-meeting-notes">
+                  <TextArea
+                    id="q-meeting-notes"
                     placeholder={`Example:\n- Goal: more leads from mobile\n- Pain: site feels outdated + slow\n- Must have: pricing page + enquiry funnel\n- Timeline: wants it live before <date>\n`}
                     value={form.meetingNotes}
                     onChange={(e) => update("meetingNotes", e.target.value)}
                     rows={9}
                   />
-                </div>
+                </Field>
               </div>
              
             </div>
           )}
 
+          <button
+            className={leadStyles.deleteLeadBtn}
+            onClick={() => setConfirmDelete(true)}
+            type="button"
+          >
+            <HiOutlineTrash size={18} />
+            <span>Delete lead</span>
+          </button>
         </main>
       </div>
+
+      <ConfirmDialog
+        variant="danger"
+        open={confirmDelete}
+        title="Delete this lead?"
+        message={`${inquiry.name || "This lead"} will be removed for good, along with any qualification notes. This can't be undone.`}
+        confirmLabel="Delete"
+        busyLabel="Deleting…"
+        busy={deleting}
+        onConfirm={deleteLead}
+        onCancel={() => setConfirmDelete(false)}
+      />
 
       {/* Status Bottom Sheet Panel - Mobile only */}
       {mounted &&

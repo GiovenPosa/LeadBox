@@ -667,3 +667,93 @@
     right: var(--space-5);
   }
 }
+/* ============================================
+   DELETE - hover button (desktop), swipe (mobile)
+   ============================================ */
+
+.swipeRow {
+  position: relative;
+  border-radius: var(--radius-2xl);
+}
+
+/* Desktop: a small button in the bottom-right corner, shown on hover */
+.hoverDelete {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hoverDelete {
+    position: absolute;
+    right: var(--space-3);
+    bottom: var(--space-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-lg);
+    color: var(--color-text-tertiary);
+    background-color: var(--color-bg-primary);
+    box-shadow: 0 0 0 1px var(--color-border-primary);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-fast), color var(--transition-fast),
+      background-color var(--transition-fast), visibility 0s linear 100ms;
+  }
+
+  .card:hover .hoverDelete,
+  .card:focus-within .hoverDelete {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity var(--transition-fast), color var(--transition-fast),
+      background-color var(--transition-fast), visibility 0s linear 0s;
+  }
+
+  .hoverDelete:hover,
+  .hoverDelete:focus-visible {
+    color: var(--color-status-lost);
+    background-color: var(--color-status-lost-bg);
+  }
+}
+
+/* Mobile: the red action sits behind the card and shows as it slides */
+@media (max-width: 768px) {
+  .swipeRow {
+    overflow: hidden;
+  }
+
+  .card {
+    will-change: transform;
+  }
+}
+
+.swipeAction {
+  position: absolute;
+  inset: 0;
+  visibility: hidden; /* shown by useSwipeToDelete while swiping */
+  display: flex;
+  justify-content: flex-end;
+  border-radius: inherit;
+  background-color: var(--color-status-lost);
+}
+
+/* grows with the swipe (--swipe is set by useSwipeToDelete) */
+.swipeDeleteBtn {
+  width: max(88px, var(--swipe, 0px));
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 var(--space-4);
+  color: var(--color-text-inverse);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+/* past the overcommit threshold the label follows the card's edge */
+.swipeActionArmed .swipeDeleteBtn {
+  align-items: flex-start;
+  padding-left: var(--space-6);
+}

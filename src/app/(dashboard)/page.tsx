@@ -10,6 +10,8 @@ import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 import styles from "./homePage.module.css";
 import { HiInbox, HiArrowPath } from "react-icons/hi2";
 import InquiryCardSkeleton from "../components/skeletons/inquiryCardSkeleton";
+import ConfirmDialog from "../components/confirmDialog";
+import { deleteInquiries } from "../../lib/deleteInquiries";
 import { useBlockIosEdgeSwipe } from "../hooks/useBlockIosEdgeBackSwipe";
 
 /* =========================================================
@@ -17,6 +19,9 @@ import { useBlockIosEdgeSwipe } from "../hooks/useBlockIosEdgeBackSwipe";
 ========================================================= */
 
 const PAGE_SIZE = 20;
+
+// How long a swiped-away lead can be brought back before it's really deleted
+const UNDO_MS = 5000;
 
 // Columns we select from the database (keeps queries consistent)
 const SELECT_COLUMNS =
@@ -38,12 +43,21 @@ type StatusCounts = {
 
 type StatusFilter = OpportunityStatus | "all";
 
+/** Newest first, the inbox's order */
+function insertByDate(rows: BookingInquiry[], row: BookingInquiry) {
+  if (rows.some((r) => r.id === row.id)) return rows;
+  const next = [...rows, row];
+  next.sort((a, b) => b.created_at.localeCompare(a.created_at));
+  return next;
+}
+
 /* =========================================================
    Component
 ========================================================= */
 
 export default function InboxPage() {
   const { setActivePage, setPageTitle, setBreadcrumbs } = useDashboard();
+  const { refreshCount } = useInbox();
 
   // Set page config on mount
   useEffect(() => {
@@ -70,6 +84,14 @@ export default function InboxPage() {
 
   // Pagination state
   const [hasMore, setHasMore] = useState(true);
+
+  // Delete: the desktop button asks first; a swipe deletes after an undo window
+  const [confirmTarget, setConfirmTarget] = useState<BookingInquiry | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [undoRow, setUndoRow] = useState<BookingInquiry | null>(null);
+  const pendingDeleteRef = useRef<BookingInquiry | null>(null);
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Counts state (fetched separately for accurate totals)
   const [counts, setCounts] = useState<StatusCounts>({
@@ -181,7 +203,8 @@ export default function InboxPage() {
       if (error) {
         setError(error.message);
       } else {
-        setRows((data ?? []) as BookingInquiry[]);
+        const pendingId = pendingDeleteRef.current?.id;
+        setRows(((data ?? []) as BookingInquiry[]).filter((r) => r.id !== pendingId));
         // If we got fewer items than PAGE_SIZE, there's no more data
         setHasMore((data?.length ?? 0) === PAGE_SIZE);
         setError(null);
@@ -375,6 +398,97 @@ export default function InboxPage() {
   }
 
   /* ---------------------------------------------------------
+     Delete
+  --------------------------------------------------------- */
+
+  function requestDelete(id: string, via: "button" | "swipe") {
+    const row = rows.find((r) => r.id === id);
+    if (!row) return;
+    if (via === "button") setConfirmTarget(row);
+    else swipeDelete(row);
+  }
+
+  // Desktop: after the confirm dialog
+  async function confirmDelete() {
+    if (!confirmTarget) return;
+    setDeleting(true);
+    setActionError(null);
+
+    try {
+      await deleteInquiries([confirmTarget.id]);
+      setRows((prev) => prev.filter((r) => r.id !== confirmTarget.id));
+      fetchCounts();
+      refreshCount();
+      setConfirmTarget(null);
+    } catch (e) {
+      setConfirmTarget(null);
+      setActionError(e instanceof Error ? e.message : "Couldn't delete that lead.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  // Mobile: the row is gone straight away; the real delete waits for the undo window
+  function swipeDelete(row: BookingInquiry) {
+    flushPendingDelete(); // only one undo at a time
+    setActionError(null);
+
+    setRows((prev) => prev.filter((r) => r.id !== row.id));
+    setCounts((prev) => ({
+      ...prev,
+      total: Math.max(0, prev.total - 1),
+      [row.opportunity_status]: Math.max(0, prev[row.opportunity_status] - 1),
+    }));
+
+    pendingDeleteRef.current = row;
+    setUndoRow(row);
+    undoTimerRef.current = setTimeout(flushPendingDelete, UNDO_MS);
+  }
+
+  function flushPendingDelete() {
+    const row = pendingDeleteRef.current;
+    if (!row) return;
+    pendingDeleteRef.current = null;
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    setUndoRow(null);
+
+    deleteInquiries([row.id])
+      .then(() => {
+        fetchCounts();
+        refreshCount();
+      })
+      .catch((e) => {
+        setRows((prev) => insertByDate(prev, row));
+        fetchCounts();
+        setActionError(e instanceof Error ? e.message : "Couldn't delete that lead.");
+      });
+  }
+
+  function undoDelete() {
+    const row = pendingDeleteRef.current;
+    if (!row) return;
+    pendingDeleteRef.current = null;
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    setUndoRow(null);
+
+    const filter = currentFilterRef.current;
+    if (filter === "all" || row.opportunity_status === filter) {
+      setRows((prev) => insertByDate(prev, row));
+    }
+    fetchCounts();
+  }
+
+  // Leaving the inbox mid-undo still deletes it
+  useEffect(() => {
+    return () => {
+      const row = pendingDeleteRef.current;
+      if (!row) return;
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+      deleteInquiries([row.id]).catch(() => {});
+    };
+  }, []);
+
+  /* ---------------------------------------------------------
      Initial Fetch Effect
   --------------------------------------------------------- */
 
@@ -502,17 +616,11 @@ export default function InboxPage() {
                 );
               }
             } else if (payload.eventType === "DELETE") {
-              const deleted = payload.old as BookingInquiry;
+              const deleted = payload.old as Partial<BookingInquiry>;
               setRows((prev) => prev.filter((r) => r.id !== deleted.id));
-              // Update counts
-              setCounts((prev) => ({
-                ...prev,
-                total: Math.max(0, prev.total - 1),
-                [deleted.opportunity_status]: Math.max(
-                  0,
-                  prev[deleted.opportunity_status] - 1
-                ),
-              }));
+              // A delete event only carries the id, not the status, so
+              // re-count instead of adjusting
+              fetchCounts();
             }
           }
         )
@@ -546,7 +654,7 @@ export default function InboxPage() {
       window.removeEventListener("visibilitychange", onVis);
       cleanup();
     };
-  }, [fetchAll]);
+  }, [fetchAll, fetchCounts]);
 
   /* ---------------------------------------------------------
      Pull-to-Refresh Visual Calculations
@@ -664,6 +772,12 @@ export default function InboxPage() {
 
         {/* Content */}
         <main className={styles.content}>
+          {actionError && (
+            <div className={`${styles.errorBanner} ${styles.actionError}`} role="alert">
+              <span>{actionError}</span>
+            </div>
+          )}
+
           {loading ? (
             <div className={styles.cardList}>
               {Array.from({ length: 3 }).map((_, i) => (
@@ -710,6 +824,7 @@ export default function InboxPage() {
                       inquiry={inquiry}
                       onStatusChange={updateStatus}
                       onSeen={markSeen}
+                      onDelete={requestDelete}
                     />
                   ))}
 
@@ -733,6 +848,29 @@ export default function InboxPage() {
           )}
         </main>
       </div>
+
+      {undoRow && (
+        <div className={styles.undoToast} role="status">
+          <span className={styles.undoText}>
+            Deleted {undoRow.name || "lead"}
+          </span>
+          <button type="button" className={styles.undoBtn} onClick={undoDelete}>
+            Undo
+          </button>
+        </div>
+      )}
+
+      <ConfirmDialog
+        variant="danger"
+        open={confirmTarget !== null}
+        title="Delete this lead?"
+        message={`${confirmTarget?.name || "This lead"} will be removed for good, along with any qualification notes. This can't be undone.`}
+        confirmLabel="Delete"
+        busyLabel="Deleting…"
+        busy={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmTarget(null)}
+      />
     </>
   );
 }

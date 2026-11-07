@@ -1,0 +1,142 @@
+/* ============================================
+   CONFIRM DIALOG - centred on desktop, bottom sheet on mobile
+   ============================================ */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background-color: rgba(0, 0, 0, 0);
+  visibility: hidden;
+  pointer-events: none;
+  transition: background-color 0.2s ease, visibility 0s linear 0.2s;
+}
+
+.backdropVisible {
+  background-color: rgba(0, 0, 0, 0.4);
+  visibility: visible;
+  pointer-events: auto;
+  transition: background-color 0.2s ease, visibility 0s linear 0s;
+}
+
+.dialog {
+  position: fixed;
+  z-index: 301;
+  top: 50%;
+  left: 50%;
+  width: min(400px, calc(100vw - 2 * var(--space-4)));
+  padding: var(--space-5);
+  border-radius: var(--radius-2xl);
+  background-color: var(--color-bg-secondary);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, -48%) scale(0.98);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
+}
+
+.dialogOpen {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0s;
+}
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: var(--tracking-tight);
+}
+
+.message {
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.cancelBtn,
+.confirmBtn {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-md);
+  font-weight: 600;
+  transition: background-color var(--transition-fast), opacity var(--transition-fast);
+}
+
+.cancelBtn {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-active);
+}
+
+.cancelBtn:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.confirmBtn {
+  color: var(--color-text-inverse);
+}
+
+.confirmBtn:hover {
+  opacity: 0.9;
+}
+
+.confirmNeutral {
+  background-color: var(--color-text-primary);
+}
+
+.confirmDanger {
+  /* white on red in both themes; the inverse text colour turns dark in dark mode */
+  color: #ffffff;
+  background-color: var(--color-status-lost);
+}
+
+.cancelBtn:disabled,
+.confirmBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+@media (max-width: 768px) {
+  .dialog {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+    padding: var(--space-6) var(--space-5);
+    padding-bottom: max(var(--space-6), env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.15);
+    opacity: 1;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.3s;
+  }
+
+  .dialogOpen {
+    transform: translateY(0);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0s;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .cancelBtn,
+  .confirmBtn {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-lg);
+  }
+}
