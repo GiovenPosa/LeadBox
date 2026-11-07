@@ -9,15 +9,18 @@ import {
   HiOutlineTag,
   HiOutlineTrash,
   HiOutlinePencilSquare,
+  HiOutlineCheckCircle,
   HiMiniPlus,
   HiMiniXMark,
 } from "react-icons/hi2";
 import styles from "./component-styles/contactEditor.module.css";
 import SidePanel, { PanelError, PanelFooter, PanelSection } from "./sidePanel";
 import NotesTimeline from "./notesTimeline";
+import TaskList from "./taskList";
 import { Field, TextInput } from "./formFields";
 import Button, { IconButton } from "./button";
 import { supabase } from "../../lib/supabaseClient";
+import { logActivity } from "../../lib/activity";
 
 // Add a contact by hand, or edit one: name, email, phone numbers and business
 
@@ -167,6 +170,11 @@ export default function ContactEditor({
       setError(contactSaveError(error, email));
       return;
     }
+    if (!contact) {
+      logActivity("contact.added", `Added ${fields.name || email || phones[0]} as a contact`, {
+        contact_id: data[0].id as string,
+      });
+    }
     onSaved();
   }
 
@@ -308,7 +316,14 @@ export default function ContactEditor({
         </datalist>
       </Field>
 
-      {/* Everything noted about this person: on the contact, their enquiries, leads and outreach */}
+      {/* Everything to do and noted about this person: on the contact, their enquiries, leads and outreach */}
+      {contact && (
+        <PanelSection>
+          <Field icon={<HiOutlineCheckCircle size={16} />} label="Tasks">
+            <TaskList subject={{ kind: "contact", id: contact.id }} />
+          </Field>
+        </PanelSection>
+      )}
       {contact && (
         <PanelSection>
           <Field icon={<HiOutlinePencilSquare size={16} />} label="Notes">

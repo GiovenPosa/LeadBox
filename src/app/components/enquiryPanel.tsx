@@ -15,6 +15,7 @@ import {
   HiOutlineTag,
   HiOutlineWindow,
   HiOutlinePencilSquare,
+  HiOutlineCheckCircle,
 } from "react-icons/hi2";
 import styles from "./component-styles/enquiryPanel.module.css";
 import SidePanel, { PanelError, PanelFooter, PanelRow, PanelSection } from "./sidePanel";
@@ -22,6 +23,7 @@ import { Dropdown, Field, type DropdownOption } from "./formFields";
 import Button from "./button";
 import Pill from "./pill";
 import NotesTimeline from "./notesTimeline";
+import TaskList from "./taskList";
 import type { BookingInquiry, OpportunityStatus } from "./inquiryCard";
 import { embeddedLead, leadHref, leadStageLabel, leadStageTone, packageLabel } from "../../lib/leads";
 
@@ -198,7 +200,13 @@ export default function EnquiryPanel({
             </PanelRow>
           </PanelSection>
 
-          {/* Notes stay with this person as the enquiry becomes a lead */}
+          {/* Tasks and notes stay with this person as the enquiry becomes a lead */}
+          <PanelSection>
+            <Field icon={<HiOutlineCheckCircle size={16} />} label="Tasks">
+              <TaskList subject={{ kind: "inquiry", id: shown.id }} />
+            </Field>
+          </PanelSection>
+
           <PanelSection>
             <Field icon={<HiOutlinePencilSquare size={16} />} label="Notes">
               <NotesTimeline subject={{ kind: "inquiry", id: shown.id }} />

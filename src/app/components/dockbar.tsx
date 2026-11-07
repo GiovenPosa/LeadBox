@@ -1,11 +1,11 @@
 "use client";
 
 import styles from "./component-styles/dockbar.module.css";
-import { HiInbox, HiOutlineInbox, HiMiniBolt, HiOutlineBolt, HiMiniPaperAirplane, HiOutlinePaperAirplane, HiMiniUsers, HiOutlineUsers, HiMiniChartBar, HiOutlineChartBar, HiMiniRocketLaunch, HiOutlineRocketLaunch } from "react-icons/hi2";
+import { HiMiniHome, HiOutlineHome, HiInbox, HiOutlineInbox, HiMiniBolt, HiOutlineBolt, HiMiniPaperAirplane, HiOutlinePaperAirplane, HiMiniUsers, HiOutlineUsers, HiMiniRocketLaunch, HiOutlineRocketLaunch } from "react-icons/hi2";
 import Link from "next/link";
 
 type DockBarProps = {
-  activePage: "inbox" | "leads" | "outreach" | "contacts" | "projects" | "analytics";
+  activePage: "home" | "inbox" | "leads" | "outreach" | "contacts" | "projects";
   inboxUnseenCount?: number;
   onSearchClick?: () => void;
 };
@@ -17,10 +17,17 @@ export default function DockBar({ activePage, inboxUnseenCount = 0, onSearchClic
     <nav className={styles.dockBar} aria-label="Main navigation">
       <div className={styles.dockInner}>
         <DockItem
+          icon={<HiOutlineHome size={25} />}
+          activeIcon={<HiMiniHome size={25} />}
+          label="Home"
+          href="/"
+          active={activePage === "home"}
+        />
+        <DockItem
           icon={<HiOutlineInbox size={25} />}
           activeIcon={<HiInbox size={25} />}
           label="Inbox"
-          href="/"
+          href="/inbox"
           active={activePage === "inbox"}
           badge={showBadge ? inboxUnseenCount : undefined}
         />
@@ -51,14 +58,6 @@ export default function DockBar({ activePage, inboxUnseenCount = 0, onSearchClic
           label="Projects"
           active={activePage === "projects"}
           onClick={onSearchClick}
-        />
-        <DockItem
-          icon={<HiOutlineChartBar size={25} />}
-          activeIcon={<HiMiniChartBar size={25} />}
-          label="Analytics"
-          href="#"
-          active={activePage === "analytics"}
-          disabled
         />
       </div>
     </nav>

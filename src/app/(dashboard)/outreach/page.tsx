@@ -16,6 +16,7 @@ import { embeddedLead, leadHref, type LeadRef } from "../../../lib/leads";
 import ConfirmDialog from "../../components/confirmDialog";
 import Button from "../../components/button";
 import { StatPill } from "../../components/statPill";
+import { TASK_COLUMNS, sortTasks, type Task } from "../../../lib/tasks";
 import Toolbar, { type ToolbarFilterGroup } from "../../components/toolbar";
 import { ChannelLabel } from "../../components/channelIcon";
 import DataTable, {
@@ -58,11 +59,8 @@ const STAGE_TONE: Record<Stage, PillTone> = {
   replied: "contacted",
   mockup: "qualified",
   chat: "qualified",
-  quoted: "qualified",
-  // the Inbox's colour for an enquiry that became a lead
-  converted: "qualified",
-  won: "won",
-  lost: "lost",
+  // green: the end of outreach, and distinct from mock-up and chat
+  converted: "won",
   no_reply: "bad",
 };
 
@@ -122,6 +120,8 @@ const isDue = (row: OutreachRow) => {
   return state === "overdue" || state === "today";
 };
 
+const linkedId = () => (typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("open"));
+
 // PostgREST says this when the migration hasn't been run yet
 const isMissingTable = (message: string) =>
   /could not find the table|relation .* does not exist/i.test(message);
@@ -142,6 +142,7 @@ export default function OutreachPage() {
   useBlockIosEdgeSwipe(true);
 
   const [rows, setRows] = useState<OutreachRow[]>([]);
+  const [openTasks, setOpenTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   // a quick load skips the skeleton; the rows just fade in
   const showSkeleton = useDelayedFlag(loading);
@@ -163,18 +164,42 @@ export default function OutreachPage() {
   /* ---------------- Data ---------------- */
 
   const fetchRows = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("outreach")
-      .select(OUTREACH_COLUMNS)
-      .order("first_contacted_on", { ascending: false })
-      .limit(1000);
+    // the businesses, and their open tasks (each row's "next step" is its soonest one)
+    const [{ data, error }, { data: tasks }] = await Promise.all([
+      supabase
+        .from("outreach")
+        .select(OUTREACH_COLUMNS)
+        .order("first_contacted_on", { ascending: false })
+        .limit(1000),
+      supabase.from("tasks").select(TASK_COLUMNS).not("outreach_id", "is", null).is("done_at", null),
+    ]);
 
     if (error) {
       setError(error.message);
       return;
     }
     setError(null);
+    setOpenTasks((tasks ?? []) as Task[]);
     setRows((data ?? []) as OutreachRow[]);
+  }, []);
+
+  // ?open=<id> (from the dashboard): open that business once the rows have loaded
+  const [pendingOpen, setPendingOpen] = useState(linkedId);
+  if (pendingOpen && !loading) {
+    setPendingOpen(null);
+    const row = rows.find((r) => r.id === pendingOpen);
+    if (row) {
+      setEditing(row);
+      setEditorOpen(true);
+    }
+  }
+
+  // A task changed in the editor: swap in that business's open tasks
+  const handleTasksChange = useCallback((outreachId: string, tasks: Task[]) => {
+    setOpenTasks((prev) => [
+      ...prev.filter((t) => t.outreach_id !== outreachId),
+      ...tasks.filter((t) => t.outreach_id === outreachId && !t.done_at),
+    ]);
   }, []);
 
   useEffect(() => {
@@ -197,17 +222,30 @@ export default function OutreachPage() {
 
   /* ---------------- Derived ---------------- */
 
+  // Each business with its next step: the soonest open task (undated ones last)
+  const withNext = useMemo(() => {
+    const next = new Map<string, Task>();
+    for (const task of sortTasks(openTasks)) {
+      if (task.outreach_id && !next.has(task.outreach_id)) next.set(task.outreach_id, task);
+    }
+    return rows.map((r) => ({
+      ...r,
+      next_step: next.get(r.id)?.title ?? null,
+      next_step_due: next.get(r.id)?.due_on ?? null,
+    }));
+  }, [rows, openTasks]);
+
   const counts = useMemo(() => {
     const byStage = Object.fromEntries(STAGES.map((s) => [s.value, 0])) as Record<Stage, number>;
-    for (const r of rows) byStage[r.stage] += 1;
-    return { all: rows.length, due: rows.filter(isDue).length, byStage };
-  }, [rows]);
+    for (const r of withNext) byStage[r.stage] += 1;
+    return { all: withNext.length, due: withNext.filter(isDue).length, byStage };
+  }, [withNext]);
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
     const industries = attrFilter.industry ?? [];
     const channels = attrFilter.channel ?? [];
-    const filtered = rows.filter((r) => {
+    const filtered = withNext.filter((r) => {
       if (filter === "due" && !isDue(r)) return false;
       if (filter !== "all" && filter !== "due" && r.stage !== filter) return false;
       if (industries.length && !industries.includes(r.industry)) return false;
@@ -217,7 +255,7 @@ export default function OutreachPage() {
         .some((v) => v?.toLowerCase().includes(q));
     });
     return sortRows(filtered, sort);
-  }, [rows, filter, search, sort, attrFilter]);
+  }, [withNext, filter, search, sort, attrFilter]);
 
   /* ---------------- Actions ---------------- */
 
@@ -240,6 +278,8 @@ export default function OutreachPage() {
         : [saved, ...prev]
     );
     setEditorOpen(false);
+    // a new business may have its first task: pick it up
+    fetchRows();
   }
 
   async function confirmDelete() {
@@ -420,6 +460,7 @@ export default function OutreachPage() {
         onClose={closeEditor}
         onSaved={handleSaved}
         onRequestDelete={setConfirmTarget}
+        onTasksChange={handleTasksChange}
         onRequestPromote={(row) => {
           // one panel at a time: the promote step replaces the editor
           setEditorOpen(false);

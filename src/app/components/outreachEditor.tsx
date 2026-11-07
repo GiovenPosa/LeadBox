@@ -19,6 +19,9 @@ import {
 } from "react-icons/hi2";
 import NotesTimeline from "./notesTimeline";
 import { addNote } from "../../lib/notes";
+import { addTask, type Task } from "../../lib/tasks";
+import TaskList from "./taskList";
+import { logActivity } from "../../lib/activity";
 import SidePanel, { PanelCallout, PanelError, PanelFooter, PanelRow, PanelSection } from "./sidePanel";
 import { useRouter } from "next/navigation";
 import { embeddedLead, leadHref, leadStageLabel } from "../../lib/leads";
@@ -33,6 +36,7 @@ import {
   OBJECTIONS,
   OUTREACH_COLUMNS,
   STAGES,
+  stageLabel,
   todayISO,
   type Channel,
   type Objection,
@@ -49,6 +53,8 @@ type OutreachEditorProps = {
   onRequestDelete: (row: OutreachRow) => void;
   /** open the promote step for this business */
   onRequestPromote: (row: OutreachRow) => void;
+  /** after a task changes, so the table's next step can follow */
+  onTasksChange?: (outreachId: string, tasks: Task[]) => void;
 };
 
 // Channels show their icon in the dropdown
@@ -101,6 +107,7 @@ export default function OutreachEditor({
   onSaved,
   onRequestDelete,
   onRequestPromote,
+  onTasksChange,
 }: OutreachEditorProps) {
   const router = useRouter();
   const lead = embeddedLead(row?.leads);
@@ -146,14 +153,14 @@ export default function OutreachEditor({
     setSaving(true);
     setError(null);
 
+    // the next step isn't a column any more: a new business's becomes its first task
+    const { next_step: firstTask, next_step_due: firstTaskDue, ...fields } = form;
     const payload = {
-      ...form,
+      ...fields,
       business_name: form.business_name.trim(),
       handle: orNull(form.handle),
       town: orNull(form.town),
       objection_reason: form.objection ? orNull(form.objection_reason) : null,
-      next_step: orNull(form.next_step),
-      next_step_due: form.next_step_due || null,
     };
 
     const query = row
@@ -166,12 +173,20 @@ export default function OutreachEditor({
       setError(error.message);
       return;
     }
-    if (!row && firstNote.trim()) {
-      try {
-        await addNote({ kind: "outreach", id: (data as OutreachRow).id }, firstNote);
-      } catch {
-        // the business is saved; the note can be added again from its timeline
-      }
+    const saved = data as OutreachRow;
+    if (!row) {
+      logActivity("outreach.added", `Messaged ${saved.business_name}`, { outreach_id: saved.id });
+    } else if (row.stage !== saved.stage) {
+      logActivity("outreach.stage", `${saved.business_name} moved to ${stageLabel(saved.stage)}`, {
+        outreach_id: saved.id,
+      });
+    }
+
+    if (!row) {
+      // the business is saved either way; a task or note that fails can be added again from its panel
+      const subject = { kind: "outreach" as const, id: saved.id };
+      if (firstTask?.trim()) await addTask(subject, firstTask, firstTaskDue || null).catch(() => {});
+      if (firstNote.trim()) await addNote(subject, firstNote).catch(() => {});
     }
     setSaving(false);
     onSaved(data as OutreachRow);
@@ -334,6 +349,17 @@ export default function OutreachEditor({
         )}
       </PanelSection>
 
+      {/* An existing business has its task list; a new one starts it with a next step */}
+      {row ? (
+        <PanelSection>
+          <Field icon={<HiOutlineArrowRightCircle size={16} />} label="Tasks">
+            <TaskList
+              subject={{ kind: "outreach", id: row.id }}
+              onChange={(tasks) => onTasksChange?.(row.id, tasks)}
+            />
+          </Field>
+        </PanelSection>
+      ) : (
       <PanelSection>
         <PanelRow wide>
           <Field icon={<HiOutlineArrowRightCircle size={16} />} label="Next step" htmlFor="outreach-next">
@@ -356,6 +382,7 @@ export default function OutreachEditor({
           </Field>
         </PanelRow>
       </PanelSection>
+      )}
 
       {/* An existing business has the notes timeline; a new one can start it with a first note */}
       {row ? (

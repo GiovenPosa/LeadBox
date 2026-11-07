@@ -61,15 +61,19 @@ export default function NotesTimeline({ subject }: { subject: NoteSubject }) {
     };
   }, [kind, id]);
 
+  // The composer empties as soon as you save, so it never looks stuck while
+  // the note is on its way; if saving fails, the text comes back.
   async function add() {
-    if (!draft.trim()) return;
+    const text = draft;
+    if (!text.trim() || adding) return;
+    setDraft("");
     setAdding(true);
     setError(null);
     try {
-      const note = await addNote(subject, draft);
+      const note = await addNote(subject, text);
       setNotes((prev) => [note, ...(prev ?? [])]);
-      setDraft("");
     } catch (e) {
+      setDraft((current) => current || text);
       setError(e instanceof Error ? e.message : "Couldn't save the note.");
     } finally {
       setAdding(false);
@@ -125,8 +129,10 @@ export default function NotesTimeline({ subject }: { subject: NoteSubject }) {
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={saveOnModEnter(add)}
           aria-label="New note"
+          readOnly={adding}
         />
-        {draft.trim() && (
+        {adding && <span className={styles.hint}>Saving…</span>}
+        {draft.trim() && !adding && (
           <div className={styles.composerActions}>
             <span className={styles.hint}>⌘ Enter to save</span>
             <Button size="sm" variant="primary" busy={adding} onClick={add}>

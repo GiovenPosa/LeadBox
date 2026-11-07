@@ -1,6 +1,7 @@
 import { adminRoute, ApiError, textField, uuidField } from "../../../../lib/server/route";
 import { fillContactGaps, findOrCreateContact } from "../../../../lib/server/contacts";
 import { industryLabel, type Industry } from "../../../../lib/outreach";
+import { logActivityTx } from "../../../../lib/server/activity";
 
 // POST /api/leads/promote
 //   { outreachId, contactId }                              use an existing contact
@@ -8,7 +9,7 @@ import { industryLabel, type Industry } from "../../../../lib/outreach";
 // Makes an outreach business a lead and moves it to the converted stage.
 // Promoting the same business again returns its lead.
 
-export const POST = adminRoute(async ({ sql, body }) => {
+export const POST = adminRoute(async ({ sql, userId, body }) => {
   const outreachId = uuidField(body, "outreachId");
   const existingContactId = body.contactId != null ? uuidField(body, "contactId") : null;
   const details = (body.contact ?? {}) as Record<string, unknown>;
@@ -45,6 +46,11 @@ export const POST = adminRoute(async ({ sql, body }) => {
       returning id, stage
     `;
     await tx`update public.outreach set stage = 'converted' where id = ${outreachId}`;
+    await logActivityTx(tx, userId, "outreach.promoted", `${outreach.business_name} became a lead`, {
+      outreach_id: outreachId,
+      lead_id: lead.id,
+      contact_id: contactId,
+    });
     return { lead };
   });
 });

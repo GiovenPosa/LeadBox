@@ -1,0 +1,512 @@
+/* ============================================
+   DASHBOARD - the home page
+   ============================================ */
+
+/* the date sits beside the greeting, on the same line */
+.titleBlock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-3);
+  row-gap: 2px;
+}
+
+.date {
+  font-size: var(--text-md);
+  color: var(--color-text-tertiary);
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ---- Summary cards ---- */
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-height: 112px;
+  padding: var(--space-4);
+  border-radius: var(--radius-2xl);
+  background-color: var(--color-bg-sidebar);
+  text-decoration: none;
+  /* the app's tappable card: lighter on hover, a slight press when clicked */
+  transition: all var(--transition-base);
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.stat:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.stat:active {
+  transform: scale(0.98);
+  background-color: var(--color-bg-active);
+}
+
+.stat:focus-visible {
+  outline: 2px solid var(--color-status-new);
+  outline-offset: 2px;
+}
+
+.statLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.statValue {
+  margin-top: auto;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: var(--tracking-tight);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.statAlert {
+  color: var(--color-status-new);
+}
+
+.statSub {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* ---- Cards ---- */
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-2xl);
+  background-color: var(--color-bg-sidebar);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.cardLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+
+.cardLink:hover {
+  color: var(--color-text-primary);
+}
+
+.empty {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--color-text-tertiary);
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.groupLabel {
+  margin-bottom: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.groupAlert {
+  color: var(--color-status-lost);
+}
+
+.list,
+.feed {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---- Tasks ---- */
+
+.taskRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.taskRow:last-child {
+  border-bottom: none;
+}
+
+/* the tick appears on hover, as a hint of what clicking does */
+.checkHint {
+  color: var(--color-text-tertiary);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.taskRow button:hover .checkHint,
+.taskRow button:focus-visible .checkHint {
+  opacity: 1;
+}
+
+.taskMain {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* the strike-through is a line drawn across with a background, so it can animate */
+.taskTitle {
+  align-self: flex-start;
+  font-size: var(--text-base);
+  line-height: 1.4;
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 55%;
+  background-size: 0% 1.5px;
+  transition: background-size 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), color 0.25s ease;
+}
+
+.taskDone .taskTitle {
+  color: var(--color-text-tertiary);
+  background-size: 100% 1.5px;
+}
+
+.taskDone .about {
+  opacity: 0.6;
+}
+
+/* the tick pops when a task is done */
+.checkPop {
+  animation: checkPop 0.3s cubic-bezier(0.2, 0.7, 0.2, 1.4);
+}
+
+@keyframes checkPop {
+  0% {
+    transform: scale(0.7);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taskTitle {
+    transition: none;
+  }
+
+  .checkPop {
+    animation: none;
+  }
+}
+
+.about {
+  align-self: flex-start;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+
+.about:hover {
+  color: var(--color-status-new);
+  text-decoration: underline;
+}
+
+/* ---- Activity feed ---- */
+
+/* each line is a one-row grid, so its height can animate open and closed */
+.feedRow {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.feedRowInner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.feedEnter {
+  animation: feedIn 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+
+.feedLeave {
+  pointer-events: none;
+  animation: feedOut 0.26s ease-in forwards;
+}
+
+@keyframes feedIn {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes feedOut {
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feedEnter,
+  .feedLeave {
+    animation-duration: 0.01ms;
+  }
+}
+
+.feedItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  margin: 0 calc(var(--space-2) * -1);
+  border-radius: var(--radius-lg);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+}
+
+a.feedItem:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.feedDot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-text-tertiary);
+}
+
+/* by what it was about */
+.dot_enquiry {
+  background-color: var(--color-status-new);
+}
+
+.dot_lead {
+  background-color: var(--color-status-qualified);
+}
+
+.dot_outreach {
+  background-color: var(--color-status-contacted);
+}
+
+.dot_task {
+  background-color: var(--color-status-won);
+}
+
+.dot_contact,
+.dot_note {
+  background-color: var(--color-text-tertiary);
+}
+
+.feedText {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-base);
+  line-height: 1.4;
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+/* what a task or note line is about, after its text */
+.feedAbout {
+  color: var(--color-text-tertiary);
+}
+
+.feedTime {
+  flex: none;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-tertiary);
+}
+
+.feedArrow {
+  flex: none;
+  color: var(--color-text-tertiary);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+a.feedItem:hover .feedArrow {
+  opacity: 1;
+}
+
+/* ---- Pipeline ---- */
+
+.bar {
+  display: flex;
+  gap: 3px;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+.barPart {
+  min-width: 6px;
+  flex-basis: 0;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.legend strong {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* the lead stage colours (lib/leads LEAD_STAGES) */
+.tone_new {
+  background-color: var(--color-status-new);
+}
+
+.tone_contacted {
+  background-color: var(--color-status-contacted);
+}
+
+.tone_qualified {
+  background-color: var(--color-status-qualified);
+}
+
+.tone_won {
+  background-color: var(--color-status-won);
+}
+
+.tone_lost {
+  background-color: var(--color-status-lost);
+}
+
+.tone_bad,
+.tone_neutral {
+  background-color: var(--color-text-tertiary);
+}
+
+/* ---- Loading ---- */
+
+.skeletonBlock {
+  background-color: var(--color-bg-tertiary);
+  animation: dashPulse 1.2s ease-in-out infinite;
+}
+
+.skeletonTall {
+  min-height: 260px;
+}
+
+@keyframes dashPulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonBlock {
+    animation: none;
+  }
+}
+
+/* ---- Smaller screens ---- */
+
+@media (max-width: 1024px) {
+  .summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .card {
+    padding: var(--space-4);
+  }
+
+  .stat {
+    min-height: 96px;
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .statValue {
+    font-size: 28px;
+  }
+}
+
+/* ---- A summary card that opens something (the outreach scorecard) ---- */
+
+.statButton {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}

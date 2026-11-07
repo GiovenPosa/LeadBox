@@ -44,6 +44,8 @@ import {
 import ContactHeader, { type ContactSummary } from "../../../components/contactHeader";
 import { useDelayedFlag } from "../../../hooks/useDelayedFlag";
 import NotesTimeline from "../../../components/notesTimeline";
+import TaskList from "../../../components/taskList";
+import { logActivity } from "../../../../lib/activity";
 import { contactSaveError } from "../../../components/contactEditor";
 import QualifiedSummary, {
   type FormState,
@@ -72,7 +74,7 @@ import { ChannelIcon } from "../../../components/channelIcon";
 ========================================================= */
 
 
-export type CarouselTab = "qualification" | "proposal" | "onboarding" | "notes";
+export type CarouselTab = "qualification" | "proposal" | "onboarding" | "tasks" | "notes";
 
 export type BookingInquiry = {
   id: string;
@@ -558,6 +560,8 @@ export default function LeadPage() {
         setLead({ ...lead, stage: "proposal" });
       }
 
+      logActivity("lead.qualified", `${leadName} was qualified`, { lead_id: lead?.id, contact_id: lead?.contact_id });
+
       // Exit edit mode and collapse form after qualifying
       setIsEditMode(false);
       setIsFormExpanded(false);
@@ -592,6 +596,11 @@ export default function LeadPage() {
     if (error) {
       setLead(prev);
       setFetchError(error.message);
+    } else if (prev.stage !== stage) {
+      logActivity("lead.stage", `${leadName} moved to ${STATUS_CONFIG[stage].label}`, {
+        lead_id: lead.id,
+        contact_id: lead.contact_id,
+      });
     }
   };
 
@@ -829,6 +838,13 @@ export default function LeadPage() {
               Onboarding
             </button>
             <button
+              className={`${leadStyles.carouselItem} ${activeTab === "tasks" ? leadStyles.carouselItemActive : ""}`}
+              onClick={() => setActiveTab("tasks")}
+              type="button"
+            >
+              Tasks
+            </button>
+            <button
               className={`${leadStyles.carouselItem} ${activeTab === "notes" ? leadStyles.carouselItemActive : ""}`}
               onClick={() => setActiveTab("notes")}
               type="button"
@@ -836,6 +852,13 @@ export default function LeadPage() {
               Notes
             </button>
           </div>
+
+          {/* Tasks: this lead's, and those from its enquiry or outreach business and its contact */}
+          {activeTab === "tasks" && (
+            <div className={leadStyles.notesPanel}>
+              <TaskList subject={{ kind: "lead", id: lead.id }} />
+            </div>
+          )}
 
           {/* Notes: this lead's, and those from its enquiry or outreach business and its contact */}
           {activeTab === "notes" && (

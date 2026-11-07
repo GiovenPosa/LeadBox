@@ -1,4 +1,5 @@
 import { adminRoute, ApiError } from "../../../../lib/server/route";
+import { logActivityTx } from "../../../../lib/server/activity";
 
 // POST /api/inquiries/delete  { ids: string[] }
 // Deletes one or more enquiries. Their leads go with them (they cascade), and
@@ -7,7 +8,7 @@ import { adminRoute, ApiError } from "../../../../lib/server/route";
 const MAX_IDS = 500;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export const POST = adminRoute(async ({ sql, body }) => {
+export const POST = adminRoute(async ({ sql, userId, body }) => {
   const ids = body.ids;
   if (
     !Array.isArray(ids) ||
@@ -22,8 +23,14 @@ export const POST = adminRoute(async ({ sql, body }) => {
     // answers left over from before qualifications belonged to leads
     await tx`delete from public.lead_qualifications where inquiry_id = any(${ids}::uuid[])`;
     const deleted = await tx`
-      delete from public.booking_inquiries where id = any(${ids}::uuid[]) returning id
+      delete from public.booking_inquiries where id = any(${ids}::uuid[])
+      returning id, coalesce(nullif(name, ''), email) as name
     `;
+    if (deleted.length > 0) {
+      const summary =
+        deleted.length === 1 ? `Deleted the enquiry from ${deleted[0].name}` : `Deleted ${deleted.length} enquiries`;
+      await logActivityTx(tx, userId, "enquiry.deleted", summary);
+    }
     return { deleted: deleted.map((row) => row.id as string) };
   });
 });

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import styles from "./component-styles/sidebar.module.css";
-import { HiInbox, HiMiniBolt, HiMiniPaperAirplane, HiMiniUsers, HiMiniChartBar, HiMiniRocketLaunch } from "react-icons/hi2";
+import { HiMiniHome, HiInbox, HiMiniBolt, HiMiniPaperAirplane, HiMiniUsers, HiMiniRocketLaunch } from "react-icons/hi2";
 import Link from "next/link"; 
 import { unauthorized } from "next/navigation";
 
@@ -10,7 +10,7 @@ type SidebarProps = {
   email: string | null;
   onSignOut: () => void;
   inboxUnseenCount: number;
-  activePage: "inbox" | "leads" | "outreach" | "contacts" | "analytics" | "projects";
+  activePage: "home" | "inbox" | "leads" | "outreach" | "contacts" | "projects";
 };
 
 export default function Sidebar({ email, onSignOut, inboxUnseenCount, activePage }: SidebarProps) {
@@ -68,9 +68,15 @@ export default function Sidebar({ email, onSignOut, inboxUnseenCount, activePage
       <nav className={styles.nav}>
         <div className={styles.navSection}>
           <NavItem
+            icon={<HiMiniHome size={20} />}
+            label="Home"
+            href="/"
+            active={activePage === "home"}
+          />
+          <NavItem
             icon={<HiInbox size={20} />}
             label="Inbox"
-            href="/"
+            href="/inbox"
             active={activePage === "inbox"}
             badgeCount={inboxUnseenCount}
           />
@@ -91,12 +97,6 @@ export default function Sidebar({ email, onSignOut, inboxUnseenCount, activePage
             label="Leads"
             href="/leads"
             active={activePage === "leads"}
-          />
-          <NavItem 
-            icon={<HiMiniChartBar size={20} />}
-            label="Analytics"
-            href="#"
-            disabled
           />
         </div>
 

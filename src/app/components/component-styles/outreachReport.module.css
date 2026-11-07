@@ -1,0 +1,886 @@
+/* ============================================
+   OUTREACH REPORT - the scorecard as a modal
+   Centred and wide on desktop, a tall bottom sheet on phones.
+   A headline row, then panels on a two-column grid.
+   ============================================ */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background-color: rgba(0, 0, 0, 0);
+  visibility: hidden;
+  pointer-events: none;
+  transition: background-color 0.2s ease, visibility 0s linear 0.2s;
+}
+
+.backdropVisible {
+  background-color: rgba(0, 0, 0, 0.4);
+  visibility: visible;
+  pointer-events: auto;
+  transition: background-color 0.2s ease, visibility 0s linear 0s;
+}
+
+.modal {
+  position: fixed;
+  z-index: 301;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  width: min(1040px, calc(100vw - 2 * var(--space-8)));
+  max-height: min(880px, calc(100dvh - 2 * var(--space-8)));
+  overflow: hidden;
+  border-radius: var(--radius-3xl);
+  background-color: var(--color-bg-primary);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.06);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, -48%) scale(0.98);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;
+}
+
+.modalOpen {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), visibility 0s linear 0s;
+}
+
+/* ---- Header ---- */
+
+/* the same header as the side panels: title and subtitle, no divider */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-5) var(--space-6) var(--space-2);
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.closeBtn {
+  display: flex;
+  flex: none;
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  color: var(--color-text-tertiary);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.closeBtn:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.closeBtn:focus-visible,
+.segment:focus-visible {
+  outline: 2px solid var(--color-status-new);
+  outline-offset: 1px;
+}
+
+/* ---- Segmented switch ---- */
+
+.segmented {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background-color: var(--color-bg-active);
+}
+
+.segment {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+  transition: background-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.segment:hover {
+  color: var(--color-text-primary);
+}
+
+/* the chosen one lifts off the track */
+.segmentOn,
+.segmentOn:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+/* ---- Body and footer ---- */
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-5) var(--space-6);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-3) var(--space-6);
+  border-top: 1px solid var(--color-border-primary);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.link:hover {
+  color: var(--color-text-primary);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-16) 0;
+  font-size: var(--text-md);
+  color: var(--color-text-tertiary);
+}
+
+.none {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--color-text-tertiary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border-radius: var(--radius-2xl);
+  background-color: var(--color-bg-sidebar);
+}
+
+.panelWide,
+.headline,
+.takeaway {
+  grid-column: 1 / -1;
+}
+
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px var(--space-3);
+}
+
+.panelTitle {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.panelHint {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ---- Headline: the gauge, then four number tiles ---- */
+
+.headline {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.rateBlock {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-6) var(--space-4) var(--space-4);
+  border-radius: var(--radius-2xl);
+  background-color: var(--color-bg-sidebar);
+}
+
+.rateText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  max-width: 11rem;
+}
+
+.rateLabel {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.toneTag {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.rateNote {
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--color-text-tertiary);
+}
+
+.gauge {
+  position: relative;
+  flex: none;
+  width: 132px;
+  height: 132px;
+}
+
+.gauge svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.gaugeTrack,
+.gaugeFill {
+  fill: none;
+  stroke-width: 12;
+}
+
+.gaugeTrack {
+  stroke: var(--color-bg-active);
+}
+
+.gaugeFill {
+  stroke-linecap: round;
+  animation: gaugeIn 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s backwards;
+}
+
+@keyframes gaugeIn {
+  from {
+    stroke-dasharray: 0 var(--gauge-full);
+  }
+}
+
+.gaugeValue {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-2xl);
+  background-color: var(--color-bg-sidebar);
+}
+
+.tile dt {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.tile dd {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: var(--tracking-tight);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.tileExtra {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+.good {
+  color: var(--color-status-won) !important;
+}
+
+/* ---- Takeaway ---- */
+
+.takeaway {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-xl);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background-color: var(--color-status-new-bg);
+}
+
+.takeaway svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--color-status-new);
+}
+
+/* ---- Funnel: rows of horizontal bars ---- */
+
+.funnel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* label, bar, count, share of the step before: the same columns in every row */
+.funnelHead,
+.step {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr) 5.5rem 7.5rem;
+  align-items: center;
+  column-gap: var(--space-4);
+}
+
+.funnelHead span {
+  text-align: right;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+}
+
+.funnelRows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepLabel {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.stepTrack {
+  display: flex;
+  height: 24px;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-active);
+}
+
+.stepFill {
+  height: 100%;
+  border-radius: var(--radius-lg);
+  transform-origin: left;
+  animation: growRight 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  animation-delay: calc(var(--i) * 0.06s);
+}
+
+.stepCount,
+.stepShare {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepCount {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.stepShare {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+/* a zero, or a share with nothing before it, steps back */
+.muted {
+  color: var(--color-text-tertiary);
+}
+
+/* the funnel deepens in colour as it goes: the app's status colours */
+.fill0 { background-color: var(--color-status-new); }
+.fill1 { background-color: var(--color-status-contacted); }
+.fill2,
+.fill3 { background-color: var(--color-status-qualified); }
+.fill4 { background-color: var(--color-status-won); }
+
+@keyframes growRight {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* ---- Channel and industry boards ---- */
+
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.leader {
+  display: grid;
+  /* fixed columns either side of the bar, so the bars line up row to row */
+  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr) 6.75rem 44px;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.leaderName {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderBar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background-color: var(--color-bg-active);
+}
+
+.leaderFill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transform-origin: left;
+  animation: growRight 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s backwards;
+}
+
+.leaderCounts {
+  text-align: right;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.leaderLeads {
+  color: var(--color-status-won);
+}
+
+.ratePill {
+  padding: 1px 0;
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* rate colours: strong, middling, weak */
+.pill_good { color: var(--color-status-won); background-color: var(--color-status-won-bg); }
+.pill_fair { color: var(--color-status-qualified); background-color: var(--color-status-qualified-bg); }
+.pill_weak { color: var(--color-status-lost); background-color: var(--color-status-lost-bg); }
+.pill_neutral { color: var(--color-text-secondary); background-color: var(--color-bg-active); }
+
+.bg_good { background-color: var(--color-status-won); }
+.bg_fair { background-color: var(--color-status-qualified); }
+.bg_weak { background-color: var(--color-status-lost); }
+.bg_neutral { background-color: var(--color-text-tertiary); }
+
+.stroke_good { stroke: var(--color-status-won); }
+.stroke_fair { stroke: var(--color-status-qualified); }
+.stroke_weak { stroke: var(--color-status-lost); }
+.stroke_neutral { stroke: var(--color-text-tertiary); }
+
+/* ---- Last 8 weeks ---- */
+
+.trend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.legend {
+  display: flex;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendSwatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.trendChart {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trendWeek {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  border-radius: var(--radius-lg);
+  transition: background-color var(--transition-fast);
+}
+
+.trendWeek:hover {
+  background-color: var(--color-bg-hover);
+}
+
+/* a fixed line height, so empty weeks and filled ones line up */
+.trendValue {
+  min-height: 1.2em;
+  line-height: 1.2;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.trendColumn {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: 120px;
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+/* replied at the bottom, the rest above it, a 2px gap between */
+.trendStack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  max-width: 28px;
+  min-height: 4px;
+  transform-origin: bottom;
+  animation: growUp 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  animation-delay: calc(var(--i) * 0.04s);
+}
+
+.trendStack > span {
+  flex-basis: 0;
+  min-height: 3px;
+}
+
+.trendStack > span:first-child {
+  border-radius: 4px 4px 0 0;
+}
+
+.trendReplied {
+  background-color: var(--color-status-contacted);
+}
+
+.trendRest {
+  background-color: color-mix(in srgb, var(--color-status-contacted) 28%, transparent);
+}
+
+@keyframes growUp {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+.trendLabel {
+  max-width: 100%;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* the week labels drop their month on phones */
+.narrow {
+  display: none;
+}
+
+.trendNow {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* ---- Objections ---- */
+
+.objections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.objection {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) 1.5rem;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.objectionName {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.objectionBar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background-color: var(--color-bg-active);
+}
+
+.objectionFill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background-color: color-mix(in srgb, var(--color-status-lost) 45%, transparent);
+  transform-origin: left;
+  animation: growRight 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s backwards;
+}
+
+/* the one that comes up most stands out */
+.objectionTop {
+  background-color: var(--color-status-lost);
+}
+
+.objectionCount {
+  text-align: right;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal,
+  .modalOpen {
+    transition: opacity 0.15s ease, visibility 0s linear;
+    transform: translate(-50%, -50%);
+  }
+
+  .gaugeFill,
+  .stepFill,
+  .leaderFill,
+  .trendStack,
+  .objectionFill {
+    animation: none;
+  }
+}
+
+/* ---- Tablets: the headline stacks ---- */
+
+@media (max-width: 900px) {
+  .headline {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rateText {
+    max-width: none;
+  }
+
+  .tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ---- Phones: a tall bottom sheet, one column ---- */
+
+@media (max-width: 768px) {
+  .modal {
+    top: max(var(--space-8), env(safe-area-inset-top, 0px));
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-height: none;
+    border-radius: var(--radius-3xl) var(--radius-3xl) 0 0;
+    box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.15);
+    opacity: 1;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.3s;
+  }
+
+  .modalOpen {
+    transform: translateY(0);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0s;
+  }
+
+  .header {
+    padding: var(--space-4) var(--space-4) var(--space-1);
+  }
+
+  /* the period switch takes its own full-width row under the title */
+  .headerActions {
+    display: contents;
+  }
+
+  .closeBtn {
+    order: 1;
+  }
+
+  .segmented {
+    order: 2;
+    flex-basis: 100%;
+  }
+
+  .segment {
+    flex: 1;
+  }
+
+  .heading {
+    flex: 1;
+  }
+
+  .body {
+    padding: var(--space-4);
+  }
+
+  .footer {
+    padding: var(--space-3) var(--space-4);
+    padding-bottom: max(var(--space-3), env(safe-area-inset-bottom, 0px));
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .panel {
+    padding: var(--space-4);
+  }
+
+  .rateBlock {
+    padding: var(--space-4);
+  }
+
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gauge {
+    width: 112px;
+    height: 112px;
+  }
+
+  .gaugeValue {
+    font-size: 26px;
+  }
+
+  .funnelHead,
+  .step {
+    grid-template-columns: 4.5rem minmax(0, 1fr) 2rem 3rem;
+    column-gap: var(--space-3);
+  }
+
+  /* too narrow for the headings: the tooltip and the order carry it */
+  .funnelHead {
+    display: none;
+  }
+
+  .leader {
+    grid-template-columns: minmax(0, 6rem) minmax(0, 1fr) 6.25rem 40px;
+    gap: var(--space-2);
+  }
+
+  .objection {
+    grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr) 1.5rem;
+  }
+
+  .wide {
+    display: none;
+  }
+
+  .narrow {
+    display: inline;
+  }
+}
+
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+  .modal,
+  .modalOpen {
+    transform: none;
+  }
+}

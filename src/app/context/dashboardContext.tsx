@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, ReactNode } from "react";
 
-export type ActivePage = "inbox" | "leads" | "outreach" | "contacts" | "projects" | "analytics" | "lead";
+export type ActivePage = "home" | "inbox" | "leads" | "outreach" | "contacts" | "projects" | "lead";
 
 type Breadcrumb = {
   label: string;

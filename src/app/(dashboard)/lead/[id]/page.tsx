@@ -20,7 +20,7 @@ export default function OldLeadRedirect() {
       .eq("inquiry_id", id)
       .maybeSingle()
       .then(({ data }) => {
-        if (!cancelled) router.replace(data ? leadHref(data.id) : "/");
+        if (!cancelled) router.replace(data ? leadHref(data.id) : "/inbox");
       });
     return () => {
       cancelled = true;

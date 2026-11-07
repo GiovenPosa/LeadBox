@@ -86,6 +86,8 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
 
 const subscribeNoop = () => () => {};
 
+const linkedId = () => (typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("open"));
+
 /* ---------------- Industry pills ---------------- */
 
 // the pill for contacts with no industry
@@ -183,6 +185,17 @@ export default function ContactsPage() {
   const [deleteTarget, setDeleteTarget] = useState<{ contact: Contact; leadId: string | null } | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  // ?open=<id> (from the dashboard): open that contact once the list has loaded
+  const [pendingOpen, setPendingOpen] = useState(linkedId);
+  if (pendingOpen && !loading) {
+    setPendingOpen(null);
+    const contact = contacts.find((c) => c.id === pendingOpen);
+    if (contact) {
+      setEditing(contact);
+      setEditorOpen(true);
+    }
+  }
 
   async function requestDelete(contactId: string) {
     const target = contacts.find((c) => c.id === contactId);

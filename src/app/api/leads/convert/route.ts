@@ -1,11 +1,12 @@
 import { adminRoute, ApiError, uuidField } from "../../../../lib/server/route";
 import { findOrCreateContact } from "../../../../lib/server/contacts";
+import { logActivityTx } from "../../../../lib/server/activity";
 
 // POST /api/leads/convert  { inquiryId }
 // Turns an enquiry into a lead, carrying its contact over, and marks the
 // enquiry converted. Converting the same enquiry again returns its lead.
 
-export const POST = adminRoute(async ({ sql, body }) => {
+export const POST = adminRoute(async ({ sql, userId, body }) => {
   const inquiryId = uuidField(body, "inquiryId");
 
   return sql.begin(async (tx) => {
@@ -28,10 +29,12 @@ export const POST = adminRoute(async ({ sql, body }) => {
         industry: inquiry.selected_types?.length ? inquiry.selected_types.join(", ") : null,
       }));
 
-    await tx`
+    // returns nothing when the enquiry is already a lead
+    const created = await tx`
       insert into public.leads (inquiry_id, contact_id)
       values (${inquiryId}, ${contactId})
       on conflict (inquiry_id) do nothing
+      returning id
     `;
     await tx`
       update public.booking_inquiries
@@ -39,6 +42,13 @@ export const POST = adminRoute(async ({ sql, body }) => {
       where id = ${inquiryId}
     `;
     const [lead] = await tx`select id, stage from public.leads where inquiry_id = ${inquiryId}`;
-    return { lead };
+    if (created.length > 0) {
+      await logActivityTx(tx, userId, "enquiry.converted", `${inquiry.name || inquiry.email} became a lead`, {
+        inquiry_id: inquiryId,
+        lead_id: lead.id,
+        contact_id: contactId,
+      });
+    }
+    return { lead: { id: lead.id, stage: lead.stage } };
   });
 });
