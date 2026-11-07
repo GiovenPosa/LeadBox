@@ -1,0 +1,53 @@
+/* ============================================
+   ENQUIRY PANEL - read-only details in the side panel
+   ============================================ */
+
+/* read-only values line up with the field labels above them */
+.value,
+.empty {
+  margin-left: var(--space-1);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  overflow-wrap: anywhere;
+}
+
+.value {
+  color: var(--color-text-primary);
+}
+
+.value a {
+  color: var(--color-text-primary);
+}
+
+.value a:hover {
+  color: var(--color-status-new);
+  text-decoration: underline;
+}
+
+.empty {
+  color: var(--color-text-tertiary);
+}
+
+/* the message, in the same soft box as the form's text areas */
+.message {
+  padding: 10px 12px;
+  border-radius: var(--radius-xl);
+  background-color: var(--color-bg-secondary);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.leadRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-left: var(--space-1);
+}
+
+.leadHint {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+}

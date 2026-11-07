@@ -98,6 +98,8 @@
    ============================================ */
 
 .canvas {
+  /* every page frame fades in as it opens; its content does the blur (globals.css) */
+  composes: page-in from global;
   flex: 1;
   padding: var(--space-5);
   width: 100%;
@@ -159,6 +161,65 @@
 /* ============================================
    STATS ROW - Horizontal Scroll
    ============================================ */
+
+/* Page title on the left, page actions (toolbar, Add) on the right */
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.headerRow > :first-child {
+  margin-bottom: 0;
+}
+
+/* Toolbar and Add are taller than the 30px title row; pulling their margins in
+   keeps the row at the title's height, so the status chips never shift */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  margin-block: calc(var(--space-2) * -1);
+}
+
+.emptyAction {
+  margin-top: var(--space-4);
+}
+
+/* Empty and loading states centred in the space below the header */
+
+.fillCanvas {
+  display: flex;
+  flex-direction: column;
+}
+
+.fillContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.fillCenter {
+  flex: 1;
+  /* a touch above true centre reads as centred */
+  padding-bottom: calc(var(--space-16) + var(--space-8));
+}
+
+/* When the toolbar's search or filters hide every row */
+.noMatches {
+  padding: var(--space-8) 0;
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-md);
+}
+
+/* Phones: the toolbar gets its own full-width row under the status chips */
+.toolbarRow {
+  margin-bottom: var(--space-3);
+}
 
 .statsRow {
   margin-bottom: var(--space-6);
@@ -257,6 +318,26 @@
   font-size: var(--text-bs);
   color: var(--color-text-primary);
   font-weight: 400;
+}
+
+/* loading: placeholder pills, where the labels come from the data */
+.statCardSkeleton {
+  height: 36px;
+  background: var(--color-bg-tertiary);
+  pointer-events: none;
+  animation: statPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes statPulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .statCardSkeleton {
+    animation: none;
+  }
 }
 
 /* ============================================

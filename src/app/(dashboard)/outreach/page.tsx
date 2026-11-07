@@ -4,21 +4,36 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../../../lib/supabaseClient";
 import { useDashboard } from "../../context/dashboardContext";
 import { useBlockIosEdgeSwipe } from "../../hooks/useBlockIosEdgeBackSwipe";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { useDelayedFlag } from "../../hooks/useDelayedFlag";
 import styles from "../homePage.module.css";
 import outreachStyles from "./outreach.module.css";
-import { HiMiniPaperAirplane, HiMiniPlus } from "react-icons/hi2";
+import { HiMiniBolt, HiMiniPaperAirplane, HiMiniPlus } from "react-icons/hi2";
 import OutreachEditor from "../../components/outreachEditor";
+import PromoteLeadPanel from "../../components/promoteLeadPanel";
+import { useRouter } from "next/navigation";
+import { embeddedLead, leadHref, type LeadRef } from "../../../lib/leads";
 import ConfirmDialog from "../../components/confirmDialog";
 import Button from "../../components/button";
+import { StatPill } from "../../components/statPill";
 import Toolbar, { type ToolbarFilterGroup } from "../../components/toolbar";
-import { ChannelIcon } from "../../components/channelIcon";
+import { ChannelLabel } from "../../components/channelIcon";
+import DataTable, {
+  DataTableSkeleton,
+  CardFooter,
+  CardMeta,
+  CardTop,
+  EmptyCell,
+  TitleCell,
+  type DataTableColumn,
+} from "../../components/dataTable";
+import Pill, { type PillTone } from "../../components/pill";
 import {
   CHANNELS,
   CLOSED_STAGES,
   INDUSTRIES,
   OUTREACH_COLUMNS,
   STAGES,
-  channelLabel,
   dueState,
   formatAgo,
   formatDue,
@@ -38,15 +53,17 @@ import {
 
 type Filter = Stage | "all" | "due";
 
-const STAGE_CLASS: Record<Stage, string> = {
-  messaged: outreachStyles.stageMessaged,
-  replied: outreachStyles.stageReplied,
-  mockup: outreachStyles.stageProgress,
-  chat: outreachStyles.stageProgress,
-  quoted: outreachStyles.stageProgress,
-  won: outreachStyles.stageWon,
-  lost: outreachStyles.stageLost,
-  no_reply: outreachStyles.stageQuiet,
+const STAGE_TONE: Record<Stage, PillTone> = {
+  messaged: "new",
+  replied: "contacted",
+  mockup: "qualified",
+  chat: "qualified",
+  quoted: "qualified",
+  // the Inbox's colour for an enquiry that became a lead
+  converted: "qualified",
+  won: "won",
+  lost: "lost",
+  no_reply: "bad",
 };
 
 const DUE_CLASS: Record<Exclude<DueState, null>, string> = {
@@ -126,6 +143,9 @@ export default function OutreachPage() {
 
   const [rows, setRows] = useState<OutreachRow[]>([]);
   const [loading, setLoading] = useState(true);
+  // a quick load skips the skeleton; the rows just fade in
+  const showSkeleton = useDelayedFlag(loading);
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
@@ -135,6 +155,9 @@ export default function OutreachPage() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<OutreachRow | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<OutreachRow | null>(null);
+  // the business being promoted to a lead (the promote panel is open while set)
+  const [promoting, setPromoting] = useState<OutreachRow | null>(null);
+  const router = useRouter();
   const [deleting, setDeleting] = useState(false);
 
   /* ---------------- Data ---------------- */
@@ -190,7 +213,7 @@ export default function OutreachPage() {
       if (industries.length && !industries.includes(r.industry)) return false;
       if (channels.length && !channels.includes(r.channel)) return false;
       if (!q) return true;
-      return [r.business_name, r.town, r.handle, r.next_step, r.notes]
+      return [r.business_name, r.town, r.handle, r.next_step]
         .some((v) => v?.toLowerCase().includes(q));
     });
     return sortRows(filtered, sort);
@@ -223,6 +246,21 @@ export default function OutreachPage() {
     if (!confirmTarget) return;
     setDeleting(true);
 
+    // a promoted business's notes move to its lead first, so the lead keeps the history
+    const lead = embeddedLead(confirmTarget.leads);
+    if (lead) {
+      const { error: moveError } = await supabase
+        .from("notes")
+        .update({ outreach_id: null, lead_id: lead.id })
+        .eq("outreach_id", confirmTarget.id);
+      if (moveError) {
+        setDeleting(false);
+        setConfirmTarget(null);
+        setError(moveError.message);
+        return;
+      }
+    }
+
     const { error } = await supabase.from("outreach").delete().eq("id", confirmTarget.id);
 
     setDeleting(false);
@@ -243,11 +281,21 @@ export default function OutreachPage() {
   /* ---------------- Render ---------------- */
 
   const missingTable = !!error && isMissingTable(error);
+  // there from the start; hidden only once it's clear there's nothing to search
+  const showToolbar = !error && (loading || rows.length > 0);
+
+  const toolbar = (
+    <Toolbar
+      search={{ value: search, onChange: setSearch, placeholder: "Search businesses" }}
+      filter={{ groups: FILTER_GROUPS, value: attrFilter, onChange: setAttrFilter }}
+      sort={{ options: SORT_OPTIONS, value: sort, onChange: setSort, defaultValue: "due" }}
+    />
+  );
 
   return (
     <>
-      <div className={`${styles.canvas} ${outreachStyles.fillCanvas}`}>
-        <div className={outreachStyles.headerRow}>
+      <div className={`${styles.canvas} ${styles.fillCanvas}`}>
+        <div className={styles.headerRow}>
           <div className={styles.pageHeader}>
             <div className={styles.pageIcon}>
               <HiMiniPaperAirplane size={30} />
@@ -255,58 +303,49 @@ export default function OutreachPage() {
             <h1 className={styles.pageTitle}>Outreach</h1>
           </div>
 
-          <Button
-            variant="primary"
-            size="sm"
-            icon={<HiMiniPlus size={18} />}
-            className={outreachStyles.headerAction}
-            onClick={openNew}
-            disabled={missingTable}
-          >
-            Add
-          </Button>
+          {/* Desktop: search, filter and sort sit with Add; phones keep them under the chips */}
+          <div className={styles.headerActions}>
+            {showToolbar && !isMobile && toolbar}
+            <Button
+              variant="primary"
+              size="sm"
+              icon={<HiMiniPlus size={18} />}
+              onClick={openNew}
+              disabled={missingTable}
+            >
+              Add
+            </Button>
+          </div>
         </div>
 
-        {/* Filters */}
+        {/* Filters: the counts are placeholders until the rows load */}
         <div className={styles.statsRow}>
           <div className={styles.statGroup}>
-            <button
-              type="button"
-              className={`${styles.statCard} ${filter === "due" ? styles.statCardActive : ""}`}
+            <StatPill
+              label="Due"
+              value={counts.due}
+              active={filter === "due"}
               onClick={() => toggleFilter("due")}
-            >
-              <span className={`${styles.statValue} ${counts.due > 0 ? outreachStyles.dueCount : ""}`}>
-                {counts.due}
-              </span>
-              <span className={styles.statLabel}>Due</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.statCard} ${filter === "all" ? styles.statCardActive : ""}`}
-              onClick={() => toggleFilter("all")}
-            >
-              <span className={styles.statValue}>{counts.all}</span>
-              <span className={styles.statLabel}>All</span>
-            </button>
+              valueClassName={counts.due > 0 ? outreachStyles.dueCount : undefined}
+            />
+            <StatPill label="All" value={counts.all} active={filter === "all"} onClick={() => toggleFilter("all")} />
             {STAGES.map((s) => (
-              <button
+              <StatPill
                 key={s.value}
-                type="button"
-                className={`${styles.statCard} ${filter === s.value ? styles.statCardActive : ""}`}
+                label={s.label}
+                value={counts.byStage[s.value]}
+                active={filter === s.value}
                 onClick={() => toggleFilter(s.value)}
-              >
-                <span className={styles.statValue}>{counts.byStage[s.value]}</span>
-                <span className={styles.statLabel}>{s.label}</span>
-              </button>
+              />
             ))}
           </div>
         </div>
 
-        <main className={`${styles.content} ${outreachStyles.fillContent}`}>
+        <main className={`${styles.content} ${styles.fillContent}`}>
           {loading ? (
-            <div className={`${styles.loading} ${outreachStyles.fillCenter}`}>Loading outreach…</div>
+            showSkeleton && <DataTableSkeleton columns={COLUMNS} />
           ) : missingTable ? (
-            <div className={`${styles.emptyState} ${outreachStyles.fillCenter}`}>
+            <div className={`${styles.emptyState} ${styles.fillCenter}`}>
               <h3 className={styles.emptyTitle}>The outreach table isn&apos;t set up yet</h3>
               <p className={styles.emptyDescription}>
                 Run supabase/migrations/20261107_outreach.sql in the Supabase SQL Editor, then reload.
@@ -317,7 +356,7 @@ export default function OutreachPage() {
               <span>{error}</span>
             </div>
           ) : rows.length === 0 ? (
-            <div className={`${styles.emptyState} ${outreachStyles.fillCenter}`}>
+            <div className={`${styles.emptyState} ${styles.fillCenter}`}>
               <h3 className={styles.emptyTitle}>No outreach yet</h3>
               <p className={styles.emptyDescription}>
                 Log a business each time you message one, and follow-ups will show up here when they&apos;re due.
@@ -333,106 +372,42 @@ export default function OutreachPage() {
             </div>
           ) : (
             <>
-              <Toolbar
-                className={outreachStyles.toolbar}
-                search={{ value: search, onChange: setSearch, placeholder: "Search businesses" }}
-                filter={{ groups: FILTER_GROUPS, value: attrFilter, onChange: setAttrFilter }}
-                sort={{ options: SORT_OPTIONS, value: sort, onChange: setSort, defaultValue: "due" }}
-              />
+              {isMobile && <div className={styles.toolbarRow}>{toolbar}</div>}
 
               {visible.length === 0 ? (
-                <p className={outreachStyles.noMatches}>Nothing matches that filter.</p>
+                <p className={styles.noMatches}>Nothing matches that filter.</p>
               ) : (
-                <>
-                  {/* Desktop: table */}
-                  <div className={outreachStyles.tableWrap}>
-                    <table className={outreachStyles.table}>
-                      <thead>
-                        <tr>
-                          <th>Business</th>
-                          <th>Industry</th>
-                          <th>Channel</th>
-                          <th>First messaged</th>
-                          <th>Stage</th>
-                          <th>Objection</th>
-                          <th>Next step</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {visible.map((row) => (
-                          <tr
-                            key={row.id}
-                            onClick={() => openRow(row)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") openRow(row);
-                            }}
-                            tabIndex={0}
-                          >
-                            <td>
-                              <BusinessCell row={row} />
-                            </td>
-                            <td className={outreachStyles.muted}>{industryLabel(row.industry)}</td>
-                            <td className={outreachStyles.muted}>
-                              <span className={outreachStyles.channel}>
-                                <ChannelIcon channel={row.channel} />
-                                {channelLabel(row.channel)}
-                              </span>
-                            </td>
-                            <td>
-                              <span title={formatShortDate(row.first_contacted_on)}>
-                                {formatAgo(row.first_contacted_on)}
-                              </span>
-                            </td>
-                            <td>
-                              <StagePill stage={row.stage} />
-                            </td>
-                            <td>
-                              <ObjectionCell row={row} />
-                            </td>
-                            <td>
-                              <NextStepCell row={row} />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Mobile: cards */}
-                  <div className={outreachStyles.cardList}>
-                    {visible.map((row) => (
-                      <article
-                        key={row.id}
-                        className={outreachStyles.card}
-                        onClick={() => openRow(row)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") openRow(row);
-                        }}
-                      >
-                        <div className={outreachStyles.cardTop}>
-                          <BusinessCell row={row} />
-                          <StagePill stage={row.stage} />
+                <DataTable
+                  rows={visible}
+                  columns={COLUMNS}
+                  rowKey={(row) => row.id}
+                  onRowClick={openRow}
+                  renderCard={(row) => (
+                    <>
+                      <CardTop>
+                        <BusinessCell row={row} />
+                        <StageCell row={row} />
+                      </CardTop>
+                      <CardMeta>
+                        {industryLabel(row.industry)} ·{" "}
+                        <ChannelLabel channel={row.channel} size={14} />{" "}
+                        · {formatAgo(row.first_contacted_on)}
+                      </CardMeta>
+                      {row.objection && (
+                        <div className={outreachStyles.cardObjection}>
+                          <ObjectionCell row={row} />
                         </div>
-                        <p className={outreachStyles.cardMeta}>
-                          {industryLabel(row.industry)} ·{" "}
-                          <span className={outreachStyles.channel}>
-                            <ChannelIcon channel={row.channel} size={14} />
-                            {channelLabel(row.channel)}
-                          </span>{" "}
-                          · {formatAgo(row.first_contacted_on)}
-                        </p>
-                        {row.objection && <ObjectionCell row={row} />}
-                        {(row.next_step || row.next_step_due) && (
+                      )}
+                      {(row.next_step || row.next_step_due) && (
+                        <CardFooter>
                           <div className={outreachStyles.cardNext}>
                             <NextStepCell row={row} />
                           </div>
-                        )}
-                      </article>
-                    ))}
-                  </div>
-                </>
+                        </CardFooter>
+                      )}
+                    </>
+                  )}
+                />
               )}
             </>
           )}
@@ -445,13 +420,35 @@ export default function OutreachPage() {
         onClose={closeEditor}
         onSaved={handleSaved}
         onRequestDelete={setConfirmTarget}
+        onRequestPromote={(row) => {
+          // one panel at a time: the promote step replaces the editor
+          setEditorOpen(false);
+          setPromoting(row);
+        }}
+      />
+
+      <PromoteLeadPanel
+        outreach={promoting}
+        onClose={() => setPromoting(null)}
+        onPromoted={(outreachId: string, lead: LeadRef) => {
+          // the database moves the business to the Lead stage; match it here
+          setRows((prev) =>
+            prev.map((r) => (r.id === outreachId ? { ...r, leads: lead, stage: "converted" as const } : r))
+          );
+          setPromoting(null);
+          router.push(leadHref(lead.id));
+        }}
       />
 
       <ConfirmDialog
         variant="danger"
         open={confirmTarget !== null}
         title="Delete this business?"
-        message={`${confirmTarget?.business_name ?? "This business"} and its notes will be removed for good. This can't be undone.`}
+        message={
+          embeddedLead(confirmTarget?.leads)
+            ? `${confirmTarget?.business_name ?? "This business"} will be removed from Outreach for good. Its lead stays, and its notes move to the lead.`
+            : `${confirmTarget?.business_name ?? "This business"} and its notes will be removed for good. This can't be undone.`
+        }
         confirmLabel="Delete"
         busyLabel="Deleting…"
         busy={deleting}
@@ -463,6 +460,31 @@ export default function OutreachPage() {
 }
 
 /* =========================================================
+   Table
+========================================================= */
+
+const COLUMNS: DataTableColumn<OutreachRow>[] = [
+  { key: "business", header: "Business", skeleton: "title", cell: (row) => <BusinessCell row={row} /> },
+  { key: "industry", header: "Industry", muted: true, cell: (row) => industryLabel(row.industry) },
+  {
+    key: "channel",
+    header: "Channel",
+    muted: true,
+    cell: (row) => (
+      <ChannelLabel channel={row.channel} />
+    ),
+  },
+  {
+    key: "first",
+    header: "First messaged",
+    cell: (row) => <span title={formatShortDate(row.first_contacted_on)}>{formatAgo(row.first_contacted_on)}</span>,
+  },
+  { key: "stage", header: "Stage", skeleton: "pill", cell: (row) => <StageCell row={row} /> },
+  { key: "objection", header: "Objection", cell: (row) => <ObjectionCell row={row} /> },
+  { key: "next", header: "Next step", skeleton: "title", cell: (row) => <NextStepCell row={row} /> },
+];
+
+/* =========================================================
    Cells
 ========================================================= */
 
@@ -471,31 +493,50 @@ function BusinessCell({ row }: { row: OutreachRow }) {
   const sub = [row.handle, row.town].filter(Boolean);
 
   return (
-    <div className={outreachStyles.business}>
-      <span className={outreachStyles.businessName}>{row.business_name}</span>
-      {sub.length > 0 && (
-        <span className={outreachStyles.businessSub}>
-          {url ? (
-            <a href={url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
-              {row.handle}
-            </a>
-          ) : (
-            row.handle
-          )}
-          {row.handle && row.town ? " · " : ""}
-          {row.town}
-        </span>
-      )}
-    </div>
+    <TitleCell
+      title={row.business_name}
+      sub={
+        sub.length > 0 && (
+          <>
+            {url ? (
+              <a href={url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
+                {row.handle}
+              </a>
+            ) : (
+              row.handle
+            )}
+            {row.handle && row.town ? " · " : ""}
+            {row.town}
+          </>
+        )
+      }
+    />
   );
 }
 
 function StagePill({ stage }: { stage: Stage }) {
-  return <span className={`${outreachStyles.stage} ${STAGE_CLASS[stage]}`}>{stageLabel(stage)}</span>;
+  return <Pill tone={STAGE_TONE[stage]}>{stageLabel(stage)}</Pill>;
+}
+
+// The stage, plus a Lead marker once the business has been promoted
+function StageCell({ row }: { row: OutreachRow }) {
+  const lead = embeddedLead(row.leads);
+  return (
+    <span className={outreachStyles.stageCell}>
+      <StagePill stage={row.stage} />
+      {/* the stage already says Lead; the mark is for a lead whose stage was changed by hand */}
+      {lead && row.stage !== "converted" && (
+        <span className={outreachStyles.leadMark} title="Promoted to a lead">
+          <HiMiniBolt size={12} />
+          Lead
+        </span>
+      )}
+    </span>
+  );
 }
 
 function ObjectionCell({ row }: { row: OutreachRow }) {
-  if (!row.objection) return <span className={outreachStyles.empty}>—</span>;
+  if (!row.objection) return <EmptyCell />;
   return (
     <div className={outreachStyles.objection}>
       <span className={outreachStyles.objectionLabel}>{objectionLabel(row.objection)}</span>
@@ -511,7 +552,7 @@ function ObjectionCell({ row }: { row: OutreachRow }) {
 function NextStepCell({ row }: { row: OutreachRow }) {
   const state = dueState(row);
   const closed = CLOSED_STAGES.includes(row.stage);
-  if (!row.next_step && !row.next_step_due) return <span className={outreachStyles.empty}>—</span>;
+  if (!row.next_step && !row.next_step_due) return <EmptyCell />;
 
   return (
     <div className={`${outreachStyles.next} ${closed ? outreachStyles.nextClosed : ""}`}>

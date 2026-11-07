@@ -1,5 +1,5 @@
 /* ============================================
-   OUTREACH EDITOR - drawer on desktop, bottom sheet on mobile
+   SIDE PANEL - drawer on desktop, bottom sheet on phones
    ============================================ */
 
 .backdrop {
@@ -41,19 +41,28 @@
   transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0s;
 }
 
-.form {
+.frame {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
+/* ---- Header ---- */
+
 .header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
   padding-top: max(var(--space-4), var(--safe-area-top));
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .title {
@@ -61,10 +70,17 @@
   font-weight: 700;
   letter-spacing: var(--tracking-tight);
   color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
 }
 
 .closeBtn {
   display: flex;
+  flex: none;
   padding: var(--space-1);
   border-radius: var(--radius-md);
   color: var(--color-text-tertiary);
@@ -75,6 +91,8 @@
   background-color: var(--color-bg-hover);
   color: var(--color-text-primary);
 }
+
+/* ---- Body ---- */
 
 .body {
   flex: 1;
@@ -114,12 +132,59 @@
   font-size: var(--text-md);
 }
 
+/* a tinted note with an action */
+.callout {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-status-new-bg);
+}
+
+.calloutIcon {
+  display: flex;
+  flex: none;
+  color: var(--color-status-new);
+}
+
+.calloutText {
+  flex: 1;
+  min-width: 0;
+}
+
+.calloutTitle {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.calloutBody {
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+.calloutAction {
+  flex: none;
+}
+
+/* ---- Footer ---- */
+
 .footer {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-5);
   padding-bottom: max(var(--space-3), var(--safe-area-bottom));
+}
+
+/* Cancel and Delete sit close together; Delete has no fill, so its padding adds the rest */
+.footerStart {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .footerActions {
@@ -134,7 +199,6 @@
     left: 0;
     width: auto;
     height: 92dvh;
-    border-left: none;
     border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
     box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.15);
     transform: translateY(100%);

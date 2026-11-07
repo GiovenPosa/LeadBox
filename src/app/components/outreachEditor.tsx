@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
 import {
-  HiXMark,
+  HiMiniBolt,
   HiOutlineTrash,
   HiOutlineBuildingOffice2,
   HiOutlineTag,
@@ -18,10 +17,15 @@ import {
   HiOutlineClock,
   HiOutlinePaperClip,
 } from "react-icons/hi2";
-import styles from "./component-styles/outreachEditor.module.css";
+import NotesTimeline from "./notesTimeline";
+import { addNote } from "../../lib/notes";
+import SidePanel, { PanelCallout, PanelError, PanelFooter, PanelRow, PanelSection } from "./sidePanel";
+import { useRouter } from "next/navigation";
+import { embeddedLead, leadHref, leadStageLabel } from "../../lib/leads";
 import { Dropdown, Field, TextArea, TextInput, type DropdownOption } from "./formFields";
 import { ChannelIcon } from "./channelIcon";
 import Button from "./button";
+import DatePicker from "./datePicker";
 import { supabase } from "../../lib/supabaseClient";
 import {
   CHANNELS,
@@ -43,6 +47,8 @@ type OutreachEditorProps = {
   onClose: () => void;
   onSaved: (row: OutreachRow) => void;
   onRequestDelete: (row: OutreachRow) => void;
+  /** open the promote step for this business */
+  onRequestPromote: (row: OutreachRow) => void;
 };
 
 // Channels show their icon in the dropdown
@@ -67,7 +73,6 @@ function blankForm(): OutreachInput {
     objection_reason: "",
     next_step: "Follow up if no reply",
     next_step_due: todayISO(5),
-    notes: "",
   };
 }
 
@@ -84,13 +89,10 @@ function formFromRow(row: OutreachRow): OutreachInput {
     objection_reason: row.objection_reason ?? "",
     next_step: row.next_step ?? "",
     next_step_due: row.next_step_due,
-    notes: row.notes ?? "",
   };
 }
 
 const orNull = (v: string | null) => (v && v.trim() ? v.trim() : null);
-
-const subscribeNoop = () => () => {};
 
 export default function OutreachEditor({
   open,
@@ -98,13 +100,16 @@ export default function OutreachEditor({
   onClose,
   onSaved,
   onRequestDelete,
+  onRequestPromote,
 }: OutreachEditorProps) {
-  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
-  const titleId = useId();
+  const router = useRouter();
+  const lead = embeddedLead(row?.leads);
   const nameRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState<OutreachInput>(blankForm);
   const [saving, setSaving] = useState(false);
+  // a new business's optional first note, saved to the notes timeline with it
+  const [firstNote, setFirstNote] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   // Reset the form each time the panel opens
@@ -114,20 +119,17 @@ export default function OutreachEditor({
     setOpenedFor(openKey);
     if (openKey) {
       setForm(row ? formFromRow(row) : blankForm());
+      setFirstNote("");
       setError(null);
     }
   }
 
+  // new rows start typing straight away; edits don't pop the keyboard
   useEffect(() => {
-    if (!open) return;
-    // new rows start typing straight away; edits don't pop the keyboard
-    if (!row) window.setTimeout(() => nameRef.current?.focus(), 250);
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !saving) onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, row, saving, onClose]);
+    if (!open || row) return;
+    const timer = window.setTimeout(() => nameRef.current?.focus(), 250);
+    return () => window.clearTimeout(timer);
+  }, [open, row]);
 
   function update<K extends keyof OutreachInput>(key: K, value: OutreachInput[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -152,7 +154,6 @@ export default function OutreachEditor({
       objection_reason: form.objection ? orNull(form.objection_reason) : null,
       next_step: orNull(form.next_step),
       next_step_due: form.next_step_due || null,
-      notes: orNull(form.notes),
     };
 
     const query = row
@@ -160,179 +161,36 @@ export default function OutreachEditor({
       : supabase.from("outreach").insert(payload);
     const { data, error } = await query.select(OUTREACH_COLUMNS).single();
 
-    setSaving(false);
     if (error) {
+      setSaving(false);
       setError(error.message);
       return;
     }
+    if (!row && firstNote.trim()) {
+      try {
+        await addNote({ kind: "outreach", id: (data as OutreachRow).id }, firstNote);
+      } catch {
+        // the business is saved; the note can be added again from its timeline
+      }
+    }
+    setSaving(false);
     onSaved(data as OutreachRow);
   }
 
-  if (!mounted) return null;
-
-  return createPortal(
-    <>
-      <div
-        className={`${styles.backdrop} ${open ? styles.backdropVisible : ""}`}
-        onClick={() => !saving && onClose()}
-        aria-hidden="true"
-      />
-      <div
-        className={`${styles.panel} ${open ? styles.panelOpen : ""}`}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-hidden={!open}
-      >
-        <form className={styles.form} onSubmit={save} noValidate>
-          <header className={styles.header}>
-            <h2 id={titleId} className={styles.title}>
-              {row ? "Edit outreach" : "Add outreach"}
-            </h2>
-            <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
-              <HiXMark size={22} />
-            </button>
-          </header>
-
-          <div className={styles.body}>
-            {error && (
-              <p className={styles.error} role="alert">
-                {error}
-              </p>
-            )}
-
-            <Field icon={<HiOutlineBuildingOffice2 size={16} />} label="Business" htmlFor="outreach-name">
-              <TextInput
-                ref={nameRef}
-                id="outreach-name"
-                placeholder="e.g. USA Nails"
-                value={form.business_name}
-                onChange={(e) => update("business_name", e.target.value)}
-                autoComplete="off"
-                required
-              />
-            </Field>
-
-            <div className={styles.row}>
-              <Field icon={<HiOutlineTag size={16} />} label="Industry" htmlFor="outreach-industry">
-                <Dropdown
-                  id="outreach-industry"
-                  value={form.industry}
-                  options={INDUSTRIES}
-                  onChange={(v) => update("industry", v)}
-                />
-              </Field>
-              <Field icon={<HiOutlineChatBubbleLeftRight size={16} />} label="Channel" htmlFor="outreach-channel">
-                <Dropdown
-                  id="outreach-channel"
-                  value={form.channel}
-                  options={CHANNEL_OPTIONS}
-                  onChange={(v) => update("channel", v)}
-                />
-              </Field>
-            </div>
-
-            <div className={styles.row}>
-              <Field icon={<HiOutlineAtSymbol size={16} />} label="Handle or link" htmlFor="outreach-handle">
-                <TextInput
-                  id="outreach-handle"
-                  placeholder="@usanails"
-                  value={form.handle ?? ""}
-                  onChange={(e) => update("handle", e.target.value)}
-                  autoComplete="off"
-                  autoCapitalize="none"
-                />
-              </Field>
-              <Field icon={<HiOutlineMapPin size={16} />} label="Town" htmlFor="outreach-town">
-                <TextInput
-                  id="outreach-town"
-                  placeholder="Trowbridge"
-                  value={form.town ?? ""}
-                  onChange={(e) => update("town", e.target.value)}
-                />
-              </Field>
-            </div>
-
-            <div className={styles.row}>
-              <Field icon={<HiOutlineCalendarDays size={16} />} label="First messaged" htmlFor="outreach-first">
-                <TextInput
-                  id="outreach-first"
-                  type="date"
-                  value={form.first_contacted_on}
-                  max={todayISO()}
-                  onChange={(e) => update("first_contacted_on", e.target.value || todayISO())}
-                />
-              </Field>
-              <Field icon={<HiOutlineFlag size={16} />} label="Stage" htmlFor="outreach-stage">
-                <Dropdown
-                  id="outreach-stage"
-                  value={form.stage}
-                  options={STAGES}
-                  onChange={(v) => update("stage", v)}
-                />
-              </Field>
-            </div>
-
-            <div className={styles.section}>
-              <Field icon={<HiOutlineHandRaised size={16} />} label="Objection" htmlFor="outreach-objection">
-                <Dropdown
-                  id="outreach-objection"
-                  value={form.objection ?? ""}
-                  options={OBJECTION_OPTIONS}
-                  onChange={(v) => update("objection", v || null)}
-                />
-              </Field>
-              {form.objection && (
-                <Field icon={<HiOutlineChatBubbleBottomCenterText size={16} />} label="What they said" htmlFor="outreach-reason">
-                  <TextArea
-                    id="outreach-reason"
-                    rows={2}
-                    placeholder="e.g. Happy with Fresha, gets most clients from Instagram"
-                    value={form.objection_reason ?? ""}
-                    onChange={(e) => update("objection_reason", e.target.value)}
-                  />
-                </Field>
-              )}
-            </div>
-
-            <div className={styles.section}>
-              <div className={styles.rowWide}>
-                <Field icon={<HiOutlineArrowRightCircle size={16} />} label="Next step" htmlFor="outreach-next">
-                  <TextInput
-                    id="outreach-next"
-                    placeholder="e.g. Send mock-up"
-                    value={form.next_step ?? ""}
-                    onChange={(e) => update("next_step", e.target.value)}
-                  />
-                </Field>
-                <Field icon={<HiOutlineClock size={16} />} label="Due" htmlFor="outreach-due">
-                  <TextInput
-                    id="outreach-due"
-                    type="date"
-                    value={form.next_step_due ?? ""}
-                    onChange={(e) => update("next_step_due", e.target.value || null)}
-                  />
-                </Field>
-              </div>
-            </div>
-
-            <Field icon={<HiOutlinePaperClip size={16} />} label="Notes" htmlFor="outreach-notes">
-              <TextArea
-                id="outreach-notes"
-                rows={3}
-                placeholder="Anything worth remembering"
-                value={form.notes ?? ""}
-                onChange={(e) => update("notes", e.target.value)}
-              />
-            </Field>
-          </div>
-
-          {/* Cancel on the left; Delete (when editing) and the main action on the right */}
-          <footer className={styles.footer}>
-            <Button variant="secondary" onClick={onClose} disabled={saving}>
-              Cancel
-            </Button>
-            <div className={styles.footerActions}>
+  return (
+    <SidePanel
+      open={open}
+      onClose={onClose}
+      title={row ? "Edit outreach" : "Add outreach"}
+      onSubmit={save}
+      dismissible={!saving}
+      footer={
+        <PanelFooter
+          start={
+            <>
+              <Button variant="secondary" onClick={onClose} disabled={saving}>
+                Cancel
+              </Button>
               {row && (
                 <Button
                   variant="ghostDanger"
@@ -343,14 +201,180 @@ export default function OutreachEditor({
                   Delete
                 </Button>
               )}
-              <Button type="submit" variant="primary" busy={saving}>
-                {saving ? "Saving…" : row ? "Save" : "Add"}
+            </>
+          }
+        >
+          <Button type="submit" variant="primary" busy={saving}>
+            {saving ? "Saving…" : row ? "Save" : "Add"}
+          </Button>
+        </PanelFooter>
+      }
+    >
+      {error && <PanelError>{error}</PanelError>}
+
+      {/* An existing business can become a lead once they're interested */}
+      {row &&
+        (lead ? (
+          <PanelCallout
+            icon={<HiMiniBolt size={20} />}
+            title={`A lead · ${leadStageLabel(lead.stage)}`}
+            action={
+              <Button size="sm" variant="primary" onClick={() => router.push(leadHref(lead.id))}>
+                View lead
               </Button>
-            </div>
-          </footer>
-        </form>
-      </div>
-    </>,
-    document.body
+            }
+          >
+            Qualify and propose from the lead.
+          </PanelCallout>
+        ) : (
+          <PanelCallout
+            icon={<HiMiniBolt size={20} />}
+            title="Interested?"
+            action={
+              <Button size="sm" variant="primary" onClick={() => onRequestPromote(row)} disabled={saving}>
+                Promote to lead
+              </Button>
+            }
+          >
+            Make them a lead to qualify and send a proposal.
+          </PanelCallout>
+        ))}
+
+      <Field icon={<HiOutlineBuildingOffice2 size={16} />} label="Business" htmlFor="outreach-name">
+        <TextInput
+          ref={nameRef}
+          id="outreach-name"
+          placeholder="e.g. USA Nails"
+          value={form.business_name}
+          onChange={(e) => update("business_name", e.target.value)}
+          autoComplete="off"
+          required
+        />
+      </Field>
+
+      <PanelRow>
+        <Field icon={<HiOutlineTag size={16} />} label="Industry" htmlFor="outreach-industry">
+          <Dropdown
+            id="outreach-industry"
+            value={form.industry}
+            options={INDUSTRIES}
+            onChange={(v) => update("industry", v)}
+          />
+        </Field>
+        <Field icon={<HiOutlineChatBubbleLeftRight size={16} />} label="Channel" htmlFor="outreach-channel">
+          <Dropdown
+            id="outreach-channel"
+            value={form.channel}
+            options={CHANNEL_OPTIONS}
+            onChange={(v) => update("channel", v)}
+          />
+        </Field>
+      </PanelRow>
+
+      <PanelRow>
+        <Field icon={<HiOutlineAtSymbol size={16} />} label="Handle or link" htmlFor="outreach-handle">
+          <TextInput
+            id="outreach-handle"
+            placeholder="@usanails"
+            value={form.handle ?? ""}
+            onChange={(e) => update("handle", e.target.value)}
+            autoComplete="off"
+            autoCapitalize="none"
+          />
+        </Field>
+        <Field icon={<HiOutlineMapPin size={16} />} label="Town" htmlFor="outreach-town">
+          <TextInput
+            id="outreach-town"
+            placeholder="Trowbridge"
+            value={form.town ?? ""}
+            onChange={(e) => update("town", e.target.value)}
+          />
+        </Field>
+      </PanelRow>
+
+      <PanelRow>
+        <Field icon={<HiOutlineCalendarDays size={16} />} label="First messaged" htmlFor="outreach-first">
+          <DatePicker
+            id="outreach-first"
+            value={form.first_contacted_on}
+            max={todayISO()}
+            onChange={(v) => update("first_contacted_on", v ?? todayISO())}
+          />
+        </Field>
+        <Field icon={<HiOutlineFlag size={16} />} label="Stage" htmlFor="outreach-stage">
+          <Dropdown
+            id="outreach-stage"
+            value={form.stage}
+            // "Lead" is set by promoting, so it's only listed when the business already is one
+            options={STAGES.filter((s) => s.value !== "converted" || form.stage === "converted")}
+            onChange={(v) => update("stage", v)}
+          />
+        </Field>
+      </PanelRow>
+
+      <PanelSection>
+        <Field icon={<HiOutlineHandRaised size={16} />} label="Objection" htmlFor="outreach-objection">
+          <Dropdown
+            id="outreach-objection"
+            value={form.objection ?? ""}
+            options={OBJECTION_OPTIONS}
+            onChange={(v) => update("objection", v || null)}
+          />
+        </Field>
+        {form.objection && (
+          <Field icon={<HiOutlineChatBubbleBottomCenterText size={16} />} label="What they said" htmlFor="outreach-reason">
+            <TextArea
+              id="outreach-reason"
+              rows={2}
+              placeholder="e.g. Happy with Fresha, gets most clients from Instagram"
+              value={form.objection_reason ?? ""}
+              onChange={(e) => update("objection_reason", e.target.value)}
+            />
+          </Field>
+        )}
+      </PanelSection>
+
+      <PanelSection>
+        <PanelRow wide>
+          <Field icon={<HiOutlineArrowRightCircle size={16} />} label="Next step" htmlFor="outreach-next">
+            <TextInput
+              id="outreach-next"
+              placeholder="e.g. Send mock-up"
+              value={form.next_step ?? ""}
+              onChange={(e) => update("next_step", e.target.value)}
+            />
+          </Field>
+          <Field icon={<HiOutlineClock size={16} />} label="Due" htmlFor="outreach-due">
+            <DatePicker
+              id="outreach-due"
+              value={form.next_step_due}
+              onChange={(v) => update("next_step_due", v)}
+              placeholder="No date"
+              clearable
+              align="end"
+            />
+          </Field>
+        </PanelRow>
+      </PanelSection>
+
+      {/* An existing business has the notes timeline; a new one can start it with a first note */}
+      {row ? (
+        <PanelSection>
+          <Field icon={<HiOutlinePaperClip size={16} />} label="Notes">
+            <NotesTimeline subject={{ kind: "outreach", id: row.id }} />
+          </Field>
+        </PanelSection>
+      ) : (
+        <Field icon={<HiOutlinePaperClip size={16} />} label="First note" htmlFor="outreach-first-note">
+          <TextArea
+            id="outreach-first-note"
+            rows={3}
+            placeholder="Anything worth remembering (optional)"
+            value={firstNote}
+            onChange={(e) => setFirstNote(e.target.value)}
+          />
+        </Field>
+      )}
+    </SidePanel>
   );
 }

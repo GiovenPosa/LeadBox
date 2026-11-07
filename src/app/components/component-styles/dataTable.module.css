@@ -1,0 +1,278 @@
+/* ============================================
+   DATA TABLE - a table on desktop, cards on phones
+   ============================================ */
+
+/* ---- Table ---- */
+
+.tableWrap {
+  overflow-x: auto;
+  border-radius: var(--radius-2xl);
+  background-color: var(--color-bg-sidebar);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-base);
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.table td {
+  padding: var(--space-3) var(--space-4);
+  vertical-align: top;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.table tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr.clickable {
+  cursor: pointer;
+}
+
+.table tbody tr.clickable:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.table tbody tr:focus-visible {
+  outline: 2px solid var(--color-status-new);
+  outline-offset: -2px;
+}
+
+.table td.muted {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.table .alignEnd {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Cells ---- */
+
+.empty {
+  color: var(--color-text-tertiary);
+}
+
+.titleCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.withAvatar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.title {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.sub {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sub a {
+  color: var(--color-text-secondary);
+}
+
+.sub a:hover {
+  text-decoration: underline;
+}
+
+/* ---- Cards (phones) ---- */
+
+.cardList {
+  display: none;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-2xl);
+  background-color: var(--color-bg-sidebar);
+  touch-action: manipulation;
+  transition: background-color var(--transition-fast);
+}
+
+.card.clickable {
+  cursor: pointer;
+}
+
+.card.clickable:active {
+  background-color: var(--color-bg-tertiary);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--color-status-new);
+  outline-offset: 2px;
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.cardTop .title {
+  font-size: var(--text-lg);
+}
+
+.cardMeta {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.cardFooter {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+/* ---- Loading skeleton (the Inbox card skeleton's colours and shimmer) ---- */
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.05), transparent);
+  animation: shimmer 1.2s infinite;
+  pointer-events: none;
+}
+
+[data-theme="dark"] .skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.barStack {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.bar {
+  display: block;
+  height: 12px;
+  max-width: min(220px, 100%);
+  border-radius: 6px;
+  background: var(--color-bg-tertiary);
+}
+
+.titleBar {
+  height: 14px;
+}
+
+.subBar {
+  height: 10px;
+}
+
+.pillBar {
+  flex: none;
+  width: 72px;
+  height: 22px;
+  border-radius: var(--radius-lg);
+}
+
+.numberBar {
+  display: inline-block;
+  width: 28px;
+}
+
+.avatarBar {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-bg-tertiary);
+}
+
+/* on phones each card shimmers, not the gaps between them */
+.cardList.skeleton {
+  overflow: visible;
+}
+
+.cardList.skeleton::after {
+  display: none;
+}
+
+.cardList.skeleton .card {
+  position: relative;
+  overflow: hidden;
+}
+
+.cardList.skeleton .card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.05), transparent);
+  animation: shimmer 1.2s infinite;
+}
+
+[data-theme="dark"] .cardList.skeleton .card::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after,
+  .cardList.skeleton .card::after {
+    animation: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .desktopOnly {
+    display: none;
+  }
+
+  .cardList {
+    display: flex;
+  }
+}

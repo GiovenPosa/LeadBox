@@ -1,9 +1,21 @@
 // Outreach: businesses contacted first (see supabase/migrations/20261107_outreach.sql).
 // The keys here must match the table's check constraints.
 
+import type { LeadRef } from "./leads";
+
 export type Industry = "salons" | "barbers" | "food" | "trades" | "fitness" | "pets" | "other";
 export type Channel = "instagram" | "facebook" | "in_person" | "email" | "phone" | "other";
-export type Stage = "messaged" | "replied" | "mockup" | "chat" | "quoted" | "won" | "lost" | "no_reply";
+/** converted: promoted to a lead (set by the database, not picked by hand) */
+export type Stage =
+  | "messaged"
+  | "replied"
+  | "mockup"
+  | "chat"
+  | "quoted"
+  | "converted"
+  | "won"
+  | "lost"
+  | "no_reply";
 export type Objection =
   | "too_expensive"
   | "busy_enough"
@@ -30,13 +42,14 @@ export type OutreachRow = {
   objection_reason: string | null;
   next_step: string | null;
   next_step_due: string | null; // yyyy-mm-dd
-  notes: string | null;
+  /** the lead it was promoted to, embedded by OUTREACH_COLUMNS */
+  leads?: LeadRef | LeadRef[] | null;
 };
 
-export type OutreachInput = Omit<OutreachRow, "id" | "created_at" | "updated_at">;
+export type OutreachInput = Omit<OutreachRow, "id" | "created_at" | "updated_at" | "leads">;
 
 export const OUTREACH_COLUMNS =
-  "id, created_at, updated_at, business_name, industry, channel, handle, town, first_contacted_on, stage, objection, objection_reason, next_step, next_step_due, notes";
+  "id, created_at, updated_at, business_name, industry, channel, handle, town, first_contacted_on, stage, objection, objection_reason, next_step, next_step_due, leads(id, stage)";
 
 export const INDUSTRIES: { value: Industry; label: string }[] = [
   { value: "salons", label: "Salons" },
@@ -64,6 +77,7 @@ export const STAGES: { value: Stage; label: string }[] = [
   { value: "mockup", label: "Mock-up" },
   { value: "chat", label: "Chat" },
   { value: "quoted", label: "Quoted" },
+  { value: "converted", label: "Lead" },
   { value: "won", label: "Won" },
   { value: "lost", label: "Lost" },
   { value: "no_reply", label: "No reply" },
@@ -90,7 +104,8 @@ export const stageLabel = (v: Stage) => labelOf(STAGES, v);
 export const objectionLabel = (v: Objection | null) => labelOf(OBJECTIONS, v);
 
 /** Stages where there's nothing left to follow up */
-export const CLOSED_STAGES: Stage[] = ["won", "lost"];
+// outreach is done: follow-ups aren't due (a converted business is followed up as a lead)
+export const CLOSED_STAGES: Stage[] = ["converted", "won", "lost"];
 
 /* ---------- dates (all local, as yyyy-mm-dd) ---------- */
 

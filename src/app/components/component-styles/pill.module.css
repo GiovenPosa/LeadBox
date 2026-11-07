@@ -1,0 +1,47 @@
+/* ============================================
+   PILL - a status label in the app's status colours
+   ============================================ */
+
+.pill {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.new {
+  color: var(--color-status-new);
+  background-color: var(--color-status-new-bg);
+}
+
+.contacted {
+  color: var(--color-status-contacted);
+  background-color: var(--color-status-contacted-bg);
+}
+
+.qualified {
+  color: var(--color-status-qualified);
+  background-color: var(--color-status-qualified-bg);
+}
+
+.won {
+  color: var(--color-status-won);
+  background-color: var(--color-status-won-bg);
+}
+
+.lost {
+  color: var(--color-status-lost);
+  background-color: var(--color-status-lost-bg);
+}
+
+.bad {
+  color: var(--color-status-bad);
+  background-color: var(--color-status-bad-bg);
+}
+
+.neutral {
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-active);
+}

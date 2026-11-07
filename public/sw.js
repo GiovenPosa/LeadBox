@@ -14,10 +14,11 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
 
-// ---- Fetch (network-first for now) ----
-self.addEventListener('fetch', (event) => {
-  event.respondWith(fetch(event.request));
-});
+// ---- Fetch ----
+// No fetch handler: the worker is only here for push and badges, and nothing
+// is cached, so the browser loads pages itself. (A pass-through
+// respondWith(fetch()) added nothing and threw "Failed to fetch" whenever a
+// load was interrupted, e.g. by a reload or a dev rebuild.)
 
 // ============================================
 // PUSH NOTIFICATIONS

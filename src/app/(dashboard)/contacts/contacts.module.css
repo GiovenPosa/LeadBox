@@ -1,71 +1,14 @@
-/* contacts.module.css
-   ============================================
-   CONTACTS LIST — matches Inbox card tone
+/* ============================================
+   CONTACTS - the list is a DataTable; this holds the phone links and the
+   phone number picker (a modal on desktop, a bottom sheet on phones)
    ============================================ */
 
-.container {
-  width: 100%;
-}
-
-/* List wrapper */
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding-bottom: var(--space-8);
-}
-
-/* Contact card */
-.card {
-  display: flex;
-  align-items: flex-start;
-  justify-content:flex-start;
-  gap: var(--space-3);
-  flex-direction: row;
-  padding: var(--space-4);
-  border-radius: var(--radius-2xl);
-  background-color: var(--color-bg-secondary);
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-.card:hover {
-  background-color: var(--color-bg-active);
-}
-
-.card:active {
-  background-color: var(--color-bg-hover);
-}
-
-/* Left column */
-.primary {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  margin-right: var(--space-5);
-  width: 200px;
-}
-
-/* Name */
-.name {
-  font-size: var(--text-xl);
-  font-weight: 700;
-  color: var(--color-text-primary);
-  text-transform: capitalize;
-  line-height: var(--leading-tight);
-  -webkit-user-select: text;
-  user-select: text;
-}
-
-/* Email + phone links */
-.linkRow {
-  display: flex;
-  flex-direction: column;
-  
-}
-
+/* a phone number or "3 numbers" button, in the table and on cards */
 .link {
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   font-size: var(--text-bs);
@@ -84,141 +27,6 @@
 
 .link:active {
   color: var(--color-accent-hover);
-}
-
-/* Truncation for long emails on small screens */
-.linkText {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.infoRow {
-  display: flex;
-  flex-direction: row;
-  gap: var(--space-2);
-  margin: auto 0;
-}
-
-.infoItem {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  background-color: var(--color-bg-tertiary);
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  line-height: 1;
-  width: 100px;
-}
-
-.infoLabel {
-  font-size: var(--text-bs);
-  font-weight: 400;
-  color: var(--color-text-primary);
-  margin-top: var(--space-2);
-}
-
-.infoValue {
-  font-size: var(--text-bs);
-  font-weight: 600;
-  color: var(--color-text-primary);
-  display: inline-flex;
-  align-items: baseline;
-}
-
-/* New */
-.status_New {
-  background-color: var(--color-status-new-bg);
-  color: var(--color-status-new);
-}
-
-.badge_New {
-  color: var(--color-status-new);
-}
-
-/* Connected -> reuse "contacted" */
-.status_Connected {
-  background-color: var(--color-status-contacted-bg);
-  color: var(--color-status-contacted);
-}
-
-.badge_Connected {
-  color: var(--color-status-contacted);
-}
-
-/* Qualified -> reuse "qualified" */
-
-.status_Qualified {
-  background-color: var(--color-status-qualified-bg);
-  color: var(--color-status-qualified);
-}
-
-.badge_Qualified {
-  color: var(--color-status-qualified);
-}
-
-/* Active -> reuse "won" */
-.status_Active {
-  background-color: var(--color-status-won-bg);
-  color: var(--color-status-won);
-}
-
-.badge_Active {
-  color: var(--color-status-won);
-}
-
-/* Completed -> reuse "won" (for now) */
-.status_Completed {
-  background-color: var(--color-status-won-bg);
-  color: var(--color-status-won);
-}
-
-.badge_Completed {
-  color: var(--color-status-won);
-}
-
-/* Lost -> reuse "lost" */
-.status_Lost {
-  background-color: var(--color-status-lost-bg);
-  color: var(--color-status-lost);
-}
-
-.badge_Lost {
-  color: var(--color-status-lost);
-}
-
-/* Right column (date) */
-.meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-1);
-  flex-shrink: 0;
-  color: var(--color-text-tertiary);
-}
-
-.dateLabel {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text-tertiary);
-}
-
-.date {
-  font-size: var(--text-md);
-  font-weight: 500;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Small ID pill (optional) */
-.idPill {
-  margin-top: var(--space-3);
-  font-size: var(--text-sm);
-  color: var(--color-text-tertiary);
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: var(--color-bg-tertiary);
-  width: max-content;
 }
 
 /* ============================================
@@ -512,42 +320,5 @@
   .phonePanel {
     display: flex;
     flex-direction: column;
-  }
-
-  .card {
-    padding: var(--space-6) var(--space-6);
-  }
-
-  .meta {
-    align-items: flex-start;
-  }
-}
-
-@media (max-width: 860px) {
-  .primary {
-    width: 100%;
-  }
-
-  .card {
-    padding: var(--space-4);
-    flex-direction: column;
-  }
-
-  .linkRow {
-    flex-direction: row;
-    gap: var(--space-4);
-  }
-
-  .infoRow {
-    display: flex;
-    flex-direction: row;
-    gap: var(--space-2);
-    justify-content: flex-start;
-    width: 100%;
-  }
-
-  .infoItem {
-    padding: var(--space-3);
-    width: 100%;
   }
 }

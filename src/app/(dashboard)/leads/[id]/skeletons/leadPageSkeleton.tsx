@@ -4,7 +4,8 @@ import styles from "./leadPageSkeleton.module.css";
 
 export default function LeadPageSkeleton() {
   return (
-    <div className={styles.layout} aria-hidden="true">
+    // fades in, as it only appears once a load is slow (useDelayedFlag)
+    <div className={`${styles.layout} fade-in`} aria-hidden="true">
       {/* Lead Header Card Skeleton */}
       <div className={styles.card}>
         {/* Header Row: Name + Status */}

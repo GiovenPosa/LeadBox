@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import styles from "./component-styles/sidebar.module.css";
-import { HiInbox, HiMiniPaperAirplane, HiMiniUsers, HiMiniChartBar, HiMiniRocketLaunch } from "react-icons/hi2";
+import { HiInbox, HiMiniBolt, HiMiniPaperAirplane, HiMiniUsers, HiMiniChartBar, HiMiniRocketLaunch } from "react-icons/hi2";
 import Link from "next/link"; 
 import { unauthorized } from "next/navigation";
 
@@ -10,7 +10,7 @@ type SidebarProps = {
   email: string | null;
   onSignOut: () => void;
   inboxUnseenCount: number;
-  activePage: "inbox" | "outreach" | "contacts" | "analytics" | "projects";
+  activePage: "inbox" | "leads" | "outreach" | "contacts" | "analytics" | "projects";
 };
 
 export default function Sidebar({ email, onSignOut, inboxUnseenCount, activePage }: SidebarProps) {
@@ -85,6 +85,12 @@ export default function Sidebar({ email, onSignOut, inboxUnseenCount, activePage
             label="Contacts"
             active={activePage === "contacts"}
             href="/contacts"
+          />
+          <NavItem
+            icon={<HiMiniBolt size={20} />}
+            label="Leads"
+            href="/leads"
+            active={activePage === "leads"}
           />
           <NavItem 
             icon={<HiMiniChartBar size={20} />}

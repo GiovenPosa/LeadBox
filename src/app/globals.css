@@ -93,6 +93,7 @@
   --radius-lg: 8px;
   --radius-xl: 12px;
   --radius-2xl: 16px;
+  --radius-3xl: 20px;
 
   /* ---- Shadows ---- */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -356,5 +357,50 @@ a svg {
   
   * {
     scrollbar-width: none;
+  }
+}
+/* ============================================
+   ENTER ANIMATIONS
+   One job each, so they never compete on a page load:
+   - page-in: the page frame (header, pills, toolbar) appears. A quick plain
+     fade, so it doesn't fight what's inside it.
+   - fade-in: a loading skeleton. It only appears once a load is slow
+     (useDelayedFlag), so it eases in rather than popping.
+   - blur-in-soft: the content arriving. The one blur, the "reveal".
+   Only the start state is held ("backwards"), so once played nothing is left
+   on the element: a lingering filter or transform would change how
+   fixed-position children (popovers, menus) are placed.
+   ============================================ */
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes blur-in-soft {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(4px);
+  }
+}
+
+.page-in {
+  animation: page-in 0.2s ease-out backwards;
+}
+
+.fade-in {
+  animation: page-in 0.25s ease-out backwards;
+}
+
+.blur-in-soft {
+  animation: blur-in-soft 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+
+/* reduced motion: a quick fade, no blur or movement */
+@media (prefers-reduced-motion: reduce) {
+  .blur-in-soft {
+    animation: page-in 0.15s ease-out backwards;
   }
 }

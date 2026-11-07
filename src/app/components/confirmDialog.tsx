@@ -4,6 +4,7 @@ import { useEffect, useId, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import styles from "./component-styles/confirmDialog.module.css";
 import Button from "./button";
+import { useRestoreFocus } from "../hooks/useRestoreFocus";
 
 export type ConfirmVariant = "neutral" | "danger";
 
@@ -41,6 +42,7 @@ export default function ConfirmDialog({
   const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
   const titleId = useId();
   const messageId = useId();
+  useRestoreFocus(open);
 
   // Escape closes it, unless a delete is already running
   useEffect(() => {
@@ -67,7 +69,8 @@ export default function ConfirmDialog({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={messageId}
-        aria-hidden={!open}
+        // inert, not aria-hidden: it also moves focus out when the dialog closes
+        inert={!open}
       >
         <h2 id={titleId} className={styles.title}>
           {title}

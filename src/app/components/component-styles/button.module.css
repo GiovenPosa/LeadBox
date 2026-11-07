@@ -140,3 +140,9 @@
   --btn-fg: var(--color-status-lost);
   --btn-hover-bg: var(--color-status-lost-bg);
 }
+
+/* LinkButton: an <a> with the same look */
+a.button {
+  text-decoration: none;
+  cursor: pointer;
+}

@@ -11,8 +11,15 @@ import styles from "./homePage.module.css";
 import { HiInbox, HiArrowPath } from "react-icons/hi2";
 import InquiryCardSkeleton from "../components/skeletons/inquiryCardSkeleton";
 import ConfirmDialog from "../components/confirmDialog";
+import EnquiryPanel from "../components/enquiryPanel";
+import Button from "../components/button";
+import { StatPill } from "../components/statPill";
 import { deleteInquiries } from "../../lib/deleteInquiries";
+import { BUSINESS_TYPES, PACKAGES, convertInquiryToLead, embeddedLead } from "../../lib/leads";
 import { useBlockIosEdgeSwipe } from "../hooks/useBlockIosEdgeBackSwipe";
+import { useMediaQuery } from "../hooks/useMediaQuery";
+import { useDelayedFlag } from "../hooks/useDelayedFlag";
+import Toolbar, { type ToolbarFilterGroup } from "../components/toolbar";
 
 /* =========================================================
    Constants
@@ -25,30 +32,146 @@ const UNDO_MS = 5000;
 
 // Columns we select from the database (keeps queries consistent)
 const SELECT_COLUMNS =
-  "id, created_at, name, email, phone, selected_types, selected_package, budget, message, source_page, user_agent, opportunity_status, seen_at";
+  "id, created_at, name, email, phone, selected_types, selected_package, budget, message, source_page, user_agent, opportunity_status, seen_at, leads(id, stage)";
 
 /* =========================================================
    Types
 ========================================================= */
 
-type StatusCounts = {
-  total: number;
-  new: number;
-  contacted: number;
-  qualified: number;
-  won: number;
-  lost: number;
-  bad: number;
+type StatusCounts = Record<OpportunityStatus, number> & { total: number };
+
+const STATUSES: OpportunityStatus[] = ["new", "contacted", "converted", "bad"];
+
+// How a status reads in "No converted enquiries" and the like
+const STATUS_WORD: Record<StatusFilter, string> = {
+  all: "",
+  new: "new",
+  contacted: "contacted",
+  converted: "converted",
+  bad: "bad",
 };
 
 type StatusFilter = OpportunityStatus | "all";
 
-/** Newest first, the inbox's order */
-function insertByDate(rows: BookingInquiry[], row: BookingInquiry) {
+type InboxSort = "newest" | "oldest" | "budget";
+
+/** Everything that decides which enquiries show, and in what order */
+type InboxView = {
+  status: StatusFilter;
+  search: string;
+  attrs: Record<string, string[]>;
+  sort: InboxSort;
+};
+
+/* =========================================================
+   Toolbar: search, filter and sort
+========================================================= */
+
+const SEARCH_DEBOUNCE_MS = 300;
+
+const FILTER_GROUPS: ToolbarFilterGroup[] = [
+  {
+    key: "read",
+    label: "Read",
+    options: [
+      { value: "unread", label: "Unread" },
+      { value: "read", label: "Read" },
+    ],
+  },
+  {
+    key: "package",
+    label: "Package",
+    options: PACKAGES,
+  },
+  {
+    key: "type",
+    label: "Business type",
+    options: BUSINESS_TYPES.map((t) => ({ value: t, label: t })),
+  },
+];
+
+const SORT_OPTIONS: { value: InboxSort; label: string }[] = [
+  { value: "newest", label: "Newest first" },
+  { value: "oldest", label: "Oldest first" },
+  { value: "budget", label: "Highest budget" },
+];
+
+// Commas, brackets and quotes would break PostgREST's or() syntax, and * is its wildcard
+const searchTerm = (search: string) => search.replace(/[,()*"\\]/g, " ").trim();
+
+const isNarrowed = (view: InboxView) =>
+  !!searchTerm(view.search) || Object.values(view.attrs).some((v) => v.length > 0);
+
+/** One page of enquiries for a view, filtered and sorted in the database */
+function inquiriesQuery(view: InboxView, from: number) {
+  let query = supabase.from("booking_inquiries").select(SELECT_COLUMNS);
+
+  if (view.status !== "all") query = query.eq("opportunity_status", view.status);
+
+  const term = searchTerm(view.search);
+  if (term) {
+    const like = `*${term}*`;
+    query = query.or(`name.ilike.${like},email.ilike.${like},phone.ilike.${like},message.ilike.${like}`);
+  }
+
+  // Both or neither of read/unread means no filter
+  const read = view.attrs.read ?? [];
+  if (read.length === 1) {
+    query = read[0] === "unread" ? query.is("seen_at", null) : query.not("seen_at", "is", null);
+  }
+  if (view.attrs.package?.length) query = query.in("selected_package", view.attrs.package);
+  if (view.attrs.type?.length) query = query.overlaps("selected_types", view.attrs.type);
+
+  query =
+    view.sort === "budget"
+      ? query.order("budget", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false })
+      : query.order("created_at", { ascending: view.sort === "oldest" });
+
+  return query.range(from, from + PAGE_SIZE - 1);
+}
+
+/** The same rules as inquiriesQuery, for realtime rows that arrive on their own */
+function matchesView(row: BookingInquiry, view: InboxView) {
+  if (view.status !== "all" && row.opportunity_status !== view.status) return false;
+
+  const term = searchTerm(view.search).toLowerCase();
+  if (term && ![row.name, row.email, row.phone, row.message].some((v) => v?.toLowerCase().includes(term))) {
+    return false;
+  }
+
+  const read = view.attrs.read ?? [];
+  if (read.length === 1 && (read[0] === "unread") !== !row.seen_at) return false;
+
+  const packages = view.attrs.package ?? [];
+  if (packages.length && !packages.includes(row.selected_package ?? "")) return false;
+
+  const types = view.attrs.type ?? [];
+  if (types.length && !row.selected_types?.some((t) => types.includes(t))) return false;
+
+  return true;
+}
+
+function compareRows(sort: InboxSort) {
+  const newest = (a: BookingInquiry, b: BookingInquiry) => b.created_at.localeCompare(a.created_at);
+  if (sort === "oldest") return (a: BookingInquiry, b: BookingInquiry) => -newest(a, b);
+  if (sort === "budget") {
+    return (a: BookingInquiry, b: BookingInquiry) =>
+      (b.budget ?? -1) - (a.budget ?? -1) || newest(a, b);
+  }
+  return newest;
+}
+
+/**
+ * Put a row where the current sort says it goes. If it would land after the
+ * last loaded row while more pages are still to come, leave it out: it'll
+ * arrive with those pages instead.
+ */
+function insertSorted(rows: BookingInquiry[], row: BookingInquiry, sort: InboxSort, moreToLoad: boolean) {
   if (rows.some((r) => r.id === row.id)) return rows;
-  const next = [...rows, row];
-  next.sort((a, b) => b.created_at.localeCompare(a.created_at));
-  return next;
+  const compare = compareRows(sort);
+  const last = rows[rows.length - 1];
+  if (moreToLoad && last && compare(row, last) > 0) return rows;
+  return [...rows, row].sort(compare);
 }
 
 /* =========================================================
@@ -79,6 +202,8 @@ export default function InboxPage() {
 
   // Loading states
   const [loading, setLoading] = useState(true); // Initial load
+  // a quick load skips the skeleton; the cards just fade in
+  const showSkeleton = useDelayedFlag(loading);
   const [loadingMore, setLoadingMore] = useState(false); // Subsequent pages
   const [error, setError] = useState<string | null>(null);
 
@@ -87,6 +212,10 @@ export default function InboxPage() {
 
   // Delete: the desktop button asks first; a swipe deletes after an undo window
   const [confirmTarget, setConfirmTarget] = useState<BookingInquiry | null>(null);
+  // The enquiry open in the side panel; it reads the live row, so status and lead changes show straight away
+  const [openId, setOpenId] = useState<string | null>(null);
+  const openInquiry = rows.find((r) => r.id === openId) ?? null;
+  const closePanel = useCallback(() => setOpenId(null), []);
   const [deleting, setDeleting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [undoRow, setUndoRow] = useState<BookingInquiry | null>(null);
@@ -94,13 +223,13 @@ export default function InboxPage() {
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Counts state (fetched separately for accurate totals)
+  // the toolbar shows until the first counts say there's nothing to search
+  const [countsLoaded, setCountsLoaded] = useState(false);
   const [counts, setCounts] = useState<StatusCounts>({
     total: 0,
     new: 0,
     contacted: 0,
-    qualified: 0,
-    won: 0,
-    lost: 0,
+    converted: 0,
     bad: 0,
   });
 
@@ -112,9 +241,25 @@ export default function InboxPage() {
   const isRealtimeReconnecting =
     realtimeState !== "connected" && rows.length > 0 && showReconnectUI;
 
-  // Track current filter in a ref to avoid stale closures in callbacks
-  const currentFilterRef = useRef<StatusFilter>(statusFilter);
-  currentFilterRef.current = statusFilter;
+  // Toolbar: the search box updates straight away; the query waits for a pause in typing
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [attrFilter, setAttrFilter] = useState<Record<string, string[]>>({});
+  const [sort, setSort] = useState<InboxSort>("newest");
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Track the current view in a ref to avoid stale closures in callbacks
+  const viewRef = useRef<InboxView>({ status: statusFilter, search: debouncedSearch, attrs: attrFilter, sort });
+  viewRef.current = { status: statusFilter, search: debouncedSearch, attrs: attrFilter, sort };
+  const hasMoreRef = useRef(hasMore);
+  hasMoreRef.current = hasMore;
+  // Only the newest request may update the list, so a slow search can't overwrite a newer one
+  const requestIdRef = useRef(0);
 
   /* ---------------------------------------------------------
      Derived State
@@ -135,48 +280,18 @@ export default function InboxPage() {
    */
   const fetchCounts = useCallback(async () => {
     // Supabase allows count queries without fetching data
-    const { count: total } = await supabase
-      .from("booking_inquiries")
-      .select("*", { count: "exact", head: true });
+    const countOf = async (status?: OpportunityStatus) => {
+      let query = supabase.from("booking_inquiries").select("*", { count: "exact", head: true });
+      if (status) query = query.eq("opportunity_status", status);
+      const { count } = await query;
+      return count ?? 0;
+    };
 
-    const { count: newCount } = await supabase
-      .from("booking_inquiries")
-      .select("*", { count: "exact", head: true })
-      .eq("opportunity_status", "new");
-
-    const { count: contactedCount } = await supabase
-      .from("booking_inquiries")
-      .select("*", { count: "exact", head: true })
-      .eq("opportunity_status", "contacted");
-
-    const { count: qualifiedCount } = await supabase
-      .from("booking_inquiries")
-      .select("*", { count: "exact", head: true })
-      .eq("opportunity_status", "qualified");
-
-    const { count: wonCount } = await supabase
-      .from("booking_inquiries")
-      .select("*", { count: "exact", head: true })
-      .eq("opportunity_status", "won");
-
-    const { count: lostCount } = await supabase
-      .from("booking_inquiries")
-      .select("*", { count: "exact", head: true })
-      .eq("opportunity_status", "lost");
-
-    const { count: badCount } = await supabase
-      .from("booking_inquiries")
-      .select("*", { count: "exact", head: true })
-      .eq("opportunity_status", "bad");
-
+    const [total, ...byStatus] = await Promise.all([countOf(), ...STATUSES.map((s) => countOf(s))]);
+    setCountsLoaded(true);
     setCounts({
-      total: total ?? 0,
-      new: newCount ?? 0,
-      contacted: contactedCount ?? 0,
-      qualified: qualifiedCount ?? 0,
-      won: wonCount ?? 0,
-      lost: lostCount ?? 0,
-      bad: badCount ?? 0,
+      total,
+      ...(Object.fromEntries(STATUSES.map((s, i) => [s, byStatus[i]])) as Record<OpportunityStatus, number>),
     });
   }, []);
 
@@ -185,20 +300,10 @@ export default function InboxPage() {
    * Called on initial load, pull-to-refresh, and filter change.
    */
   const fetchInitialInquiries = useCallback(
-    async (filter: StatusFilter = currentFilterRef.current) => {
-      // Build the query
-      let query = supabase
-        .from("booking_inquiries")
-        .select(SELECT_COLUMNS)
-        .order("created_at", { ascending: false })
-        .limit(PAGE_SIZE);
-
-      // Apply filter at DATABASE level (not client-side)
-      if (filter !== "all") {
-        query = query.eq("opportunity_status", filter);
-      }
-
-      const { data, error } = await query;
+    async (view: InboxView = viewRef.current) => {
+      const requestId = ++requestIdRef.current;
+      const { data, error } = await inquiriesQuery(view, 0);
+      if (requestId !== requestIdRef.current) return;
 
       if (error) {
         setError(error.message);
@@ -209,13 +314,18 @@ export default function InboxPage() {
         setHasMore((data?.length ?? 0) === PAGE_SIZE);
         setError(null);
       }
+      // Only the request whose rows are used ends the loading state. An
+      // earlier one that lost the race returns above, so it can't switch
+      // loading off while the list is still empty (which flashed the empty state).
+      setLoading(false);
     },
     []
   );
 
   /**
-   * Load the next page of inquiries WITH the current filter applied.
-   * Uses cursor-based pagination (created_at of last item).
+   * Load the next page of inquiries for the current view.
+   * Offset-based, so it works for every sort; rows already shown are skipped
+   * in case a realtime insert shifted the pages.
    */
   const loadMore = useCallback(async () => {
     // Guard clauses prevent duplicate/unnecessary requests
@@ -225,31 +335,22 @@ export default function InboxPage() {
 
     setLoadingMore(true);
 
-    // Cursor = timestamp of the last loaded item
-    const lastRow = rows[rows.length - 1];
-    const cursor = lastRow.created_at;
+    const requestId = requestIdRef.current;
+    const { data, error } = await inquiriesQuery(viewRef.current, rows.length);
 
-    // Build the query
-    let query = supabase
-      .from("booking_inquiries")
-      .select(SELECT_COLUMNS)
-      .order("created_at", { ascending: false })
-      .lt("created_at", cursor) // Items BEFORE the cursor (older)
-      .limit(PAGE_SIZE);
-
-    // Apply filter at DATABASE level
-    if (currentFilterRef.current !== "all") {
-      query = query.eq("opportunity_status", currentFilterRef.current);
+    // the view changed while this page was loading; its rows belong to the old one
+    if (requestId !== requestIdRef.current) {
+      setLoadingMore(false);
+      return;
     }
-
-    const { data, error } = await query;
 
     if (error) {
       setError(error.message);
     } else {
       // APPEND new data to existing rows
-      setRows((prev) => [...prev, ...(data ?? [])]);
-      setHasMore((data?.length ?? 0) === PAGE_SIZE);
+      const page = (data ?? []) as BookingInquiry[];
+      setRows((prev) => [...prev, ...page.filter((r) => !prev.some((p) => p.id === r.id))]);
+      setHasMore(page.length === PAGE_SIZE);
     }
 
     setLoadingMore(false);
@@ -260,8 +361,8 @@ export default function InboxPage() {
    * Used for initial load and refresh.
    */
   const fetchAll = useCallback(
-    async (filter?: StatusFilter) => {
-      await Promise.all([fetchCounts(), fetchInitialInquiries(filter)]);
+    async () => {
+      await Promise.all([fetchCounts(), fetchInitialInquiries()]);
     },
     [fetchCounts, fetchInitialInquiries]
   );
@@ -284,7 +385,7 @@ export default function InboxPage() {
 
       // Update state
       setStatusFilter(targetFilter);
-      currentFilterRef.current = targetFilter;
+      viewRef.current = { ...viewRef.current, status: targetFilter };
 
       // Reset pagination
       setHasMore(true);
@@ -293,13 +394,23 @@ export default function InboxPage() {
       // Show loading briefly
       setLoading(true);
 
-      // Fetch with new filter
-      await fetchInitialInquiries(targetFilter);
-
-      setLoading(false);
+      // Fetch with new filter; it ends the loading state itself
+      await fetchInitialInquiries();
     },
     [statusFilter, fetchInitialInquiries]
   );
+
+  /**
+   * Search, filter or sort changed: refetch the first page. The current
+   * cards stay up until the new ones arrive, so typing doesn't flash.
+   */
+  const toolbarKey = JSON.stringify([debouncedSearch.trim(), attrFilter, sort]);
+  const lastToolbarKeyRef = useRef(toolbarKey);
+  useEffect(() => {
+    if (toolbarKey === lastToolbarKeyRef.current) return;
+    lastToolbarKeyRef.current = toolbarKey;
+    fetchInitialInquiries();
+  }, [toolbarKey, fetchInitialInquiries]);
 
   /* ---------------------------------------------------------
      Intersection Observer for Infinite Scroll
@@ -398,6 +509,29 @@ export default function InboxPage() {
   }
 
   /* ---------------------------------------------------------
+     Turn into lead
+  --------------------------------------------------------- */
+
+  // The card stays where it is (even under a status filter) so its
+  // View lead button is right there afterwards
+  async function convertToLead(id: string) {
+    const lead = await convertInquiryToLead(id);
+    const previous = rows.find((r) => r.id === id)?.opportunity_status;
+
+    setRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, opportunity_status: "converted", leads: lead } : r))
+    );
+    if (previous && previous !== "converted") {
+      setCounts((prev) => ({
+        ...prev,
+        [previous]: Math.max(0, prev[previous] - 1),
+        converted: prev.converted + 1,
+      }));
+    }
+    refreshCount();
+  }
+
+  /* ---------------------------------------------------------
      Delete
   --------------------------------------------------------- */
 
@@ -422,7 +556,7 @@ export default function InboxPage() {
       setConfirmTarget(null);
     } catch (e) {
       setConfirmTarget(null);
-      setActionError(e instanceof Error ? e.message : "Couldn't delete that lead.");
+      setActionError(e instanceof Error ? e.message : "Couldn't delete that enquiry.");
     } finally {
       setDeleting(false);
     }
@@ -458,9 +592,9 @@ export default function InboxPage() {
         refreshCount();
       })
       .catch((e) => {
-        setRows((prev) => insertByDate(prev, row));
+        setRows((prev) => insertSorted(prev, row, viewRef.current.sort, false));
         fetchCounts();
-        setActionError(e instanceof Error ? e.message : "Couldn't delete that lead.");
+        setActionError(e instanceof Error ? e.message : "Couldn't delete that enquiry.");
       });
   }
 
@@ -471,9 +605,8 @@ export default function InboxPage() {
     if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
     setUndoRow(null);
 
-    const filter = currentFilterRef.current;
-    if (filter === "all" || row.opportunity_status === filter) {
-      setRows((prev) => insertByDate(prev, row));
+    if (matchesView(row, viewRef.current)) {
+      setRows((prev) => insertSorted(prev, row, viewRef.current.sort, false));
     }
     fetchCounts();
   }
@@ -492,8 +625,9 @@ export default function InboxPage() {
      Initial Fetch Effect
   --------------------------------------------------------- */
 
+  // fetchInitialInquiries ends the loading state once the newest request lands
   useEffect(() => {
-    fetchAll().then(() => setLoading(false));
+    fetchAll();
   }, [fetchAll]);
 
   /* ---------------------------------------------------------
@@ -562,13 +696,10 @@ export default function InboxPage() {
                 [row.opportunity_status]: prev[row.opportunity_status] + 1,
               }));
 
-              // Only add to view if it matches current filter
-              if (
-                currentFilterRef.current === "all" ||
-                row.opportunity_status === currentFilterRef.current
-              ) {
+              // Only add to view if it matches the current filters and search
+              if (matchesView(row, viewRef.current)) {
                 setRows((prev) =>
-                  prev.some((r) => r.id === row.id) ? prev : [row, ...prev]
+                  insertSorted(prev, row, viewRef.current.sort, hasMoreRef.current)
                 );
               }
             } else if (payload.eventType === "UPDATE") {
@@ -591,30 +722,19 @@ export default function InboxPage() {
                 }));
               }
 
-              // Handle row updates based on filter
-              const filter = currentFilterRef.current;
-              const matchesFilter =
-                filter === "all" || updated.opportunity_status === filter;
-              const wasInView = old.opportunity_status
-                ? filter === "all" || old.opportunity_status === filter
-                : true;
-
-              if (matchesFilter && wasInView) {
-                // Update in place
-                setRows((prev) =>
-                  prev.map((r) => (r.id === updated.id ? updated : r))
-                );
-              } else if (!matchesFilter && wasInView) {
-                // Remove from view (no longer matches filter)
-                setRows((prev) => prev.filter((r) => r.id !== updated.id));
-              } else if (matchesFilter && !wasInView) {
-                // Add to view (now matches filter)
-                setRows((prev) =>
-                  prev.some((r) => r.id === updated.id)
-                    ? prev
-                    : [updated, ...prev]
-                );
-              }
+              // Update in place, drop it if it no longer matches the
+              // filters and search, or add it if it now does
+              const view = viewRef.current;
+              setRows((prev) => {
+                const inView = prev.some((r) => r.id === updated.id);
+                if (!matchesView(updated, view)) {
+                  return inView ? prev.filter((r) => r.id !== updated.id) : prev;
+                }
+                // the realtime row has no embedded lead; keep the one we have
+                return inView
+                  ? prev.map((r) => (r.id === updated.id ? { ...updated, leads: r.leads } : r))
+                  : insertSorted(prev, updated, view.sort, hasMoreRef.current);
+              });
             } else if (payload.eventType === "DELETE") {
               const deleted = payload.old as Partial<BookingInquiry>;
               setRows((prev) => prev.filter((r) => r.id !== deleted.id));
@@ -673,6 +793,30 @@ export default function InboxPage() {
     return counts[statusFilter];
   };
 
+  const narrowed = isNarrowed({ status: statusFilter, search: debouncedSearch, attrs: attrFilter, sort });
+
+  // There from the start; hidden only if there are no enquiries at all (kept while narrowed, so it can be cleared)
+  const showToolbar = !countsLoaded || counts.total > 0 || narrowed;
+
+  const toolbar = (
+    <Toolbar
+      search={{ value: search, onChange: setSearch, placeholder: "Search leads" }}
+      filter={{ groups: FILTER_GROUPS, value: attrFilter, onChange: setAttrFilter }}
+      sort={{
+        options: SORT_OPTIONS,
+        value: sort,
+        onChange: (v) => setSort(v as InboxSort),
+        defaultValue: "newest",
+      }}
+    />
+  );
+
+  function clearToolbar() {
+    setSearch("");
+    setDebouncedSearch("");
+    setAttrFilter({});
+  }
+
   /* ---------------------------------------------------------
      Render
   --------------------------------------------------------- */
@@ -707,12 +851,15 @@ export default function InboxPage() {
             pullDistance > 0 ? `translateY(${pullDistance * 0.4}px)` : undefined,
         }}
       >
-        {/* Page Header */}
-        <div className={styles.pageHeader}>
-          <div className={styles.pageIcon}>
-            <HiInbox size={30} />
+        {/* Page Header; on desktop the toolbar sits on the right */}
+        <div className={styles.headerRow}>
+          <div className={styles.pageHeader}>
+            <div className={styles.pageIcon}>
+              <HiInbox size={30} />
+            </div>
+            <h1 className={styles.pageTitle}>Inbox</h1>
           </div>
-          <h1 className={styles.pageTitle}>Inbox</h1>
+          {showToolbar && !isMobile && <div className={styles.headerActions}>{toolbar}</div>}
         </div>
 
         {/* Stats Row - Now uses accurate counts from database */}
@@ -740,18 +887,11 @@ export default function InboxPage() {
               active={statusFilter === "contacted"}
             />
             <StatCard
-              label="Qualified"
-              value={counts.qualified}
+              label="Leads"
+              value={counts.converted}
               variant="orange"
-              onClick={() => handleFilterChange("qualified")}
-              active={statusFilter === "qualified"}
-            />
-            <StatCard
-              label="Won"
-              value={counts.won}
-              variant="green"
-              onClick={() => handleFilterChange("won")}
-              active={statusFilter === "won"}
+              onClick={() => handleFilterChange("converted")}
+              active={statusFilter === "converted"}
             />
             <StatCard
               label="Bad"
@@ -760,18 +900,13 @@ export default function InboxPage() {
               onClick={() => handleFilterChange("bad")}
               active={statusFilter === "bad"}
             />
-            <StatCard
-              label="Lost"
-              value={counts.lost}
-              variant="neutral"
-              onClick={() => handleFilterChange("lost")}
-              active={statusFilter === "lost"}
-            />
           </div>
         </div>
 
         {/* Content */}
         <main className={styles.content}>
+          {showToolbar && isMobile && <div className={styles.toolbarRow}>{toolbar}</div>}
+
           {actionError && (
             <div className={`${styles.errorBanner} ${styles.actionError}`} role="alert">
               <span>{actionError}</span>
@@ -779,11 +914,13 @@ export default function InboxPage() {
           )}
 
           {loading ? (
-            <div className={styles.cardList}>
-              {Array.from({ length: 3 }).map((_, i) => (
-                <InquiryCardSkeleton key={i} />
-              ))}
-            </div>
+            showSkeleton && (
+              <div className={`${styles.cardList} fade-in`}>
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <InquiryCardSkeleton key={i} />
+                ))}
+              </div>
+            )
           ) : error ? (
             <div className={styles.errorBanner}>
               <svg
@@ -800,6 +937,13 @@ export default function InboxPage() {
               </svg>
               <span>{error}</span>
             </div>
+          ) : rows.length === 0 && narrowed ? (
+            <EmptyState
+              icon="🔍"
+              title="Nothing matches"
+              description="Try a different search, or clear the filters."
+              action={{ label: "Clear search and filters", onClick: clearToolbar }}
+            />
           ) : rows.length === 0 && statusFilter === "all" ? (
             <EmptyState
               icon="📭"
@@ -809,7 +953,7 @@ export default function InboxPage() {
           ) : rows.length === 0 ? (
             <EmptyState
               icon="🔍"
-              title={`No ${statusFilter} inquiries`}
+              title={`No ${STATUS_WORD[statusFilter]} enquiries`}
               description="Try changing your filter to see more results."
             />
           ) : (
@@ -825,6 +969,7 @@ export default function InboxPage() {
                       onStatusChange={updateStatus}
                       onSeen={markSeen}
                       onDelete={requestDelete}
+                      onOpen={setOpenId}
                     />
                   ))}
 
@@ -839,8 +984,9 @@ export default function InboxPage() {
                 )}
                 {!hasMore && rows.length >= PAGE_SIZE && (
                   <p className={styles.endMessage}>
-                    You've seen all {getFilteredCount()}{" "}
-                    {statusFilter === "all" ? "leads" : `${statusFilter} leads`}
+                    {narrowed
+                      ? `That's all ${rows.length} matching enquiries`
+                      : `You've seen all ${getFilteredCount()} ${statusFilter === "all" ? "enquiries" : `${STATUS_WORD[statusFilter]} enquiries`}`}
                   </p>
                 )}
               </div>
@@ -852,7 +998,7 @@ export default function InboxPage() {
       {undoRow && (
         <div className={styles.undoToast} role="status">
           <span className={styles.undoText}>
-            Deleted {undoRow.name || "lead"}
+            Deleted {undoRow.name || "enquiry"}
           </span>
           <button type="button" className={styles.undoBtn} onClick={undoDelete}>
             Undo
@@ -860,11 +1006,19 @@ export default function InboxPage() {
         </div>
       )}
 
+      <EnquiryPanel
+        inquiry={openInquiry}
+        onClose={closePanel}
+        onStatusChange={updateStatus}
+        onConvert={convertToLead}
+        onRequestDelete={(id) => requestDelete(id, "button")}
+      />
+
       <ConfirmDialog
         variant="danger"
         open={confirmTarget !== null}
-        title="Delete this lead?"
-        message={`${confirmTarget?.name || "This lead"} will be removed for good, along with any qualification notes. This can't be undone.`}
+        title="Delete this enquiry?"
+        message={`${confirmTarget?.name || "This enquiry"} will be removed for good${embeddedLead(confirmTarget?.leads) ? ", along with its lead, qualification answers and notes" : ", along with its notes"}. This can't be undone.`}
         confirmLabel="Delete"
         busyLabel="Deleting…"
         busy={deleting}
@@ -889,13 +1043,13 @@ type StatCardProps = {
 
 function StatCard({ label, value, variant, onClick, active }: StatCardProps) {
   return (
-    <button
-      className={`${styles.statCard} ${styles[`statCard${variant.charAt(0).toUpperCase() + variant.slice(1)}`]} ${active ? styles.statCardActive : ""}`}
+    <StatPill
+      label={label}
+      value={value}
+      active={active}
       onClick={onClick}
-    >
-      <span className={styles.statValue}>{value}</span>
-      <span className={styles.statLabel}>{label}</span>
-    </button>
+      className={styles[`statCard${variant.charAt(0).toUpperCase() + variant.slice(1)}`]}
+    />
   );
 }
 
@@ -903,14 +1057,20 @@ type EmptyStateProps = {
   icon: string;
   title: string;
   description: string;
+  action?: { label: string; onClick: () => void };
 };
 
-function EmptyState({ icon, title, description }: EmptyStateProps) {
+function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
     <div className={styles.emptyState}>
       <div className={styles.emptyIcon}>{icon}</div>
       <h3 className={styles.emptyTitle}>{title}</h3>
       <p className={styles.emptyDescription}>{description}</p>
+      {action && (
+        <Button className={styles.emptyAction} onClick={action.onClick}>
+          {action.label}
+        </Button>
+      )}
     </div>
   );
 }

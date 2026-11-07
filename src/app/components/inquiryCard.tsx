@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import styles from "./component-styles/inquiryCard.module.css";
 import {
@@ -11,12 +11,18 @@ import {
   HiCheck,
   HiTrash,
   HiOutlineTrash,
+  HiMiniBolt,
 } from "react-icons/hi2";
 import { useRouter } from "next/navigation";
 import { useSwipeToDelete } from "../hooks/useSwipeToDelete";
+import { useMediaQuery } from "../hooks/useMediaQuery";
+import { embeddedLead, leadHref, type LeadRef } from "../../lib/leads";
 
-
-export type OpportunityStatus = "new" | "contacted" | "qualified" | "won" | "lost" | "bad";
+/**
+ * An enquiry is New, Contacted or Bad until it's turned into a lead, which
+ * makes it Converted; from there the lead's own stage tracks the deal.
+ */
+export type OpportunityStatus = "new" | "contacted" | "converted" | "bad";
 
 export type BookingInquiry = {
   id: string;
@@ -32,6 +38,8 @@ export type BookingInquiry = {
   source_page: string | null;
   opportunity_status: OpportunityStatus;
   seen_at: string | null;
+  /** the lead it was turned into, embedded by the inbox query */
+  leads?: LeadRef | LeadRef[] | null;
 };
 
 type InquiryCardProps = {
@@ -40,18 +48,21 @@ type InquiryCardProps = {
   onSeen: (id: string) => void;
   /** "button": the desktop hover button (asks first). "swipe": a committed mobile swipe. */
   onDelete: (id: string, via: "button" | "swipe") => void;
+  /** open the enquiry in the side panel */
+  onOpen: (id: string) => void;
 };
 
-const STATUS_ORDER: OpportunityStatus[] = ["new", "contacted", "qualified", "won", "lost", "bad"];
+// Converted isn't picked from the menu: the Turn into lead button sets it
+const STATUS_ORDER: OpportunityStatus[] = ["new", "contacted", "bad"];
 
 const STATUS_CONFIG: Record<OpportunityStatus, { label: string; className: string }> = {
   new: { label: "New", className: styles.statusNew },
   contacted: { label: "Contacted", className: styles.statusContacted },
-  qualified: { label: "Qualified", className: styles.statusQualified },
-  won: { label: "Won", className: styles.statusWon },
-  lost: { label: "Lost", className: styles.statusLost },
+  converted: { label: "Lead", className: styles.statusQualified },
   bad: { label: "Bad", className: styles.statusBad },
 };
+
+const subscribeNoop = () => () => {};
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -80,14 +91,15 @@ function formatBudget(budget: number): string {
   return `£${budget}`;
 }
 
-export default function InquiryCard({ inquiry, onStatusChange, onSeen, onDelete }: InquiryCardProps) {
+export default function InquiryCard({ inquiry, onStatusChange, onSeen, onDelete, onOpen }: InquiryCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [showStatusPanel, setShowStatusPanel] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [messageExpanded, setMessageExpanded] = useState(false);
-  const router = useRouter()
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  // true only in the browser, so the status sheet's portal never renders on the server
+  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
+  const router = useRouter();
+  const lead = embeddedLead(inquiry.leads);
 
   const {
     rowRef: swipeRowRef,
@@ -103,27 +115,9 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen, onDelete 
     onCommit: () => onDelete(inquiry.id, "swipe"),
   });
 
-  // Character limit for truncation (roughly 2 lines)
-  const MESSAGE_TRUNCATE_LENGTH = 80;
-  const isMessageLong = (inquiry.message?.length ?? 0) > MESSAGE_TRUNCATE_LENGTH;
 
   
 
-  // Track mount state for portal
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Detect mobile on mount and resize
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   // Prevent scrolling when panel is open
   useEffect(() => {
@@ -159,12 +153,20 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen, onDelete 
       return;
     }
     if (showNewDot) onSeen(inquiry.id);
-    router.push(`/lead/${inquiry.id}`);
+    onOpen(inquiry.id);
+  };
+
+  const openLead = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (lead) router.push(leadHref(lead.id));
   };
 
   const handleStatusClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // ✅ don't mark seen when opening status menu
-    
+
+    // a converted enquiry's status is its lead, so the badge opens the lead
+    if (lead) return openLead(e);
+
     if (isMobile) {
       setShowStatusPanel(true);
     } else {
@@ -207,7 +209,8 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen, onDelete 
       )}
       <article
         ref={swipeCardRef}
-        className={styles.card}
+        // fades in softly when the cards replace their skeletons, or a new enquiry arrives (globals.css)
+        className={`${styles.card} blur-in-soft`}
         onClick={handleCardClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
@@ -216,8 +219,13 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen, onDelete 
         }}
         role="button"
         tabIndex={0}
+        aria-haspopup="dialog"
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") handleCardClick();
+          if (e.target !== e.currentTarget) return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleCardClick();
+          }
         }}
       >
         <div className={styles.cardContent}>
@@ -235,11 +243,12 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen, onDelete 
                 <button
                   className={`${styles.status} ${config.className}`}
                   onClick={handleStatusClick}
-                  title="Click to change status"
+                  title={lead ? "Open lead" : "Click to change status"}
                   type="button"
-                  aria-expanded={showStatusMenu || showStatusPanel}
-                  aria-haspopup="listbox"
+                  aria-expanded={lead ? undefined : showStatusMenu || showStatusPanel}
+                  aria-haspopup={lead ? undefined : "listbox"}
                 >
+                  {lead && <HiMiniBolt size={12} />}
                   {config.label}
                 </button>
 
@@ -298,21 +307,7 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen, onDelete 
           {/* Message */}
           {inquiry.message && (
             <div className={styles.messageBlock}>
-              <p className={`${styles.message} ${messageExpanded ? styles.messageExpanded : ""}`}>
-                {inquiry.message}
-              </p>
-              {isMessageLong && (
-                <button
-                  className={styles.seeMoreBtn}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMessageExpanded(!messageExpanded);
-                  }}
-                  type="button"
-                >
-                  {messageExpanded ? "See less" : "... See more"}
-                </button>
-              )}
+              <p className={styles.message}>{inquiry.message}</p>
             </div>
           )}
 
@@ -349,8 +344,8 @@ export default function InquiryCard({ inquiry, onStatusChange, onSeen, onDelete 
             e.stopPropagation();
             onDelete(inquiry.id, "button");
           }}
-          aria-label={`Delete ${inquiry.name || "lead"}`}
-          title="Delete lead"
+          aria-label={`Delete ${inquiry.name || "enquiry"}`}
+          title="Delete enquiry"
         >
           <HiOutlineTrash size={16} />
         </button>

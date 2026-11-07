@@ -49,6 +49,30 @@ export default function Button({
   );
 }
 
+type LinkButtonProps = ComponentProps<"a"> & {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  icon?: ReactNode;
+};
+
+/** A link that looks like a Button, for mailto:, tel: and page links */
+export function LinkButton({ variant = "secondary", size = "md", icon, className, children, ...props }: LinkButtonProps) {
+  const classes = [styles.button, styles[variant], styles[size], icon ? styles.withIcon : "", className]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <a {...props} className={classes}>
+      {icon && (
+        <span className={styles.icon} aria-hidden="true">
+          {icon}
+        </span>
+      )}
+      {children != null && children !== false && <span className={styles.label}>{children}</span>}
+    </a>
+  );
+}
+
 type IconButtonProps = Omit<ButtonProps, "children" | "icon"> & {
   icon: ReactNode;
   /** read out by screen readers and shown as the tooltip */

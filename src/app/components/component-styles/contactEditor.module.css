@@ -1,0 +1,38 @@
+/* ============================================
+   CONTACT EDITOR - the phone list and hints
+   ============================================ */
+
+.phones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.phoneRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* quiet, like the panel's close button (doubled to outrank the ghost variant's colour) */
+.removePhone.removePhone {
+  --btn-fg: var(--color-text-tertiary);
+  flex: none;
+}
+
+.removePhone.removePhone:hover {
+  --btn-fg: var(--color-text-primary);
+}
+
+/* sits under the inputs, lined up with their text */
+.addPhone {
+  align-self: flex-start;
+  margin-left: calc(var(--space-1) * -1);
+}
+
+.hint {
+  margin-left: var(--space-1);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  color: var(--color-text-tertiary);
+}

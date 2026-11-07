@@ -34,12 +34,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 var(--space-3);
+  /* six items share the width evenly, so they fit a 375px phone */
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 var(--space-1);
   padding-bottom: var(--space-4);
   color: var(--color-text-primary);
   transition: all var(--transition-fast);
   touch-action: manipulation;
-  min-width: 60px;
   text-decoration: none;
   background: none;
   cursor: pointer;
@@ -118,11 +120,3 @@
   }
 }
 
-/* Extra small screens - tighter spacing */
-@media (max-width: 360px) {
-  .dockItem {
-    min-width: 52px;
-  }
-  
-  
-}

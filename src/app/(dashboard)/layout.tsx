@@ -10,7 +10,7 @@ import TopBar from "../components/topbar";
 import DockBar from "../components/dockbar";
 import styles from "./homePage.module.css";
 
-type NavActivePage = "inbox" | "outreach" | "contacts" | "projects" | "analytics";
+type NavActivePage = "inbox" | "leads" | "outreach" | "contacts" | "projects" | "analytics";
 
 function DashboardShell({ children }: { children: ReactNode }) {
   const { email, loading, signOut } = useAuth();
@@ -26,7 +26,8 @@ function DashboardShell({ children }: { children: ReactNode }) {
   }
 
   const isLeadPage = activePage === "lead";
-  const navActivePage: NavActivePage = isLeadPage ? "inbox" : activePage;
+  // a single lead's page lights up Leads in the nav
+  const navActivePage: NavActivePage = isLeadPage ? "leads" : activePage;
 
   return (
     <div className={styles.workspace}>

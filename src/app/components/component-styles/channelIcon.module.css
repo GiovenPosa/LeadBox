@@ -1,0 +1,14 @@
+/* ============================================
+   CHANNEL LABEL - a channel's icon and name
+   ============================================ */
+
+.channel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  vertical-align: bottom;
+}
+
+.channel svg {
+  flex: none;
+}
