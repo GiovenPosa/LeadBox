@@ -19,7 +19,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function checkSession() {
-      const { data } = await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.getSession();
+
+      // A stored session whose refresh token Supabase no longer knows
+      // (expired, revoked, or from rotated keys): clear it locally so it
+      // doesn't fail again on every load.
+      if (error) {
+        await supabase.auth.signOut({ scope: "local" });
+      }
+
       const sessionEmail = data.session?.user?.email ?? null;
 
       if (!sessionEmail) {
