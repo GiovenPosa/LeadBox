@@ -56,7 +56,8 @@ export type AuditFacts = {
     pages: AuditPage[];
     places: Record<string, number>;
     phoneOnSite: string | null;
-    contactForm: boolean;
+    contactForm: "yes" | "no" | "unknown";
+    contactPage: string | null;
     bookingLinks: string[];
     socialLinks: string[];
     businessData: { name: string | null; address: string | null; openingHours: boolean } | null;

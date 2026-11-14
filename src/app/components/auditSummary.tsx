@@ -145,7 +145,18 @@ export default function AuditSummary({ inquiryId }: { inquiryId: string }) {
                 {site.businessData ? `${site.businessData.name ?? "unnamed"}${site.businessData.address ? `, ${site.businessData.address}` : ""}` : "none"}
               </Line>
               <Line label="Phone on site">{site.phoneOnSite ?? "none found"}</Line>
-              <Line label="Contact form">{site.contactForm ? "yes" : "none found"}</Line>
+              <Line label="Contact form">
+                {site.contactForm === "yes"
+                  ? "yes"
+                  : site.contactForm === "unknown"
+                    ? `can’t tell (${site.platform} adds forms with JavaScript)`
+                    : "none found"}
+                {site.contactPage && (
+                  <a href={site.contactPage} target="_blank" rel="noopener noreferrer" className={styles.site}>
+                    contact page
+                  </a>
+                )}
+              </Line>
               {site.bookingLinks.length > 0 && <Line label="Booking">{site.bookingLinks.join(", ")}</Line>}
             </>
           )}
