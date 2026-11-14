@@ -17,12 +17,15 @@ export default function AuditModal({
   open,
   title,
   subtitle,
+  actions,
   onClose,
   children,
 }: {
   open: boolean;
   title: string;
   subtitle?: ReactNode;
+  /** beside the close button, e.g. a link to the report */
+  actions?: ReactNode;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -65,9 +68,12 @@ export default function AuditModal({
             </h2>
             {subtitle && <div className={styles.subtitle}>{subtitle}</div>}
           </div>
-          <button type="button" className={styles.close} onClick={onClose} aria-label="Close">
-            <HiMiniXMark size={20} />
-          </button>
+          <div className={styles.headActions}>
+            {actions}
+            <button type="button" className={styles.close} onClick={onClose} aria-label="Close">
+              <HiMiniXMark size={20} />
+            </button>
+          </div>
         </header>
         <div className={styles.body}>{children}</div>
       </div>

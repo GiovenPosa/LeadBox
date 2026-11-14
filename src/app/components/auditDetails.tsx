@@ -2,13 +2,13 @@
 
 import styles from "./component-styles/auditSummary.module.css";
 import Pill, { type PillTone } from "./pill";
-import { reportUrl, type Audit, type AuditStatus, type SpeedRun } from "../../lib/audits";
+import { type Audit, type AuditStatus, type SpeedRun } from "../../lib/audits";
 import { packageLabel } from "../../lib/leads";
 
 // A website audit's full results, shown in the audit window (auditModal.tsx)
-// once it's done: Claude's draft (verdict, recommended package, problems, what
-// the checks caught, and the report's link), then the facts gathered about
-// the site, in plain terms.
+// once it's done: Claude's draft (verdict, recommended package, problems and
+// what the checks caught), then the facts gathered about the site, in plain
+// terms. The report's own link is in the window's header (auditSummary.tsx).
 
 export const STATUS: Record<AuditStatus, { label: string; tone: PillTone }> = {
   queued: { label: "Queued", tone: "neutral" },
@@ -86,9 +86,6 @@ export default function AuditDetails({ audit }: { audit: Audit }) {
               ))}
             </ul>
           )}
-          <a href={reportUrl(audit.report_id)} target="_blank" rel="noopener noreferrer" className={styles.open}>
-            Open the report ↗
-          </a>
         </div>
       )}
 

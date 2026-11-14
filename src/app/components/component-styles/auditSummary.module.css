@@ -131,13 +131,3 @@
   list-style: disc;
 }
 
-.open {
-  align-self: flex-start;
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
-.open:hover {
-  text-decoration: underline;
-}

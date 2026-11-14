@@ -115,3 +115,14 @@ export async function fetchAuditForInquiry(inquiryId: string): Promise<Audit | n
 
 /** still on its way: worth checking again shortly */
 export const auditInProgress = (status: AuditStatus) => status === "queued" || status === "gathering" || status === "writing";
+
+/** Gio emailed the report's link by hand: marks it sent, so the report page
+ *  starts counting its visitor's views (until the website's own sending is
+ *  built, docs/website-audit/plan.md phase 4) */
+export async function markAuditSent(id: string): Promise<void> {
+  const { error } = await supabase.from("audits").update({ status: "sent", sent_at: new Date().toISOString() }).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+/** a report that's been written and can be sent */
+export const auditSendable = (status: AuditStatus) => status === "ready" || status === "review";

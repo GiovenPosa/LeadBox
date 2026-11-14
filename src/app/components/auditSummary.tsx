@@ -6,7 +6,7 @@ import styles from "./component-styles/auditProgress.module.css";
 import Pill from "./pill";
 import AuditModal from "./auditModal";
 import AuditDetails, { STATUS, scoreTone } from "./auditDetails";
-import { auditInProgress, fetchAuditForInquiry, type Audit } from "../../lib/audits";
+import { auditInProgress, auditSendable, fetchAuditForInquiry, markAuditSent, reportUrl, type Audit } from "../../lib/audits";
 import { clock, progressOf, STEPS } from "../../lib/auditProgress";
 import { packageLabel } from "../../lib/leads";
 
@@ -21,6 +21,8 @@ export default function AuditSummary({ inquiryId }: { inquiryId: string }) {
   const [state, setState] = useState<"loading" | "ready" | "none" | "error">("loading");
   const [open, setOpen] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const [marking, setMarking] = useState(false);
+  const [markError, setMarkError] = useState<string | null>(null);
   const running = audit ? auditInProgress(audit.status) : false;
 
   // load it, then check again every 5 seconds while it's still running
@@ -59,6 +61,20 @@ export default function AuditSummary({ inquiryId }: { inquiryId: string }) {
   }
 
   const site = audit.url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+
+  // after emailing the report's link by hand
+  const markSent = async () => {
+    setMarking(true);
+    setMarkError(null);
+    try {
+      await markAuditSent(audit.id);
+      setAudit({ ...audit, status: "sent" });
+    } catch (e) {
+      setMarkError(e instanceof Error ? e.message : "Couldn’t mark it as sent.");
+    } finally {
+      setMarking(false);
+    }
+  };
   const progress = progressOf(audit, now);
   const status = STATUS[audit.status];
 
@@ -108,11 +124,20 @@ export default function AuditSummary({ inquiryId }: { inquiryId: string }) {
             )}
             {audit.report && <Pill tone="qualified">{packageLabel(audit.report.recommendation.package)}</Pill>}
           </div>
-          {audit.facts && (
-            <button type="button" className={styles.view} onClick={() => setOpen(true)}>
-              View results
-            </button>
-          )}
+          <div className={styles.actions}>
+            {audit.facts && (
+              <button type="button" className={styles.view} onClick={() => setOpen(true)}>
+                View results
+              </button>
+            )}
+            {/* after emailing its link by hand: the report starts counting views */}
+            {audit.report && auditSendable(audit.status) && (
+              <button type="button" className={styles.view} onClick={markSent} disabled={marking}>
+                {marking ? "Marking…" : "Mark as sent"}
+              </button>
+            )}
+          </div>
+          {markError && <p className={styles.fail}>{markError}</p>}
         </div>
       )}
 
@@ -121,6 +146,14 @@ export default function AuditSummary({ inquiryId }: { inquiryId: string }) {
         onClose={() => setOpen(false)}
         title={running ? "Auditing the site" : "Website audit"}
         subtitle={site}
+        actions={
+          !running &&
+          audit.report && (
+            <a href={reportUrl(audit.report_id)} target="_blank" rel="noopener noreferrer" className={styles.openReport}>
+              Open the report ↗
+            </a>
+          )
+        }
       >
         {running ? <ProgressSteps current={progress.current} percent={progress.percent} elapsed={progress.elapsed} /> : <AuditDetails audit={audit} />}
       </AuditModal>
