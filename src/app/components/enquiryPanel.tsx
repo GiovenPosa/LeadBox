@@ -16,6 +16,7 @@ import {
   HiOutlineWindow,
   HiOutlinePencilSquare,
   HiOutlineCheckCircle,
+  HiOutlineDocumentMagnifyingGlass,
 } from "react-icons/hi2";
 import styles from "./component-styles/enquiryPanel.module.css";
 import SidePanel, { PanelError, PanelFooter, PanelRow, PanelSection } from "./sidePanel";
@@ -26,6 +27,8 @@ import NotesTimeline from "./notesTimeline";
 import TaskList from "./taskList";
 import type { BookingInquiry, OpportunityStatus } from "./inquiryCard";
 import { embeddedLead, leadHref, leadStageLabel, leadStageTone, packageLabel } from "../../lib/leads";
+import { AUDIT_SOURCE } from "../../lib/audits";
+import AuditSummary from "./auditSummary";
 
 // An enquiry, opened from its Inbox card: everything they sent, its status,
 // and the step that turns it into a lead.
@@ -199,6 +202,15 @@ export default function EnquiryPanel({
               </Detail>
             </PanelRow>
           </PanelSection>
+
+          {/* a request from gios.build/website-audit: the facts gathered about their site */}
+          {shown.source_page === AUDIT_SOURCE && (
+            <PanelSection>
+              <Field icon={<HiOutlineDocumentMagnifyingGlass size={16} />} label="Website audit">
+                <AuditSummary inquiryId={shown.id} />
+              </Field>
+            </PanelSection>
+          )}
 
           {/* Tasks and notes stay with this person as the enquiry becomes a lead */}
           <PanelSection>
