@@ -1,0 +1,291 @@
+/* ============================================
+   AUDIT PROGRESS - the running audit's bar in the side panel, its steps in
+   the audit window, and the summary once it's done
+   ============================================ */
+
+.muted {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* ---- the bar: the whole card is a button that opens the window ---- */
+
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  margin-left: var(--space-1);
+  padding: 12px 14px;
+  border: 0;
+  border-radius: var(--radius-xl);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.35);
+}
+
+.bar:active {
+  transform: scale(0.99);
+}
+
+.barTop,
+.barFoot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.stage {
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.percent {
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+.barFoot {
+  font-size: var(--text-xs, 12px);
+  color: var(--color-text-tertiary);
+}
+
+.barFoot span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* three dots, bouncing in turn */
+.dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 4px;
+}
+
+.dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: audit-dot 1.2s ease-in-out infinite;
+}
+
+.dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes audit-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* the track and its fill: the hero stickers' colours, sliding along under a
+   moving shine */
+.track {
+  position: relative;
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background-color: var(--color-bg-tertiary, rgba(127, 127, 127, 0.15));
+  overflow: hidden;
+}
+
+.fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--p, 0%);
+  border-radius: inherit;
+  background: linear-gradient(90deg, #fe432a, #f7e07a, #22c55e, #0a7cff, #c9b8f5, #fe432a);
+  background-size: 300% 100%;
+  animation: audit-colours 4s linear infinite;
+  transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: audit-shine 1.6s ease-in-out infinite;
+}
+
+@keyframes audit-colours {
+  to { background-position: 300% 0; }
+}
+
+@keyframes audit-shine {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+
+/* ---- the steps, in the window ---- */
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.steps .track {
+  height: 12px;
+}
+
+.steps ol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  list-style: none;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  padding: 10px 12px;
+  border-radius: var(--radius-xl);
+  font-size: var(--text-md);
+  transition: background-color 0.3s ease, opacity 0.3s ease;
+}
+
+.steps li strong {
+  font-weight: 600;
+}
+
+.detail {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border-primary);
+}
+
+.done {
+  color: var(--color-text-secondary);
+}
+
+.done .mark {
+  border-color: var(--color-status-won);
+  background-color: var(--color-status-won);
+  color: #fff;
+  animation: audit-tick 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.now {
+  background-color: var(--color-bg-primary, rgba(127, 127, 127, 0.08));
+  color: var(--color-text-primary);
+}
+
+.now .mark {
+  border-color: transparent;
+}
+
+.next {
+  color: var(--color-text-tertiary);
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border-primary);
+  border-top-color: var(--color-status-new);
+  animation: audit-spin 0.8s linear infinite;
+}
+
+@keyframes audit-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes audit-tick {
+  from { transform: scale(0.4); }
+  to { transform: scale(1); }
+}
+
+/* ---- the summary, once it's done ---- */
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-left: var(--space-1);
+}
+
+.summaryHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.verdict {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-primary);
+}
+
+.fail {
+  font-size: var(--text-sm);
+  color: var(--color-status-bad);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.view {
+  align-self: flex-start;
+  margin-top: var(--space-1);
+  padding: 8px 14px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.view:hover {
+  background-color: var(--color-bg-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill,
+  .fill::after,
+  .dots i,
+  .spinner,
+  .done .mark {
+    animation: none;
+  }
+}

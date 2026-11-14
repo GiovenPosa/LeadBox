@@ -1,62 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import styles from "./component-styles/auditSummary.module.css";
-import Pill, { type PillTone } from "./pill";
-import { auditInProgress, fetchAuditForInquiry, reportUrl, type Audit, type AuditStatus, type SpeedRun } from "../../lib/audits";
+import { useEffect, useState, type CSSProperties } from "react";
+import { HiMiniCheck } from "react-icons/hi2";
+import styles from "./component-styles/auditProgress.module.css";
+import Pill from "./pill";
+import AuditModal from "./auditModal";
+import AuditDetails, { STATUS, scoreTone } from "./auditDetails";
+import { auditInProgress, fetchAuditForInquiry, type Audit } from "../../lib/audits";
+import { clock, progressOf, STEPS } from "../../lib/auditProgress";
 import { packageLabel } from "../../lib/leads";
 
-// The website audit behind an enquiry from gios.build/website-audit: where
-// it's up to, then the facts gathered about the site, in plain terms, ready
-// for writing the report (by hand until the report-writing phase is built).
-
-const STATUS: Record<AuditStatus, { label: string; tone: PillTone }> = {
-  queued: { label: "Queued", tone: "neutral" },
-  held: { label: "Held: over the daily cap", tone: "contacted" },
-  gathering: { label: "Checking the site…", tone: "neutral" },
-  writing: { label: "Writing the report…", tone: "neutral" },
-  review: { label: "Needs a look", tone: "contacted" },
-  ready: { label: "Report ready", tone: "qualified" },
-  sent: { label: "Sent", tone: "won" },
-  failed: { label: "Failed", tone: "bad" },
-  rejected: { label: "Not sent", tone: "lost" },
-};
-
-// Google's own bands for the Lighthouse scores
-const scoreTone = (score: number | null): PillTone =>
-  score === null ? "neutral" : score >= 90 ? "won" : score >= 50 ? "contacted" : "bad";
-
-const seconds = (ms: number | null) => (ms === null ? "—" : `${(ms / 1000).toFixed(1)}s`);
-
-function Speed({ label, run }: { label: string; run: SpeedRun | null }) {
-  if (!run) return <Line label={label}>not measured</Line>;
-  return (
-    <Line label={label}>
-      <Pill tone={scoreTone(run.performance)}>{run.performance ?? "—"}/100</Pill>
-      <span className={styles.muted}>
-        main content {seconds(run.lcpMs)} · {run.weightKb !== null ? `${(run.weightKb / 1024).toFixed(1)} MB` : "—"}
-        {run.seo !== null && ` · SEO ${run.seo}`}
-      </span>
-    </Line>
-  );
-}
-
-function Line({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className={styles.line}>
-      <span className={styles.label}>{label}</span>
-      <span className={styles.value}>{children}</span>
-    </div>
-  );
-}
-
-const yesNo = (value: boolean | null, yes: string, no: string) => (value === null ? "unknown" : value ? yes : no);
+// The website audit behind an enquiry from gios.build/website-audit, in the
+// enquiry's side panel. While it runs: a playful progress bar, and a click
+// opens the audit window with every step as it happens. Once it's done: a
+// short summary (status, verdict, scores, the package it recommends), and a
+// click opens the full results in the same window (auditDetails.tsx).
 
 export default function AuditSummary({ inquiryId }: { inquiryId: string }) {
   const [audit, setAudit] = useState<Audit | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "none" | "error">("loading");
+  const [open, setOpen] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+  const running = audit ? auditInProgress(audit.status) : false;
 
-  // load it, then keep checking every 10 seconds while it's still gathering
+  // load it, then check again every 5 seconds while it's still running
   useEffect(() => {
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -66,7 +33,7 @@ export default function AuditSummary({ inquiryId }: { inquiryId: string }) {
         if (cancelled) return;
         setAudit(found);
         setState(found ? "ready" : "none");
-        if (found && auditInProgress(found.status)) timer = setTimeout(load, 10_000);
+        if (found && auditInProgress(found.status)) timer = setTimeout(load, 5_000);
       } catch {
         if (!cancelled) setState("error");
       }
@@ -78,132 +45,115 @@ export default function AuditSummary({ inquiryId }: { inquiryId: string }) {
     };
   }, [inquiryId]);
 
+  // the bar and the clock move every second while it runs
+  useEffect(() => {
+    if (!running) return;
+    const tick = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(tick);
+  }, [running]);
+
   if (state === "loading") return <p className={styles.muted}>Loading the audit…</p>;
   if (state === "error") return <p className={styles.muted}>Couldn’t load the audit.</p>;
   if (state === "none" || !audit) {
     return <p className={styles.muted}>A repeat request: this site was already audited in the last 30 days.</p>;
   }
 
-  const facts = audit.facts;
-  const site = facts?.site ?? null;
-  const pages = site?.pages ?? [];
+  const site = audit.url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const progress = progressOf(audit, now);
   const status = STATUS[audit.status];
-  const noDescription = pages.filter((page) => !page.description).length;
-  const thin = pages.filter((page) => page.words < 150).length;
-  const missingAlt = pages.reduce((sum, page) => sum + page.imagesMissingAlt, 0);
-  const places = Object.entries(site?.places ?? {}).sort((a, b) => b[1] - a[1]);
 
   return (
-    <div className={styles.audit}>
-      <div className={styles.head}>
-        <Pill tone={status.tone}>{status.label}</Pill>
-        <a href={audit.url} target="_blank" rel="noopener noreferrer" className={styles.site}>
-          {audit.url.replace(/^https?:\/\//, "")}
-        </a>
-      </div>
-      {audit.fail_reason && <p className={styles.fail}>{audit.fail_reason}</p>}
-
-      {/* Claude's draft: the verdict, what it recommends, and anything the
-          checks caught (a report that fails them waits here, never sent) */}
-      {audit.report && (
-        <div className={styles.report}>
-          <p className={styles.verdict}>{audit.report.verdict}</p>
-          <Line label="Recommends">{packageLabel(audit.report.recommendation.package)}</Line>
-          <Line label="Problems">{audit.report.problems.map((p) => p.title).join(" ")}</Line>
-          {audit.checks && !audit.checks.passed && (
-            <ul className={styles.checks}>
-              {audit.checks.problems.map((problem) => (
-                <li key={problem}>{problem}</li>
-              ))}
-            </ul>
+    <>
+      {running ? (
+        // the whole bar opens the window
+        <button type="button" className={styles.bar} onClick={() => setOpen(true)} aria-label={`Audit of ${site}: ${progress.percent}%. Show progress`}>
+          <span className={styles.barTop}>
+            <span className={styles.stage}>
+              {STEPS[progress.current]?.label}
+              <span className={styles.dots} aria-hidden>
+                <i />
+                <i />
+                <i />
+              </span>
+            </span>
+            <span className={styles.percent}>{progress.percent}%</span>
+          </span>
+          <span className={styles.track} aria-hidden>
+            <span className={styles.fill} style={{ "--p": `${progress.percent}%` } as CSSProperties} />
+          </span>
+          <span className={styles.barFoot}>
+            <span>{site}</span>
+            <span>{clock(progress.elapsed)} · tap for details</span>
+          </span>
+        </button>
+      ) : (
+        <div className={styles.summary}>
+          <div className={styles.summaryHead}>
+            <Pill tone={status.tone}>{status.label}</Pill>
+            <span className={styles.muted}>{site}</span>
+          </div>
+          {audit.report?.verdict && <p className={styles.verdict}>{audit.report.verdict}</p>}
+          {audit.fail_reason && <p className={styles.fail}>{audit.fail_reason}</p>}
+          <div className={styles.chips}>
+            {audit.facts?.speed.mobile && (
+              <Pill tone={scoreTone(audit.facts.speed.mobile.performance)}>Phone {audit.facts.speed.mobile.performance}/100</Pill>
+            )}
+            {audit.facts?.speed.desktop && (
+              <Pill tone={scoreTone(audit.facts.speed.desktop.performance)}>Computer {audit.facts.speed.desktop.performance}/100</Pill>
+            )}
+            {audit.facts?.profile?.found && (
+              <Pill tone="neutral">
+                {audit.facts.profile.rating ?? "—"}★ · {audit.facts.profile.reviews ?? 0} reviews
+              </Pill>
+            )}
+            {audit.report && <Pill tone="qualified">{packageLabel(audit.report.recommendation.package)}</Pill>}
+          </div>
+          {audit.facts && (
+            <button type="button" className={styles.view} onClick={() => setOpen(true)}>
+              View results
+            </button>
           )}
-          <a href={reportUrl(audit.report_id)} target="_blank" rel="noopener noreferrer" className={styles.open}>
-            Open the report ↗
-          </a>
         </div>
       )}
 
-      {facts && (
-        <>
-          {facts.screenshot && (
-            // eslint-disable-next-line @next/next/no-img-element -- a data URL from PageSpeed
-            <img className={styles.shot} src={facts.screenshot} alt={`The home page of ${audit.url} on a phone`} />
-          )}
+      <AuditModal
+        open={open}
+        onClose={() => setOpen(false)}
+        title={running ? "Auditing the site" : "Website audit"}
+        subtitle={site}
+      >
+        {running ? <ProgressSteps current={progress.current} percent={progress.percent} elapsed={progress.elapsed} /> : <AuditDetails audit={audit} />}
+      </AuditModal>
+    </>
+  );
+}
 
-          <p className={styles.group}>Speed</p>
-          <Speed label="Phone" run={facts.speed.mobile} />
-          <Speed label="Computer" run={facts.speed.desktop} />
-          {facts.speed.mobile?.field?.overall && <Line label="Real visitors">{facts.speed.mobile.field.overall.toLowerCase()}</Line>}
-
-          {site && (
-            <>
-              <p className={styles.group}>Google</p>
-              <Line label="Built with">{site.platform ?? "not obvious"}</Line>
-              <Line label="Pages read">
-                {pages.length}
-                {site.sitemap.found ? ` (sitemap lists ${site.sitemap.urls})` : " (no sitemap)"}
-              </Line>
-              <Line label="No description">{noDescription ? `${noDescription} of ${pages.length} pages` : "none"}</Line>
-              <Line label="Thin pages">{thin ? `${thin} under 150 words` : "none"}</Line>
-              <Line label="Images, no alt">{missingAlt || "none"}</Line>
-              <Line label="Redirects">
-                http {yesNo(site.redirects.http, "✓", "✗")} · www/bare {yesNo(site.redirects.otherHost, "✓", "✗")}
-              </Line>
-              <div className={styles.titles}>
-                {pages.map((page) => (
-                  <p key={page.url} title={page.url}>
-                    <span>{page.title || "No title"}</span>
-                    {page.noindex && <em> · noindex</em>}
-                  </p>
-                ))}
-              </div>
-
-              <p className={styles.group}>Local</p>
-              <Line label="Places named">
-                {places.length ? places.slice(0, 6).map(([name, count]) => `${name} ${count}`).join(" · ") : "none"}
-              </Line>
-              <Line label="Business data">
-                {site.businessData ? `${site.businessData.name ?? "unnamed"}${site.businessData.address ? `, ${site.businessData.address}` : ""}` : "none"}
-              </Line>
-              <Line label="Phone on site">{site.phoneOnSite ?? "none found"}</Line>
-              <Line label="Contact form">
-                {site.contactForm === "yes"
-                  ? "yes"
-                  : site.contactForm === "unknown"
-                    ? `can’t tell (${site.platform} adds forms with JavaScript)`
-                    : "none found"}
-                {site.contactPage && (
-                  <a href={site.contactPage} target="_blank" rel="noopener noreferrer" className={styles.site}>
-                    contact page
-                  </a>
-                )}
-              </Line>
-              {site.bookingLinks.length > 0 && <Line label="Booking">{site.bookingLinks.join(", ")}</Line>}
-            </>
-          )}
-
-          {facts.profile?.found && (
-            <>
-              <p className={styles.group}>Google Business Profile</p>
-              <Line label="Listing">
-                {facts.profile.name} · {facts.profile.rating ?? "—"}★ ({facts.profile.reviews ?? 0})
-              </Line>
-              <Line label="Matches site">
-                name {yesNo(facts.profile.nameMatches, "✓", "✗")} · address {yesNo(facts.profile.addressMatches, "✓", "✗")} · phone{" "}
-                {yesNo(facts.profile.phoneMatches, "✓", "✗")}
-              </Line>
-            </>
-          )}
-
-          {facts.gaps.length > 0 && (
-            <ul className={styles.gaps}>
-              {facts.gaps.map((gap) => (
-                <li key={gap}>{gap}</li>
-              ))}
-            </ul>
-          )}
-        </>
-      )}
+/** every step, ticked off as it goes, the current one with its line */
+function ProgressSteps({ current, percent, elapsed }: { current: number; percent: number; elapsed: number }) {
+  return (
+    <div className={styles.steps}>
+      <span className={styles.track} aria-hidden>
+        <span className={styles.fill} style={{ "--p": `${percent}%` } as CSSProperties} />
+      </span>
+      <p className={styles.muted}>
+        {percent}% · {clock(elapsed)} so far · usually about two minutes
+      </p>
+      <ol>
+        {STEPS.map((step, index) => {
+          const state = index < current ? "done" : index === current ? "now" : "next";
+          return (
+            <li key={step.key} className={styles[state]}>
+              <span className={styles.mark} aria-hidden>
+                {state === "done" ? <HiMiniCheck size={14} /> : state === "now" ? <span className={styles.spinner} /> : null}
+              </span>
+              <span>
+                <strong>{step.label}</strong>
+                {state === "now" && <span className={styles.detail}>{step.detail}</span>}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }

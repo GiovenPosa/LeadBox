@@ -84,6 +84,8 @@ export type AuditReportDraft = {
 export type Audit = {
   id: string;
   created_at: string;
+  /** when its status last changed: the progress bar times its steps from it */
+  updated_at: string;
   url: string;
   status: AuditStatus;
   fail_reason: string | null;
@@ -102,7 +104,7 @@ export const reportUrl = (reportId: string) => `https://www.gios.build/report/${
 export async function fetchAuditForInquiry(inquiryId: string): Promise<Audit | null> {
   const { data, error } = await supabase
     .from("audits")
-    .select("id, created_at, url, status, fail_reason, facts, report_id, report, checks, model")
+    .select("id, created_at, updated_at, url, status, fail_reason, facts, report_id, report, checks, model")
     .eq("inquiry_id", inquiryId)
     .order("created_at", { ascending: false })
     .limit(1)
