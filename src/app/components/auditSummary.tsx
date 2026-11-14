@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import styles from "./component-styles/auditSummary.module.css";
 import Pill, { type PillTone } from "./pill";
-import { auditInProgress, fetchAuditForInquiry, type Audit, type AuditStatus, type SpeedRun } from "../../lib/audits";
+import { auditInProgress, fetchAuditForInquiry, reportUrl, type Audit, type AuditStatus, type SpeedRun } from "../../lib/audits";
+import { packageLabel } from "../../lib/leads";
 
 // The website audit behind an enquiry from gios.build/website-audit: where
 // it's up to, then the facts gathered about the site, in plain terms, ready
@@ -14,7 +15,7 @@ const STATUS: Record<AuditStatus, { label: string; tone: PillTone }> = {
   held: { label: "Held: over the daily cap", tone: "contacted" },
   gathering: { label: "Checking the site…", tone: "neutral" },
   writing: { label: "Writing the report…", tone: "neutral" },
-  review: { label: "Facts ready", tone: "qualified" },
+  review: { label: "Needs a look", tone: "contacted" },
   ready: { label: "Report ready", tone: "qualified" },
   sent: { label: "Sent", tone: "won" },
   failed: { label: "Failed", tone: "bad" },
@@ -101,6 +102,26 @@ export default function AuditSummary({ inquiryId }: { inquiryId: string }) {
         </a>
       </div>
       {audit.fail_reason && <p className={styles.fail}>{audit.fail_reason}</p>}
+
+      {/* Claude's draft: the verdict, what it recommends, and anything the
+          checks caught (a report that fails them waits here, never sent) */}
+      {audit.report && (
+        <div className={styles.report}>
+          <p className={styles.verdict}>{audit.report.verdict}</p>
+          <Line label="Recommends">{packageLabel(audit.report.recommendation.package)}</Line>
+          <Line label="Problems">{audit.report.problems.map((p) => p.title).join(" ")}</Line>
+          {audit.checks && !audit.checks.passed && (
+            <ul className={styles.checks}>
+              {audit.checks.problems.map((problem) => (
+                <li key={problem}>{problem}</li>
+              ))}
+            </ul>
+          )}
+          <a href={reportUrl(audit.report_id)} target="_blank" rel="noopener noreferrer" className={styles.open}>
+            Open the report ↗
+          </a>
+        </div>
+      )}
 
       {facts && (
         <>

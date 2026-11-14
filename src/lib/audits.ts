@@ -74,6 +74,13 @@ export type AuditFacts = {
   gaps: string[];
 };
 
+// What Claude wrote (the full shape is the website's src/data/auditReport.ts)
+export type AuditReportDraft = {
+  verdict: string;
+  problems: { title: string; severity: "high" | "medium" | "low" }[];
+  recommendation: { package: string; why: string };
+};
+
 export type Audit = {
   id: string;
   created_at: string;
@@ -81,14 +88,21 @@ export type Audit = {
   status: AuditStatus;
   fail_reason: string | null;
   facts: AuditFacts | null;
+  report_id: string;
+  report: AuditReportDraft | null;
+  checks: { passed: boolean; problems: string[] } | null;
+  model: string | null;
 };
+
+/** the report's private page on the website (a preview until it's sent) */
+export const reportUrl = (reportId: string) => `https://www.gios.build/report/${reportId}`;
 
 /** The audit an enquiry was filed for, or null (a repeat request within 30
  *  days files an enquiry but no new audit) */
 export async function fetchAuditForInquiry(inquiryId: string): Promise<Audit | null> {
   const { data, error } = await supabase
     .from("audits")
-    .select("id, created_at, url, status, fail_reason, facts")
+    .select("id, created_at, url, status, fail_reason, facts, report_id, report, checks, model")
     .eq("inquiry_id", inquiryId)
     .order("created_at", { ascending: false })
     .limit(1)

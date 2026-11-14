@@ -106,3 +106,38 @@
   color: var(--color-text-tertiary);
   list-style: disc;
 }
+
+/* Claude's draft, above the facts */
+.report {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 10px 12px;
+  border-radius: var(--radius-xl);
+  background-color: var(--color-bg-secondary);
+}
+
+.verdict {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-primary);
+}
+
+/* what the checks caught: reasons it's held */
+.checks {
+  padding-left: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-status-bad);
+  list-style: disc;
+}
+
+.open {
+  align-self: flex-start;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.open:hover {
+  text-decoration: underline;
+}
